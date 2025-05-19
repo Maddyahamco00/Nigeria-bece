@@ -1,0 +1,33 @@
+/* Styling for student management page */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+.student-table {
+  @apply w-full bg-white rounded-lg shadow-lg;
+}
+
+.student-table th,
+.student-table td {
+  @apply p-4 border-b;
+}
+
+.student-table th {
+  @apply bg-gray-100 text-left font-semibold;
+}
+
+.student-table tr:hover {
+  @apply bg-gray-50;
+}
+
+.action-button {
+  @apply px-4 py-2 rounded-lg text-white;
+}
+
+.action-button.edit {
+  @apply bg-blue-500 hover:bg-blue-600;
+}
+
+.action-button.delete {
+  @apply bg-red-500 hover:bg-red-600;
+}

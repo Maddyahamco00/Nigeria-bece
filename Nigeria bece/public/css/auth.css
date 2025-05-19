@@ -1,0 +1,36 @@
+/* Styling for login and registration pages */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body {
+  @apply bg-gray-100 font-sans;
+}
+
+.auth-container {
+  @apply flex items-center justify-center min-h-screen;
+}
+
+.auth-card {
+  @apply bg-white p-8 rounded-lg shadow-lg w-full max-w-md;
+}
+
+.auth-card h2 {
+  @apply text-2xl font-bold text-center text-gray-800 mb-6;
+}
+
+.auth-card input {
+  @apply w-full p-3 mb-4 border rounded-lg focus:outline-nil focus:ring-2 focus:ring-blue-500;
+}
+
+.auth-card button {
+  @apply w-full p-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition;
+}
+
+.auth-card a {
+  @apply text-blue-600 hover:underline;
+}
+
+.error-message {
+  @apply text-red-500 text-sm mb-4;
+}

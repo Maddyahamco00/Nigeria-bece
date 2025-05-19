@@ -1,0 +1,33 @@
+/* Styling for payment page */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+.payment-container {
+  @apply flex items-center justify-center min-h-screen bg-gray-100;
+}
+
+.payment-card {
+  @apply bg-white p-8 rounded-lg shadow-lg w-full max-w-md;
+}
+
+.payment-card h2 {
+  @apply text-2xl font-bold text-center text-gray-800 mb-6;
+}
+
+.payment-card input,
+.payment-card select {
+  @apply w-full p-3 mb-4 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500;
+}
+
+.payment-button {
+  @apply w-full p-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition;
+}
+
+.payment-error {
+  @apply text-red-500 text-sm mb-4;
+}
+
+.payment-success {
+  @apply text-green-500 text-sm mb-4;
+}
