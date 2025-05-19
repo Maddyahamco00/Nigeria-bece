@@ -19,7 +19,7 @@ The **Nigeria BECE Admin Portal** is a web application for managing student regi
 ## Installation
 1. Clone the repo:
    ```bash
-   git clone https://github.com/your-username/nigeria-bece-admin.git
+   git clone https://github.com/Maddyahamco00/Nigeria-bece.git
    cd nigeria-bece-admin
    ```
 2. Install dependencies:
