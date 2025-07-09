@@ -3,12 +3,13 @@ const router = express.Router();
 const { isAuthenticated, isAdmin } = require('../middleware/auth');
 const Student = require('../models/Student');
 const School = require('../models/School');
+const User = require('../models/User'); // Added User model import
 const { check, validationResult } = require('express-validator');
 
-// Ensure user is authenticated and an admin
+// Apply admin authentication to all admin routes
 router.use(isAuthenticated, isAdmin);
 
-// Dashboard
+// Admin dashboard
 router.get('/dashboard', async (req, res) => {
   try {
     const studentCount = await Student.count();
@@ -120,7 +121,7 @@ router.get('/profile', (req, res) => {
 router.post('/profile', async (req, res) => {
   try {
     const { name, email } = req.body;
-    await User.update(req.user.id, { name, email });
+    await User.update({ name, email }, { where: { id: req.user.id } });
     req.flash('success', 'Profile updated successfully');
     res.redirect('/admin/profile');
   } catch (err) {
@@ -130,3 +131,4 @@ router.post('/profile', async (req, res) => {
 });
 
 module.exports = router;
+// Error handling middleware

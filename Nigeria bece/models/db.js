@@ -1,6 +1,5 @@
 //This file sets up the Sequelize connection to the MySQL database and initializes model associations.
 
-// models/db.js
 const { Sequelize } = require('sequelize');
 require('dotenv').config();
 
@@ -35,5 +34,14 @@ Object.keys(models).forEach((modelName) => {
 // Export sequelize instance and models
 module.exports = {
   sequelize,
-  ...models,
+  Sequelize,
+  models,
 };
+// Test the connection
+sequelize.authenticate()
+  .then(() => {
+    console.log('Database connection established successfully.');
+  })
+  .catch((error) => {
+    console.error('Unable to connect to the database:', error);
+  })

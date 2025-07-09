@@ -1,19 +1,13 @@
-//The main application file sets up the Express server, middleware, routes, and database connection.
-
-// app.js
 const express = require('express');
-const dotenv = require('dotenv');
 const session = require('express-session');
 const passport = require('passport');
 const path = require('path');
 const mysql = require('mysql2');
 const flash = require('connect-flash');
 const morgan = require('morgan');
+const { errorHandler } = require('./middleware/errorMiddleware');
+require('dotenv').config();
 
-// Load environment variables
-dotenv.config();
-
-// Initialize Express app
 const app = express();
 
 // Database connection
@@ -23,7 +17,6 @@ const db = mysql.createConnection({
   password: process.env.DB_PASSWORD,
   database: process.env.DB_NAME,
 });
-
 db.connect((err) => {
   if (err) {
     console.error('Database connection failed:', err);
@@ -33,10 +26,10 @@ db.connect((err) => {
 });
 
 // Middleware
-app.use(morgan('dev')); // Logging
-app.use(express.json()); // Parse JSON bodies
-app.use(express.urlencoded({ extended: true })); // Parse URL-encoded bodies
-app.use(express.static(path.join(__dirname, 'public'))); // Serve static files
+app.use(morgan('dev'));
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+app.use(express.static(path.join(__dirname, 'public')));
 
 // Session configuration
 app.use(
@@ -47,14 +40,18 @@ app.use(
   })
 );
 
+// Flash messages
+app.use(flash());
+
 // Passport initialization
 require('./config/passport')(passport);
 app.use(passport.initialize());
 app.use(passport.session());
 
-// Flash messages
-app.use(flash());
+// Locals middleware (AFTER session and flash!)
 app.use((req, res, next) => {
+  res.locals.user = req.user || null;
+  res.locals.messages = req.flash();
   res.locals.success_msg = req.flash('success_msg');
   res.locals.error_msg = req.flash('error_msg');
   res.locals.error = req.flash('error');
@@ -76,11 +73,15 @@ app.use('/auth', authRoutes);
 app.use('/admin', adminRoutes);
 app.use('/payment', paymentRoutes);
 
-// Error handling middleware
-app.use((err, req, res, next) => {
-  console.error(err.stack);
-  res.status(500).render('error', { message: 'Something went wrong!' });
+// Log all registered routes (for debugging)
+app._router.stack.forEach(function(r){
+    if (r.route && r.route.path){
+        console.log(r.route.path)
+    }
 });
+
+// Error handling middleware
+app.use(errorHandler);
 
 // Start server
 const PORT = process.env.PORT || 3000;

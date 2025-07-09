@@ -9,12 +9,20 @@ require('dotenv').config();
 const PAYSTACK_SECRET_KEY = process.env.PAYSTACK_SECRET_KEY;
 const PAYSTACK_API_URL = 'https://api.paystack.co';
 
+// Payment page
+router.get('/', (req, res) => {
+  res.render('payment', {
+    title: 'Make a Payment',
+    user: req.user,
+  });
+});
+
 // Initialize payment
 router.post(
   '/initialize',
   [
     check('email').isEmail().withMessage('Please enter a valid email'),
-    check('amount').isNumeric().withMessage('Amount is required'),
+    check('amount').isFloat({ gt: 0 }).withMessage('Amount must be a positive number'),
   ],
   async (req, res) => {
     const errors = validationResult(req);
@@ -26,7 +34,6 @@ router.post(
     try {
       const { email, amount } = req.body;
 
-      // Initialize payment with Paystack
       const response = await axios.post(
         `${PAYSTACK_API_URL}/transaction/initialize`,
         {
@@ -44,7 +51,6 @@ router.post(
 
       const { authorization_url, reference } = response.data.data;
 
-      // Save payment details to database
       await Payment.create({
         email,
         amount,
@@ -52,7 +58,6 @@ router.post(
         status: 'pending',
       });
 
-      // Redirect to Paystack payment page
       res.redirect(authorization_url);
     } catch (err) {
       req.flash('error', 'Error initializing payment');
@@ -66,7 +71,6 @@ router.get('/verify', async (req, res) => {
   const { reference } = req.query;
 
   try {
-    // Verify payment with Paystack
     const response = await axios.get(
       `${PAYSTACK_API_URL}/transaction/verify/${reference}`,
       {
@@ -77,20 +81,17 @@ router.get('/verify', async (req, res) => {
       }
     );
 
-    const { status, amount, customer } = response.data.data;
+    const { status } = response.data.data;
 
     if (status === 'success') {
-      // Generate unique code
       const code = await generateCode();
-
-      // Update payment record
       await Payment.update(reference, {
         status: 'success',
         code,
       });
 
       req.flash('success', `Payment successful! Your code is ${code}`);
-      res.redirect(`/success?reference=${reference}`);
+      res.redirect(`/payment/success?reference=${reference}`);
     } else {
       await Payment.update(reference, { status: 'failed' });
       req.flash('error', 'Payment failed. Please try again.');
@@ -102,4 +103,14 @@ router.get('/verify', async (req, res) => {
   }
 });
 
+// Success page
+router.get('/success', (req, res) => {
+  res.render('payment-success', {
+    title: 'Payment Successful',
+    user: req.user,
+    reference: req.query.reference,
+  });
+});
+
 module.exports = router;
+// Middleware to check if user is authenticated

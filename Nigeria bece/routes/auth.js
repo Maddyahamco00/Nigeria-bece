@@ -12,7 +12,7 @@ router.get('/login', (req, res) => {
   res.render('auth/login', { title: 'Login', errors: req.flash('error') });
 });
 
-// Login handler
+// Handle login
 router.post(
   '/login',
   [
@@ -42,7 +42,7 @@ router.get('/register', (req, res) => {
   res.render('auth/register', { title: 'Register', errors: req.flash('error') });
 });
 
-// Registration handler
+// Handle registration
 router.post(
   '/register',
   [
@@ -67,14 +67,14 @@ router.post(
 
     try {
       const { name, email, password } = req.body;
-      const userExists = await User.findByEmail(email);
-      if (userExists) {
+      const existing = await User.findByEmail(email);
+      if (existing) {
         req.flash('error', 'Email already registered');
         return res.redirect('/auth/register');
       }
 
       await User.create({ name, email, password });
-      req.flash('success', 'Registration successful! Please login.');
+      req.flash('success', 'Registration successful! Please log in.');
       res.redirect('/auth/login');
     } catch (err) {
       req.flash('error', 'Server error. Please try again.');
@@ -85,7 +85,7 @@ router.post(
 
 // Logout
 router.get('/logout', (req, res) => {
-  req.logout((err) => {
+  req.logout(err => {
     if (err) {
       req.flash('error', 'Error logging out');
       return res.redirect('/admin/dashboard');
@@ -96,3 +96,4 @@ router.get('/logout', (req, res) => {
 });
 
 module.exports = router;
+// Middleware to check if user is authenticated
