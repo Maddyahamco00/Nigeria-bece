@@ -1,3 +1,4 @@
+// public/js/payment.js
 // Paystack integration for payment processing
 document.addEventListener('DOMContentLoaded', () => {
   const paymentForm = document.getElementById('payment-form');

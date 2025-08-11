@@ -2,52 +2,42 @@
 
 // models/User.js
 const { DataTypes } = require('sequelize');
+const sequelize = require('../models/db');
 
-module.exports = (sequelize) => {
-  const User = sequelize.define(
-    'User',
-    {
-      id: {
-        type: DataTypes.INTEGER,
-        primaryKey: true,
-        autoIncrement: true,
-      },
-      email: {
-        type: DataTypes.STRING,
-        allowNull: false,
-        unique: true,
-        validate: {
-          isEmail: true,
-        },
-      },
-      password: {
-        type: DataTypes.STRING,
-        allowNull: false,
-      },
-      firstName: {
-        type: DataTypes.STRING,
-        allowNull: false,
-      },
-      lastName: {
-        type: DataTypes.STRING,
-        allowNull: false,
-      },
-      role: {
-        type: DataTypes.ENUM('admin', 'superadmin'),
-        defaultValue: 'admin',
-        allowNull: false,
-      },
-    },
-    {
-      tableName: 'users',
-      timestamps: true,
+// This model represents admin users who manage the system (e.g., school admins or super admins).
+const User = sequelize.define('User', {
+  name: {
+    type: DataTypes.STRING,
+    allowNull: false
+  },
+  email: {
+    type: DataTypes.STRING,
+    unique: true,
+    allowNull: false,
+    validate: { isEmail: true }
+  },
+  password: {
+    type: DataTypes.STRING,
+    allowNull: false
+  },
+  resetToken: {
+    type: DataTypes.STRING,
+    allowNull: true
+  },
+  resetTokenExpiration: {
+    type: DataTypes.DATE,
+    allowNull: true
+  }
+}, {
+  tableName: 'users', //  Ensures Sequelize uses the correct lowercase table name
+  timestamps: true,   //  Adds createdAt and updatedAt fields automatically
+  hooks: {
+    beforeCreate: async (user) => {
+      const bcrypt = require('bcryptjs');
+      const salt = await bcrypt.genSalt(10);
+      user.password = await bcrypt.hash(user.password, salt);
     }
-  );
+  }
+});
 
-  User.associate = (models) => {
-    User.hasMany(models.Student, { foreignKey: 'userId' });
-    User.hasMany(models.School, { foreignKey: 'userId' });
-  };
-
-  return User;
-};
+module.exports = User;

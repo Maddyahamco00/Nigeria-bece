@@ -1,3 +1,4 @@
+//  utils/codeGenerator.js
 const generateCode = (length = 12) => {
   const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
   let code = '';

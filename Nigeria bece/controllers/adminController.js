@@ -1,4 +1,6 @@
 //Manages admin dashboard, student, school, and profile functionalities.
+// controllers/adminController.js
+
 const pool = require('../config/database');
 
 exports.getDashboard = async (req, res) => {

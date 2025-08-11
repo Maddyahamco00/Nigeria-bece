@@ -1,3 +1,4 @@
+//  routes/payment.js
 const express = require('express');
 const router = express.Router();
 const axios = require('axios');
@@ -113,4 +114,3 @@ router.get('/success', (req, res) => {
 });
 
 module.exports = router;
-// Middleware to check if user is authenticated

@@ -1,99 +1,80 @@
+
+//  routes/auth.js
 const express = require('express');
-const router = express.Router();
-const passport = require('passport');
 const { check, validationResult } = require('express-validator');
+const bcrypt = require('bcrypt');
 const User = require('../models/User');
 
-// Login page
-router.get('/login', (req, res) => {
-  if (req.isAuthenticated()) {
-    return res.redirect('/admin/dashboard');
-  }
-  res.render('auth/login', { title: 'Login', errors: req.flash('error') });
-});
+const router = express.Router();
 
-// Handle login
-router.post(
-  '/login',
-  [
-    check('email').isEmail().withMessage('Please enter a valid email'),
-    check('password').notEmpty().withMessage('Password is required'),
-  ],
-  (req, res, next) => {
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-      req.flash('error', errors.array().map(err => err.msg));
-      return res.redirect('/auth/login');
-    }
-
-    passport.authenticate('local', {
-      successRedirect: '/admin/dashboard',
-      failureRedirect: '/auth/login',
-      failureFlash: true,
-    })(req, res, next);
-  }
-);
-
-// Registration page
+// 🔐 REGISTER ROUTE
+// GET /auth/register — show registration form
 router.get('/register', (req, res) => {
-  if (req.isAuthenticated()) {
-    return res.redirect('/admin/dashboard');
+  res.render('auth/register', { title: 'Register' });
+});
+router.post('/register', [
+  check('name').notEmpty().withMessage('Name is required'),
+  check('email').isEmail().withMessage('Enter a valid email'),
+  check('password').isLength({ min: 6 }).withMessage('Password must be at least 6 characters'),
+], async (req, res) => {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return res.status(400).json({ errors: errors.array() });
   }
-  res.render('auth/register', { title: 'Register', errors: req.flash('error') });
+
+  const { name, email, password } = req.body;
+
+  try {
+    // Check if user already exists
+    const existingUser = await User.findOne({ where: { email } });
+    if (existingUser) {
+      return res.status(409).send('User already exists');
+    }
+
+    // Create user (password will be hashed by the model hook)
+    await User.create({ name, email, password });
+
+    return res.status(201).send('User registered successfully!');
+  } catch (error) {
+    console.error('Registration error:', error);
+    return res.status(500).send('Internal server error');
+  }
 });
 
-// Handle registration
-router.post(
-  '/register',
-  [
-    check('name').notEmpty().withMessage('Name is required'),
-    check('email').isEmail().withMessage('Please enter a valid email'),
-    check('password')
-      .isLength({ min: 6 })
-      .withMessage('Password must be at least 6 characters'),
-    check('confirmPassword').custom((value, { req }) => {
-      if (value !== req.body.password) {
-        throw new Error('Passwords do not match');
-      }
-      return true;
-    }),
-  ],
-  async (req, res) => {
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-      req.flash('error', errors.array().map(err => err.msg));
-      return res.redirect('/auth/register');
-    }
-
-    try {
-      const { name, email, password } = req.body;
-      const existing = await User.findByEmail(email);
-      if (existing) {
-        req.flash('error', 'Email already registered');
-        return res.redirect('/auth/register');
-      }
-
-      await User.create({ name, email, password });
-      req.flash('success', 'Registration successful! Please log in.');
-      res.redirect('/auth/login');
-    } catch (err) {
-      req.flash('error', 'Server error. Please try again.');
-      res.redirect('/auth/register');
-    }
+// 🔐 LOGIN ROUTE
+// GET /auth/login — show login form
+router.get('/login', (req, res) => {
+  res.render('auth/login', { title: 'Login' });
+});
+router.post('/login', [
+  check('email').isEmail().withMessage('Enter a valid email'),
+  check('password').notEmpty().withMessage('Password is required'),
+], async (req, res) => {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return res.status(400).json({ errors: errors.array() });
   }
-);
 
-// Logout
-router.get('/logout', (req, res) => {
-  req.logout(err => {
-    if (err) {
-      req.flash('error', 'Error logging out');
-      return res.redirect('/admin/dashboard');
+  const { email, password } = req.body;
+
+  try {
+    const user = await User.findOne({ where: { email } });
+
+    if (!user) {
+      return res.status(401).send('User not found');
     }
-    req.flash('success', 'Successfully logged out');
-    res.redirect('/auth/login');
-  });
+
+    const isPasswordValid = await bcrypt.compare(password, user.password);
+
+    if (!isPasswordValid) {
+      return res.status(401).send('Invalid credentials');
+    }
+
+    return res.send('Login successful!');
+  } catch (error) {
+    console.error('Login error:', error);
+    return res.status(500).send('Internal server error');
+  }
 });
 
 module.exports = router;
-// Middleware to check if user is authenticated

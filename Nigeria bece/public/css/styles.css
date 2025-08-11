@@ -1,0 +1,6 @@
+/* public/css/styles.css */
+@import url('auth.css');
+@import url('students.css');
+@import url('dashboard.css');
+@import url('payment.css');
+@import url('schools.css');

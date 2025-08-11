@@ -1,4 +1,6 @@
 //This file configures the MySQL database connection using environment variables.
+// config/database.js
+
 const mysql = require('mysql2/promise');
 require('dotenv').config();
 

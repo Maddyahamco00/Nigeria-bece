@@ -1,5 +1,6 @@
 //This model stores Nigeria's 36 states + FCT, used for geographic categorization.
 // This model is used to categorize schools and students by their respective states.
+// model/State.js
 
 const { DataTypes } = require('sequelize');
 

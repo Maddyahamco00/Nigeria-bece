@@ -1,3 +1,4 @@
+// public/js/main.js
 // General client-side scripts for the application
 document.addEventListener('DOMContentLoaded', () => {
   // Sidebar toggle for mobile

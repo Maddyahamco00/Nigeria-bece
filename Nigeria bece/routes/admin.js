@@ -1,134 +1,29 @@
+//  routes/admin.js
 const express = require('express');
 const router = express.Router();
-const { isAuthenticated, isAdmin } = require('../middleware/auth');
-const Student = require('../models/Student');
-const School = require('../models/School');
-const User = require('../models/User'); // Added User model import
-const { check, validationResult } = require('express-validator');
-
-// Apply admin authentication to all admin routes
-router.use(isAuthenticated, isAdmin);
-
-// Admin dashboard
-router.get('/dashboard', async (req, res) => {
-  try {
-    const studentCount = await Student.count();
-    const schoolCount = await School.count();
-    res.render('admin/dashboard', {
-      title: 'Admin Dashboard',
-      user: req.user,
-      studentCount,
-      schoolCount,
-    });
-  } catch (err) {
-    req.flash('error', 'Error loading dashboard');
-    res.redirect('/auth/login');
-  }
-});
-
-// Students list
-router.get('/students', async (req, res) => {
-  try {
-    const students = await Student.findAll();
-    res.render('admin/students', {
-      title: 'Manage Students',
-      user: req.user,
-      students,
-    });
-  } catch (err) {
-    req.flash('error', 'Error fetching students');
-    res.redirect('/admin/dashboard');
-  }
-});
-
-// Add student
-router.post(
-  '/students/add',
-  [
-    check('firstName').notEmpty().withMessage('First name is required'),
-    check('lastName').notEmpty().withMessage('Last name is required'),
-    check('schoolId').notEmpty().withMessage('School is required'),
-  ],
-  async (req, res) => {
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-      req.flash('error', errors.array().map(err => err.msg));
-      return res.redirect('/admin/students');
-    }
-
-    try {
-      const { firstName, lastName, schoolId } = req.body;
-      await Student.create({ firstName, lastName, schoolId });
-      req.flash('success', 'Student added successfully');
-      res.redirect('/admin/students');
-    } catch (err) {
-      req.flash('error', 'Error adding student');
-      res.redirect('/admin/students');
-    }
-  }
-);
-
-// Schools list
-router.get('/schools', async (req, res) => {
-  try {
-    const schools = await School.findAll();
-    res.render('admin/schools', {
-      title: 'Manage Schools',
-      user: req.user,
-      schools,
-    });
-  } catch (err) {
-    req.flash('error', 'Error fetching schools');
-    res.redirect('/admin/dashboard');
-  }
-});
-
-// Add school
-router.post(
-  '/schools/add',
-  [
-    check('name').notEmpty().withMessage('School name is required'),
-    check('stateId').notEmpty().withMessage('State is required'),
-  ],
-  async (req, res) => {
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-      req.flash('error', errors.array().map(err => err.msg));
-      return res.redirect('/admin/schools');
-    }
-
-    try {
-      const { name, stateId } = req.body;
-      await School.create({ name, stateId });
-      req.flash('success', 'School added successfully');
-      res.redirect('/admin/schools');
-    } catch (err) {
-      req.flash('error', 'Error adding school');
-      res.redirect('/admin/schools');
-    }
-  }
-);
-
-// Profile page
-router.get('/profile', (req, res) => {
-  res.render('admin/profile', {
-    title: 'Admin Profile',
-    user: req.user,
-  });
-});
-
-// Update profile
 router.post('/profile', async (req, res) => {
+  const { name, email } = req.body;
   try {
-    const { name, email } = req.body;
     await User.update({ name, email }, { where: { id: req.user.id } });
-    req.flash('success', 'Profile updated successfully');
+    req.flash('success', 'Profile updated');
     res.redirect('/admin/profile');
   } catch (err) {
-    req.flash('error', 'Error updating profile');
+    req.flash('error', 'Update failed');
     res.redirect('/admin/profile');
   }
 });
-
+router.get('/profile', (req, res) => {
+  res.render('admin/profile', { user: req.user });
+});
+router.get('/users', async (req, res) => {
+  try {
+    const users = await User.findAll();
+    res.render('admin/users', { users });
+  } catch (err) {
+    req.flash('error', 'Failed to fetch users');
+    res.redirect('/admin/dashboard');
+  }
+});
 module.exports = router;
-// Error handling middleware
+
+// routes/admin.js

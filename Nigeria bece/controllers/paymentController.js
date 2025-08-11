@@ -1,4 +1,6 @@
 //Handles payment processing with Paystack and code generation.
+// controllers/paymentController.js
+
 const axios = require('axios');
 const pool = require('../config/database');
 const { generateCode } = require('../utils/codeGenerator');
