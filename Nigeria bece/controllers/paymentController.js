@@ -1,56 +1,82 @@
-//Handles payment processing with Paystack and code generation.
 // controllers/paymentController.js
-
 const axios = require('axios');
-const pool = require('../config/database');
-const { generateCode } = require('../utils/codeGenerator');
-require('dotenv').config();
+const Payment = require('../models/Payment');
 
-const paystack = axios.create({
-  baseURL: 'https://api.paystack.co',
-  headers: {
-    Authorization: `Bearer ${process.env.PAYSTACK_SECRET_KEY}`,
-    'Content-Type': 'application/json'
-  }
-});
+const PAYSTACK_SECRET_KEY = process.env.PAYSTACK_SECRET_KEY; // Store in .env
 
-exports.getPaymentPage = (req, res) => {
-  res.render('public/payment', { title: 'Purchase Code', user: req.user || null, paystackKey: process.env.PAYSTACK_PUBLIC_KEY });
-};
-
-exports.initiatePayment = async (req, res) => {
-  const { email, amount } = req.body;
+// Initialize payment
+exports.initializePayment = async (req, res) => {
   try {
-    const response = await paystack.post('/transaction/initialize', {
-      email,
-      amount: amount * 100, // Paystack expects amount in kobo
-      callback_url: `${process.env.APP_URL}/payment/verify`
-    });
-    res.json({ authorization_url: response.data.data.authorization_url });
-  } catch (err) {
-    res.status(500).json({ error: 'Payment initiation failed' });
-  }
-};
+    const { email, amount } = req.body;
 
-exports.verifyPayment = async (req, res) => {
-  const { reference } = req.query;
-  try {
-    const response = await paystack.get(`/transaction/verify/${reference}`);
-    const paymentData = response.data.data;
-    if (paymentData.status === 'success') {
-      const code = generateCode();
-      await pool.query('INSERT INTO payments (reference, email, amount, code, status) VALUES (?, ?, ?, ?, ?)', [
-        paymentData.reference,
-        paymentData.customer.email,
-        paymentData.amount / 100,
-        code,
-        'success'
-      ]);
-      res.render('public/success', { title: 'Payment Successful', code, user: req.user || null });
-    } else {
-      res.status(400).send('Payment verification failed');
+    if (!email || !amount) {
+      return res.status(400).json({ error: 'Email and amount are required' });
     }
-  } catch (err) {
-    res.status(500).send('Server error');
+
+    // Prevent duplicate pending payments for the same email
+    const existingPayment = await Payment.findOne({
+      where: { email, status: 'pending' }
+    });
+    if (existingPayment) {
+      return res.status(400).json({ error: 'A pending payment already exists for this email' });
+    }
+
+    // Call Paystack initialize endpoint
+    const response = await axios.post(
+      'https://api.paystack.co/transaction/initialize',
+      { email, amount: amount * 100 },
+      { headers: { Authorization: `Bearer ${PAYSTACK_SECRET_KEY}` } }
+    );
+
+    const { reference, authorization_url } = response.data.data;
+
+    // Save payment in DB
+    await Payment.create({
+      email,
+      amount,
+      reference,
+      status: 'pending'
+    });
+
+    return res.json({ authorization_url, reference });
+  } catch (error) {
+    console.error(error.response?.data || error.message);
+    return res.status(500).json({ error: 'Payment initialization failed' });
+  }
+};
+
+// Verify payment
+exports.verifyPayment = async (req, res) => {
+  try {
+    const { reference } = req.query;
+
+    if (!reference) {
+      return res.status(400).json({ error: 'Reference is required' });
+    }
+
+    // Check Paystack verify endpoint
+    const response = await axios.get(
+      `https://api.paystack.co/transaction/verify/${reference}`,
+      { headers: { Authorization: `Bearer ${PAYSTACK_SECRET_KEY}` } }
+    );
+
+    const { status, customer, amount } = response.data.data;
+
+    if (status === 'success') {
+      await Payment.update(
+        { status: 'success' },
+        { where: { reference } }
+      );
+      return res.json({ message: 'Payment verified successfully', email: customer.email, amount: amount / 100 });
+    } else {
+      await Payment.update(
+        { status: 'failed' },
+        { where: { reference } }
+      );
+      return res.status(400).json({ message: 'Payment failed or incomplete' });
+    }
+  } catch (error) {
+    console.error(error.response?.data || error.message);
+    return res.status(500).json({ error: 'Payment verification failed' });
   }
 };
