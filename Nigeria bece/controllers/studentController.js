@@ -67,3 +67,14 @@ exports.registerStudentForm = async (req, res) => {
     res.render('student/register', { title: 'Register Student', errors: [{ msg: 'Error saving student' }], data: req.body, schools: [] });
   }
 };
+const schools = await School.findAll();
+res.render('admin/student', {
+  title: 'Manage Students',
+  students: students.map(s => ({
+    id: s.id,
+    name: s.name,
+    regNumber: s.regNumber,
+    schoolName: s.School ? s.School.name : 'N/A'
+  })),
+  schools
+});
