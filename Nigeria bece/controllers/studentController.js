@@ -1,14 +1,14 @@
-const { Student, School } = require('../models');
+// controllers/studentController.js
+const Student = require('../models/Student');
+const School = require('../models/School');
 
+// --- API Controllers ---
 exports.createStudent = async (req, res) => {
   try {
-    const school = await School.findByPk(req.body.schoolId);
-    if (!school) return res.status(404).json({ error: 'School not found' });
-
     const student = await Student.create(req.body);
-    res.status(201).json(student);
-  } catch (error) {
-    res.status(400).json({ error: error.message });
+    res.json(student);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
   }
 };
 
@@ -16,8 +16,8 @@ exports.getStudents = async (req, res) => {
   try {
     const students = await Student.findAll({ include: School });
     res.json(students);
-  } catch (error) {
-    res.status(500).json({ error: error.message });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
   }
 };
 
@@ -26,29 +26,44 @@ exports.getStudent = async (req, res) => {
     const student = await Student.findByPk(req.params.id, { include: School });
     if (!student) return res.status(404).json({ error: 'Student not found' });
     res.json(student);
-  } catch (error) {
-    res.status(500).json({ error: error.message });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
   }
 };
 
 exports.updateStudent = async (req, res) => {
   try {
-    const student = await Student.findByPk(req.params.id);
-    if (!student) return res.status(404).json({ error: 'Student not found' });
-    await student.update(req.body);
-    res.json(student);
-  } catch (error) {
-    res.status(400).json({ error: error.message });
+    const [updated] = await Student.update(req.body, { where: { id: req.params.id } });
+    if (!updated) return res.status(404).json({ error: 'Student not found' });
+    res.json({ message: 'Student updated' });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
   }
 };
 
 exports.deleteStudent = async (req, res) => {
   try {
-    const student = await Student.findByPk(req.params.id);
-    if (!student) return res.status(404).json({ error: 'Student not found' });
-    await student.destroy();
+    const deleted = await Student.destroy({ where: { id: req.params.id } });
+    if (!deleted) return res.status(404).json({ error: 'Student not found' });
     res.json({ message: 'Student deleted' });
-  } catch (error) {
-    res.status(500).json({ error: error.message });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};
+
+// --- EJS Form Controllers ---
+exports.showRegisterForm = async (req, res) => {
+  const schools = await School.findAll();
+  res.render('student/register', { title: 'Register Student', errors: [], data: {}, schools });
+};
+
+exports.registerStudentForm = async (req, res) => {
+  try {
+    await Student.create(req.body);
+    req.flash('success', 'Student registered successfully!');
+    res.redirect('/student/register');
+  } catch (err) {
+    console.error(err);
+    res.render('student/register', { title: 'Register Student', errors: [{ msg: 'Error saving student' }], data: req.body, schools: [] });
   }
 };

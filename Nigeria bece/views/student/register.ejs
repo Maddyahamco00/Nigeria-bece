@@ -1,0 +1,68 @@
+<%- include('../partials/head', { title: 'Register Student' }) %>
+<%- include('../partials/header') %>
+<%- include('../partials/sidebar') %>
+
+<main class="ml-64 p-6">
+  <h2 class="text-2xl font-bold mb-6">Register Student</h2>
+
+  <% if (messages.success) { %>
+    <p class="text-green-600"><%= messages.success %></p>
+  <% } %>
+
+  <% if (errors.length > 0) { %>
+    <ul class="text-red-600">
+      <% errors.forEach(e => { %>
+        <li><%= e.msg %></li>
+      <% }) %>
+    </ul>
+  <% } %>
+
+  <form method="POST" action="/student/register" class="space-y-4">
+    <div>
+      <label class="block">Full Name</label>
+      <input type="text" name="name" class="border p-2 w-full" value="<%= data.name || '' %>">
+    </div>
+
+    <div>
+      <label class="block">Email</label>
+      <input type="email" name="email" class="border p-2 w-full" value="<%= data.email || '' %>">
+    </div>
+
+    <div>
+      <label class="block">Student Code</label>
+      <input type="text" name="studentCode" class="border p-2 w-full" value="<%= data.studentCode || '' %>">
+    </div>
+
+    <div>
+      <label class="block">Gender</label>
+      <select name="gender" class="border p-2 w-full">
+        <option value="">--Select--</option>
+        <option value="Male" <%= data.gender === 'Male' ? 'selected' : '' %>>Male</option>
+        <option value="Female" <%= data.gender === 'Female' ? 'selected' : '' %>>Female</option>
+      </select>
+    </div>
+
+    <div>
+      <label class="block">Date of Birth</label>
+      <input type="date" name="dateOfBirth" class="border p-2 w-full" value="<%= data.dateOfBirth || '' %>">
+    </div>
+
+    <div>
+      <label class="block">Guardian Phone</label>
+      <input type="text" name="guardianPhone" class="border p-2 w-full" value="<%= data.guardianPhone || '' %>">
+    </div>
+
+    <div>
+      <label class="block">School</label>
+      <select name="schoolId" class="border p-2 w-full">
+        <% schools.forEach(school => { %>
+          <option value="<%= school.id %>"><%= school.name %></option>
+        <% }) %>
+      </select>
+    </div>
+
+    <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded">Register</button>
+  </form>
+</main>
+
+<%- include('../partials/footer') %>
