@@ -1,60 +1,62 @@
-// controllers/paymentController.js
 const axios = require('axios');
-const Payment = require('../models/Payment');
+const sendEmail = require('../utils/sendEmail');
+const { Payment, Student } = require('../models'); // Adjust if needed
+const PAYSTACK_SECRET_KEY = process.env.PAYSTACK_SECRET_KEY;
+const ADMIN_EMAIL = process.env.ADMIN_EMAIL;
 
-const PAYSTACK_SECRET_KEY = process.env.PAYSTACK_SECRET_KEY; // Store in .env
+// Render payment page
+exports.renderPaymentPage = (req, res) => {
+  res.render('payment'); // Make sure you have views/payment.ejs
+};
+
+// Validate payment input
+exports.validatePayment = (req, res, next) => {
+  const { email, amount } = req.body;
+  if (!email || !amount) {
+    return res.status(400).json({ error: 'Email and amount are required' });
+  }
+  next();
+};
 
 // Initialize payment
 exports.initializePayment = async (req, res) => {
   try {
     const { email, amount } = req.body;
 
-    if (!email || !amount) {
-      return res.status(400).json({ error: 'Email and amount are required' });
-    }
-
-    // Prevent duplicate pending payments for the same email
-    const existingPayment = await Payment.findOne({
-      where: { email, status: 'pending' }
-    });
-    if (existingPayment) {
-      return res.status(400).json({ error: 'A pending payment already exists for this email' });
-    }
-
-    // Call Paystack initialize endpoint
     const response = await axios.post(
       'https://api.paystack.co/transaction/initialize',
-      { email, amount: amount * 100 },
-      { headers: { Authorization: `Bearer ${PAYSTACK_SECRET_KEY}` } }
+      {
+        email,
+        amount: amount * 100 // Convert to kobo
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${PAYSTACK_SECRET_KEY}`,
+          'Content-Type': 'application/json'
+        }
+      }
     );
 
-    const { reference, authorization_url } = response.data.data;
+    const { authorization_url, reference } = response.data.data;
 
-    // Save payment in DB
-    await Payment.create({
-      email,
-      amount,
-      reference,
-      status: 'pending'
-    });
+    // Save payment reference
+    await Payment.create({ email, amount, reference, status: 'pending' });
 
-    return res.json({ authorization_url, reference });
+    res.json({ authorization_url });
   } catch (error) {
     console.error(error.response?.data || error.message);
-    return res.status(500).json({ error: 'Payment initialization failed' });
+    res.status(500).json({ error: 'Payment initialization failed' });
   }
 };
 
 // Verify payment
 exports.verifyPayment = async (req, res) => {
   try {
-    const { reference } = req.query;
-
+    const { reference } = req.params;
     if (!reference) {
       return res.status(400).json({ error: 'Reference is required' });
     }
 
-    // Check Paystack verify endpoint
     const response = await axios.get(
       `https://api.paystack.co/transaction/verify/${reference}`,
       { headers: { Authorization: `Bearer ${PAYSTACK_SECRET_KEY}` } }
@@ -63,16 +65,39 @@ exports.verifyPayment = async (req, res) => {
     const { status, customer, amount } = response.data.data;
 
     if (status === 'success') {
-      await Payment.update(
-        { status: 'success' },
-        { where: { reference } }
+      await Payment.update({ status: 'success' }, { where: { reference } });
+
+      let student = await Student.findOne({ where: { email: customer.email } });
+      if (!student) {
+        student = await Student.create({
+          name: customer.first_name || 'Unknown',
+          email: customer.email,
+          studentCode: generateStudentCode()
+        });
+      }
+
+      await sendEmail(
+        student.email,
+        'Welcome to My School',
+        `<h1>Welcome ${student.name}</h1>
+        <p>Your student code is: <strong>${student.studentCode}</strong></p>`
       );
-      return res.json({ message: 'Payment verified successfully', email: customer.email, amount: amount / 100 });
+
+      await sendEmail(
+        ADMIN_EMAIL,
+        'New Student Registration',
+        `<h2>New Student Registered</h2>
+        <p><strong>Name:</strong> ${student.name}</p>
+        <p><strong>Email:</strong> ${student.email}</p>
+        <p><strong>Amount Paid:</strong> ₦${amount / 100}</p>`
+      );
+
+      return res.json({
+        message: 'Payment verified, student registered, and emails sent',
+        student
+      });
     } else {
-      await Payment.update(
-        { status: 'failed' },
-        { where: { reference } }
-      );
+      await Payment.update({ status: 'failed' }, { where: { reference } });
       return res.status(400).json({ message: 'Payment failed or incomplete' });
     }
   } catch (error) {
@@ -80,3 +105,13 @@ exports.verifyPayment = async (req, res) => {
     return res.status(500).json({ error: 'Payment verification failed' });
   }
 };
+
+// Render success page
+exports.renderSuccessPage = (req, res) => {
+  res.render('success'); // Make sure you have views/success.ejs
+};
+
+// Utility to generate student code
+function generateStudentCode() {
+  return 'STU-' + Math.floor(Math.random() * 1000000);
+}

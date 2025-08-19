@@ -5,6 +5,7 @@ const { handleSuccessfulPayment } = require('../services/paymentService');
 
 const router = express.Router();
 
+// routes/webhook.js
 router.post('/paystack', express.json({ type: '*/*' }), async (req, res) => {
   try {
     const hash = crypto
@@ -20,11 +21,16 @@ router.post('/paystack', express.json({ type: '*/*' }), async (req, res) => {
 
     if (event.event === 'charge.success') {
       const data = event.data;
+
+      // Example: you should attach schoolId when starting payment (metadata)
+      const schoolId = data.metadata.schoolId; 
+
       await handleSuccessfulPayment({
         reference: data.reference,
         amount: data.amount / 100,
         email: data.customer.email,
-        firstName: data.customer.first_name
+        firstName: data.customer.first_name,
+        schoolId
       });
     }
 
@@ -34,5 +40,6 @@ router.post('/paystack', express.json({ type: '*/*' }), async (req, res) => {
     res.sendStatus(500);
   }
 });
+
 
 module.exports = router;

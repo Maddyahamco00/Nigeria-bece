@@ -1,21 +1,24 @@
 // models/School.js
 const { DataTypes } = require('sequelize');
-const sequelize = require('../models/db');
+const sequelize = require('../config/db');
 
 const School = sequelize.define('School', {
   name: {
     type: DataTypes.STRING,
-    allowNull: false,
-    validate: { notEmpty: true }
+    allowNull: false
   },
-  state: {
-    type: DataTypes.STRING,
-    allowNull: false,
-    validate: { notEmpty: true }
+  stateCode: {
+    type: DataTypes.STRING(3), // e.g. "ABI"
+    allowNull: false
+  },
+  lgaSerial: {
+    type: DataTypes.INTEGER,
+    allowNull: false
+  },
+  schoolSerial: {
+    type: DataTypes.INTEGER,
+    allowNull: false
   }
-}, {
-  tableName: 'schools',
-  timestamps: true
 });
 
 module.exports = School;

@@ -43,37 +43,41 @@ router.post('/register', [
 
 // 🔐 LOGIN ROUTE
 // GET /auth/login — show login form
+// 🔐 LOGIN ROUTE
 router.get('/login', (req, res) => {
   res.render('auth/login', { title: 'Login' });
 });
+
 router.post('/login', [
   check('email').isEmail().withMessage('Enter a valid email'),
   check('password').notEmpty().withMessage('Password is required'),
 ], async (req, res) => {
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
-    return res.status(400).json({ errors: errors.array() });
+    return res.status(400).render('auth/login', { 
+      title: 'Login', 
+      errors: errors.array() 
+    });
   }
 
   const { email, password } = req.body;
 
   try {
     const user = await User.findOne({ where: { email } });
-
     if (!user) {
-      return res.status(401).send('User not found');
+      return res.status(401).render('auth/login', { title: 'Login', error: 'User not found' });
     }
 
     const isPasswordValid = await bcrypt.compare(password, user.password);
-
     if (!isPasswordValid) {
-      return res.status(401).send('Invalid credentials');
+      return res.status(401).render('auth/login', { title: 'Login', error: 'Invalid credentials' });
     }
 
-    return res.send('Login successful!');
+    // ✅ redirect user to dashboard
+    return res.redirect('/dashboard');
   } catch (error) {
     console.error('Login error:', error);
-    return res.status(500).send('Internal server error');
+    return res.status(500).render('auth/login', { title: 'Login', error: 'Internal server error' });
   }
 });
 
