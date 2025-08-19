@@ -9,20 +9,10 @@ router.get('/', paymentController.renderPaymentPage);
 // Initialize payment
 router.post('/initialize', 
   paymentController.validatePayment, 
-  async (req, res, next) => {
-    try {
-      await paymentController.initializePayment(req, res, next);
-
-      // ✅ after successful initialization, redirect to success page
-      res.redirect('/payment/success');
-    } catch (error) {
-      console.error('Payment error:', error);
-      res.status(500).render('payment/error', { error: 'Payment failed, please try again' });
-    }
-  }
+  paymentController.initializePayment // ✅ controller handles redirect to Paystack
 );
 
-// Verify payment using route param
+// Verify payment
 router.get('/verify/:reference', paymentController.verifyPayment);
 
 // Success page
