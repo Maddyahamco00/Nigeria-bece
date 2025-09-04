@@ -1,18 +1,52 @@
 // controllers/studentController.js
-const Student = require('../models/Student');
-const School = require('../models/School');
+import Student from '../models/Student.js';
+import School from '../models/School.js';
+import db from "../models/index.js";
+
+export const registerStudent = async (req, res) => {
+  try {
+    const { name, email, stateId, schoolId } = req.body;
+
+    // Save student
+    const student = await db.Student.create({
+      name,
+      email,
+      schoolId
+    });
+
+    // Build Reg Number (BECE + YEAR + STATEID + SCHOOLID + STUID)
+    const year = new Date().getFullYear().toString().slice(-2); // e.g., "25" for 2025
+    const regNumber = `BECE${year}${stateId}${schoolId}${student.id}`;
+
+    // Update with reg number
+    student.regNumber = regNumber;
+    await student.save();
+
+    res.redirect("/students/success");
+  } catch (err) {
+    console.error("Student Register Error:", err);
+    res.status(500).send("Error registering student");
+  }
+};
 
 // --- API Controllers ---
-exports.createStudent = async (req, res) => {
+const createStudent = async (req, res) => {
   try {
-    const student = await Student.create(req.body);
+    const { name, email, stateId, schoolId } = req.body;
+
+    const student = await Student.create({ name, email, schoolId });
+
+    const year = new Date().getFullYear().toString().slice(-2);
+    student.regNumber = `BECE${year}${stateId}${schoolId}${student.id}`;
+    await student.save();
+
     res.json(student);
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
 };
 
-exports.getStudents = async (req, res) => {
+const getStudents = async (req, res) => {
   try {
     const students = await Student.findAll({ include: School });
     res.json(students);
@@ -21,7 +55,7 @@ exports.getStudents = async (req, res) => {
   }
 };
 
-exports.getStudent = async (req, res) => {
+const getStudent = async (req, res) => {
   try {
     const student = await Student.findByPk(req.params.id, { include: School });
     if (!student) return res.status(404).json({ error: 'Student not found' });
@@ -31,7 +65,7 @@ exports.getStudent = async (req, res) => {
   }
 };
 
-exports.updateStudent = async (req, res) => {
+const updateStudent = async (req, res) => {
   try {
     const [updated] = await Student.update(req.body, { where: { id: req.params.id } });
     if (!updated) return res.status(404).json({ error: 'Student not found' });
@@ -41,7 +75,7 @@ exports.updateStudent = async (req, res) => {
   }
 };
 
-exports.deleteStudent = async (req, res) => {
+const deleteStudent = async (req, res) => {
   try {
     const deleted = await Student.destroy({ where: { id: req.params.id } });
     if (!deleted) return res.status(404).json({ error: 'Student not found' });
@@ -52,29 +86,45 @@ exports.deleteStudent = async (req, res) => {
 };
 
 // --- EJS Form Controllers ---
-exports.showRegisterForm = async (req, res) => {
+const showRegisterForm = async (req, res) => {
   const schools = await School.findAll();
-  res.render('student/register', { title: 'Register Student', errors: [], data: {}, schools });
+  res.render('student/register', {
+    title: 'Register Student',
+    errors: [],
+    data: {},
+    schools
+  });
 };
 
-exports.registerStudentForm = async (req, res) => {
+const registerStudentForm = async (req, res) => {
   try {
-    await Student.create(req.body);
+    const { name, email, stateId, schoolId } = req.body;
+    const student = await Student.create({ name, email, schoolId });
+
+    const year = new Date().getFullYear().toString().slice(-2);
+    student.regNumber = `BECE${year}${stateId}${schoolId}${student.id}`;
+    await student.save();
+
     req.flash('success', 'Student registered successfully!');
     res.redirect('/student/register');
   } catch (err) {
     console.error(err);
-    res.render('student/register', { title: 'Register Student', errors: [{ msg: 'Error saving student' }], data: req.body, schools: [] });
+    res.render('student/register', {
+      title: 'Register Student',
+      errors: [{ msg: 'Error saving student' }],
+      data: req.body,
+      schools: []
+    });
   }
 };
-const schools = await School.findAll();
-res.render('admin/student', {
-  title: 'Manage Students',
-  students: students.map(s => ({
-    id: s.id,
-    name: s.name,
-    regNumber: s.regNumber,
-    schoolName: s.School ? s.School.name : 'N/A'
-  })),
-  schools
-});
+
+// ✅ Default export as an object
+export default {
+  createStudent,
+  getStudents,
+  getStudent,
+  updateStudent,
+  deleteStudent,
+  showRegisterForm,
+  registerStudentForm
+};

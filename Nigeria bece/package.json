@@ -1,10 +1,11 @@
 {
   "version": "1.0.0",
   "description": "Admin portal for Nigeria BECE registration and payment",
+  "type": "module",
   "main": "app.js",
   "scripts": {
-    "start": "node --env-file=.env app.js",
-    "dev": "nodemon app.js"
+    "start": "node app.js",
+    "dev": "nodemon app.js && start http://localhost:3000"
   },
   "author": "Muhammad Kabir Ahmad ( Maddy)",
   "license": "ISC",

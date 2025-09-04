@@ -1,68 +1,131 @@
-<%- include('../partials/head', { title: 'Register Student' }) %>
+<!-- views/public/students/register.ejs -->
+<%- include('../partials/head', { title: 'Student Registration' }) %>
 <%- include('../partials/header') %>
-<%- include('../partials/sidebar') %>
 
-<main class="ml-64 p-6">
-  <h2 class="text-2xl font-bold mb-6">Register Student</h2>
+<!-- Hero Section -->
+<section class="bg-light text-center py-5 mb-4 shadow-sm">
+  <div class="container">
+    <h1 class="display-5 fw-bold text-primary">Welcome to Student Registration</h1>
+    <p class="lead text-primary">Fill in your details to get started</p>
+  </div>
+</section>
 
-  <% if (messages.success) { %>
-    <p class="text-green-600"><%= messages.success %></p>
-  <% } %>
+<!-- Main Registration Form -->
+<main class="container mt-5">
+  <div class="card shadow-lg p-5 border-0 rounded-4 bg-white">
+    <h2 class="text-center mb-4 text-primary"> Student Registration Form</h2>
 
-  <% if (errors.length > 0) { %>
-    <ul class="text-red-600">
-      <% errors.forEach(e => { %>
-        <li><%= e.msg %></li>
-      <% }) %>
-    </ul>
-  <% } %>
+    <form action="/students/register" method="POST">
 
-  <form method="POST" action="/student/register" class="space-y-4">
-    <div>
-      <label class="block">Full Name</label>
-      <input type="text" name="name" class="border p-2 w-full" value="<%= data.name || '' %>">
-    </div>
+      <!-- Full Name -->
+      <div class="mb-3">
+        <label for="name" class="form-label fw-bold">Full Name</label>
+        <input id="name" type="text" name="name" class="form-control" placeholder="Enter your full name" required>
+      </div>
 
-    <div>
-      <label class="block">Email</label>
-      <input type="email" name="email" class="border p-2 w-full" value="<%= data.email || '' %>">
-    </div>
+      <!-- Email -->
+      <div class="mb-3">
+        <label for="email" class="form-label fw-bold">Email</label>
+        <div class="input-group">
+          <span class="input-group-text bg-primary text-white">
+            <i class="bi bi-envelope-fill"></i>
+          </span>
+          <input id="email" type="email" name="email" class="form-control" placeholder="Enter your email" required>
+        </div>
+      </div>
 
-    <div>
-      <label class="block">Student Code</label>
-      <input type="text" name="studentCode" class="border p-2 w-full" value="<%= data.studentCode || '' %>">
-    </div>
+      <!-- Password -->
+      <div class="mb-3">
+        <label for="password" class="form-label fw-bold">Password</label>
+        <input id="password" type="password" name="password" class="form-control" placeholder="Enter your password" required>
+      </div>
 
-    <div>
-      <label class="block">Gender</label>
-      <select name="gender" class="border p-2 w-full">
-        <option value="">--Select--</option>
-        <option value="Male" <%= data.gender === 'Male' ? 'selected' : '' %>>Male</option>
-        <option value="Female" <%= data.gender === 'Female' ? 'selected' : '' %>>Female</option>
-      </select>
-    </div>
+      <!-- State -->
+      <div class="mb-3">
+        <label for="state" class="form-label fw-bold">State</label>
+        <select id="state" name="stateId" class="form-select" required>
+          <option value="">Select State</option>
+          <% states.forEach(state => { %>
+            <option value="<%= state.id %>"><%= state.name %></option>
+          <% }) %>
+        </select>
+      </div>
 
-    <div>
-      <label class="block">Date of Birth</label>
-      <input type="date" name="dateOfBirth" class="border p-2 w-full" value="<%= data.dateOfBirth || '' %>">
-    </div>
+      <!-- LGA -->
+      <div class="mb-3">
+        <label for="lga" class="form-label fw-bold">Local Government Area (LGA)</label>
+        <select id="lga" name="lgaId" class="form-select" required disabled>
+          <option value="">Select LGA</option>
+        </select>
+      </div>
 
-    <div>
-      <label class="block">Guardian Phone</label>
-      <input type="text" name="guardianPhone" class="border p-2 w-full" value="<%= data.guardianPhone || '' %>">
-    </div>
+      <!-- School -->
+      <div class="mb-3">
+        <label for="school" class="form-label fw-bold">School</label>
+        <select id="school" name="schoolId" class="form-select" required disabled>
+          <option value="">Select School</option>
+        </select>
+      </div>
 
-    <div>
-      <label class="block">School</label>
-      <select name="schoolId" class="border p-2 w-full">
-        <% schools.forEach(school => { %>
-          <option value="<%= school.id %>"><%= school.name %></option>
-        <% }) %>
-      </select>
-    </div>
-
-    <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded">Register</button>
-  </form>
+      <!-- Submit -->
+      <div class="text-center">
+        <button type="submit" class="btn btn-primary px-5 py-2 fw-bold rounded-pill shadow">
+          Register
+        </button>
+      </div>
+    </form>
+  </div>
 </main>
+
+<!-- Dynamic Selects -->
+<script>
+  const stateSelect = document.getElementById('state');
+  const lgaSelect = document.getElementById('lga');
+  const schoolSelect = document.getElementById('school');
+
+  // Dynamic LGA loading
+  stateSelect.addEventListener('change', async (e) => {
+    const stateId = e.target.value;
+
+    lgaSelect.innerHTML = '<option value="">Select LGA</option>';
+    lgaSelect.disabled = true;
+    schoolSelect.innerHTML = '<option value="">Select School</option>';
+    schoolSelect.disabled = true;
+
+    if (!stateId) return;
+
+    const res = await fetch(`/api/lgas/${stateId}`);
+    const lgas = await res.json();
+
+    let lgaOptions = '<option value="">Select LGA</option>';
+    lgas.forEach(lga => {
+      lgaOptions += `<option value="${lga.id}">${lga.name}</option>`;
+    });
+
+    lgaSelect.innerHTML = lgaOptions;
+    lgaSelect.disabled = false;
+  });
+
+  // Dynamic School loading
+  lgaSelect.addEventListener('change', async (e) => {
+    const lgaId = e.target.value;
+
+    schoolSelect.innerHTML = '<option value="">Select School</option>';
+    schoolSelect.disabled = true;
+
+    if (!lgaId) return;
+
+    const res = await fetch(`/api/schools/${lgaId}`);
+    const schools = await res.json();
+
+    let schoolOptions = '<option value="">Select School</option>';
+    schools.forEach(school => {
+      schoolOptions += `<option value="${school.id}">${school.name}</option>`;
+    });
+
+    schoolSelect.innerHTML = schoolOptions;
+    schoolSelect.disabled = false;
+  });
+</script>
 
 <%- include('../partials/footer') %>

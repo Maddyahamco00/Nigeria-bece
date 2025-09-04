@@ -1,7 +1,7 @@
 // models/User.js
-const { DataTypes } = require('sequelize');
-const bcrypt = require('bcryptjs');
-const sequelize = require('../models/db');
+import { DataTypes } from 'sequelize';
+import bcrypt from 'bcryptjs';
+import sequelize from '../models/db.js';
 
 const User = sequelize.define(
   'User',
@@ -9,36 +9,21 @@ const User = sequelize.define(
     name: {
       type: DataTypes.STRING,
       allowNull: false,
-      validate: {
-        notEmpty: { msg: 'Name is required' }
-      }
+      validate: { notEmpty: { msg: 'Name is required' } },
     },
     email: {
       type: DataTypes.STRING,
-      unique: {
-        msg: 'Email already exists'
-      },
+      unique: { msg: 'Email already exists' },
       allowNull: false,
-      validate: {
-        isEmail: { msg: 'Must be a valid email' }
-      }
+      validate: { isEmail: { msg: 'Must be a valid email' } },
     },
-    password: {
-      type: DataTypes.STRING,
-      allowNull: false
-    },
-    resetToken: {
-      type: DataTypes.STRING,
-      allowNull: true
-    },
-    resetTokenExpiration: {
-      type: DataTypes.DATE,
-      allowNull: true
-    }
+    password: { type: DataTypes.STRING, allowNull: false },
+    resetToken: { type: DataTypes.STRING, allowNull: true },
+    resetTokenExpiration: { type: DataTypes.DATE, allowNull: true },
   },
   {
     tableName: 'users',
-    timestamps: true,
+    timestamps: false,
     hooks: {
       beforeCreate: async (user) => {
         if (user.password) {
@@ -51,8 +36,8 @@ const User = sequelize.define(
           const salt = await bcrypt.genSalt(10);
           user.password = await bcrypt.hash(user.password, salt);
         }
-      }
-    }
+      },
+    },
   }
 );
 
@@ -61,4 +46,4 @@ User.prototype.validPassword = async function (password) {
   return await bcrypt.compare(password, this.password);
 };
 
-module.exports = User;
+export default User;

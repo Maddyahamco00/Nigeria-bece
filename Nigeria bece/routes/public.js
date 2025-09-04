@@ -1,17 +1,16 @@
-//  routes/public.js
-const express = require('express');
-const router = express.Router();
-const states = require('../config/states');
+// routes/public.js
+import express from 'express';
+import states from '../config/states.js';
 
-// Home page
+const router = express.Router();
+
 router.get('/', (req, res) => {
-  res.render('public/home', {
+  res.render('public/landing', {
     title: 'BECE Admin Portal',
     states,
   });
 });
 
-// Payment page
 router.get('/payment', (req, res) => {
   res.render('public/payment', {
     title: 'Purchase BECE Code',
@@ -21,7 +20,6 @@ router.get('/payment', (req, res) => {
   });
 });
 
-// Payment success page
 router.get('/success', (req, res) => {
   res.render('public/success', {
     title: 'Payment Successful',
@@ -29,4 +27,4 @@ router.get('/success', (req, res) => {
   });
 });
 
-module.exports = router;
+export default router;

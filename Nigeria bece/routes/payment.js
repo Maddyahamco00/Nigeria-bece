@@ -1,21 +1,20 @@
-//routes/payment.js
-const express = require('express');
-const router = express.Router();
-const paymentController = require('../controllers/paymentController');
+import express from 'express';
+import paymentController from '../controllers/paymentController.js';
 
-// Render payment page
+const router = express.Router();
+
 router.get('/', paymentController.renderPaymentPage);
 
-// Initialize payment
-router.post('/initialize', 
-  paymentController.validatePayment, 
-  paymentController.initializePayment // ✅ controller handles redirect to Paystack
+// Initialize
+router.post(
+  '/initialize',
+  paymentController.validatePayment,
+  paymentController.initializePayment
 );
 
-// Verify payment
-router.get('/verify/:reference', paymentController.verifyPayment);
+// ✅ Change to POST (frontend sends POST body)
+router.post('/verify', paymentController.verifyPayment);
 
-// Success page
 router.get('/success', paymentController.renderSuccessPage);
 
-module.exports = router;
+export default router;

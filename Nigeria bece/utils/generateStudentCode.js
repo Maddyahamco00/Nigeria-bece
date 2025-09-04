@@ -1,5 +1,4 @@
-//  utils/codeGenerator.js
-
+// utils/codeGenerator.js
 /**
  * Generates a student code in the format: STATEYYLLSSSS
  * Example: ABI24110216
@@ -11,7 +10,7 @@
  * @param {number} studentSerial - Student serial number (e.g., 16)
  * @returns {string} - Formatted student code
  */
-function generateStudentCode(stateCode, year, lgaSerial, schoolSerial, studentSerial) {
+export function generateStudentCode(stateCode, year, lgaSerial, schoolSerial, studentSerial) {
   const yy = year.toString().slice(-2);
   const lga = lgaSerial.toString().padStart(2, '0');
   const school = schoolSerial.toString().padStart(2, '0');
@@ -19,5 +18,3 @@ function generateStudentCode(stateCode, year, lgaSerial, schoolSerial, studentSe
 
   return `${stateCode.toUpperCase()}${yy}${lga}${school}${student}`;
 }
-
-module.exports = { generateCode };

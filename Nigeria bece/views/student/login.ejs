@@ -1,0 +1,23 @@
+<!-- views/public/students/login.ejs -->
+<%- include('../partials/head', { title: 'Student Login' }) %>
+<%- include('../partials/header') %>
+
+<main class="p-6 max-w-xl mx-auto">
+  <h2 class="text-2xl font-bold mb-6">Login with PIN</h2>
+
+  <form action="/students/login" method="POST" class="bg-white p-6 rounded-lg shadow">
+    <div class="mb-4">
+      <label class="block mb-1">Registration Number / PIN</label>
+      <input type="text" name="regNumber" class="border p-2 rounded w-full" required>
+    </div>
+
+    <button type="submit" class="bg-green-600 text-white px-4 py-2 rounded">
+      Login
+    </button>
+    <button type="submit" class="btn btn-primary px-5 py-2 fw-bold rounded-pill shadow">
+          Register
+        </button>
+  </form>
+</main>
+
+<%- include('../partials/footer') %>

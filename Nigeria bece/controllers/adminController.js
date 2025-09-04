@@ -1,10 +1,10 @@
 // controllers/adminController.js
-const { User, Student, School, Payment } = require('../models');
-const bcrypt = require('bcryptjs');
-const { validationResult } = require('express-validator');
+import { User, Student, School, Payment } from '../models/index.js';
+import bcrypt from 'bcryptjs';
+import { validationResult } from 'express-validator';
 
 // ===================== ADMIN DASHBOARD =====================
-exports.getDashboard = async (req, res) => {
+export const getDashboard = async (req, res) => {
   try {
     const schools = await School.findAll({
       include: [
@@ -29,7 +29,7 @@ exports.getDashboard = async (req, res) => {
 };
 
 // ===================== REGISTER SCHOOL =====================
-exports.postAddSchool = async (req, res) => {
+export const postAddSchool = async (req, res) => {
   try {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
@@ -52,7 +52,7 @@ exports.postAddSchool = async (req, res) => {
 };
 
 // ===================== LIST SCHOOLS =====================
-exports.getSchools = async (req, res) => {
+export const getSchools = async (req, res) => {
   try {
     const schools = await School.findAll({ include: Student });
     res.render('admin/schools', { schools });
@@ -63,7 +63,7 @@ exports.getSchools = async (req, res) => {
 };
 
 // ===================== REGISTER STUDENT =====================
-exports.postAddStudent = async (req, res) => {
+export const postAddStudent = async (req, res) => {
   try {
     await Student.create({
       name: req.body.name,
@@ -81,13 +81,12 @@ exports.postAddStudent = async (req, res) => {
 };
 
 // ===================== PAYMENTS =====================
-exports.getPayments = async (req, res) => {
+export const getPayments = async (req, res) => {
   try {
     const payments = await Payment.findAll({
       include: School,
       order: [['createdAt', 'DESC']]
     });
-
     res.render('admin/payments', { payments });
   } catch (err) {
     console.error(err);
@@ -96,7 +95,7 @@ exports.getPayments = async (req, res) => {
 };
 
 // ===================== UPDATE PAYMENT STATUS =====================
-exports.updatePaymentStatus = async (req, res) => {
+export const updatePaymentStatus = async (req, res) => {
   try {
     const payment = await Payment.findByPk(req.params.id);
     if (!payment) {

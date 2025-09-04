@@ -1,6 +1,7 @@
-const { School } = require('../models');
+// controllers/schoolController.js
+import { School } from '../models/index.js';
 
-exports.createSchool = async (req, res) => {
+export const createSchool = async (req, res) => {
   try {
     const school = await School.create(req.body);
     res.status(201).json(school);
@@ -9,7 +10,7 @@ exports.createSchool = async (req, res) => {
   }
 };
 
-exports.getSchools = async (req, res) => {
+export const getSchools = async (req, res) => {
   try {
     const schools = await School.findAll();
     res.json(schools);
@@ -18,7 +19,7 @@ exports.getSchools = async (req, res) => {
   }
 };
 
-exports.getSchool = async (req, res) => {
+export const getSchool = async (req, res) => {
   try {
     const school = await School.findByPk(req.params.id);
     if (!school) return res.status(404).json({ error: 'School not found' });
@@ -28,10 +29,11 @@ exports.getSchool = async (req, res) => {
   }
 };
 
-exports.updateSchool = async (req, res) => {
+export const updateSchool = async (req, res) => {
   try {
     const school = await School.findByPk(req.params.id);
     if (!school) return res.status(404).json({ error: 'School not found' });
+
     await school.update(req.body);
     res.json(school);
   } catch (error) {
@@ -39,10 +41,11 @@ exports.updateSchool = async (req, res) => {
   }
 };
 
-exports.deleteSchool = async (req, res) => {
+export const deleteSchool = async (req, res) => {
   try {
     const school = await School.findByPk(req.params.id);
     if (!school) return res.status(404).json({ error: 'School not found' });
+
     await school.destroy();
     res.json({ message: 'School deleted' });
   } catch (error) {

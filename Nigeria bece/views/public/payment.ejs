@@ -9,21 +9,26 @@
     <% if (messages.error) { %>
       <p class="text-red-500 mb-4"><%= messages.error %></p>
     <% } %>
-    <form id="paymentForm">
-      <div class="mb-4">
-        <label for="email" class="block text-sm font-medium">Email</label>
-        <input type="email" id="email" name="email" class="w-full p-2 border rounded" required>
-      </div>
-      <div class="mb-4">
-        <label for="amount" class="block text-sm font-medium">Amount (NGN)</label>
-        <input type="number" id="amount" name="amount" value="5000" class="w-full p-2 border rounded" readonly>
-      </div>
-      <button type="button" onclick="payWithPaystack()" class="w-full bg-blue-600 text-white p-2 rounded hover:bg-blue-700">Pay Now</button>
-    </form>
+    <form id="payment-form">
+  <div class="mb-4">
+    <label for="email" class="block text-sm font-medium">Email</label>
+    <input type="email" id="email" name="email" class="w-full p-2 border rounded" required>
+  </div>
+  <div class="mb-4">
+    <label for="amount" class="block text-sm font-medium">Amount (NGN)</label>
+    <input type="number" id="amount" name="amount" value="5000" class="w-full p-2 border rounded" readonly>
+  </div>
+  <button type="submit" id="payment-button" class="w-full bg-blue-600 text-white p-2 rounded hover:bg-blue-700">
+    Pay Now
+  </button>
+  <div id="payment-error" class="text-red-500 mt-2"></div>
+</form>
+
   </div>
 </main>
 
 <script src="https://js.paystack.co/v1/inline.js"></script>
 <script src="/js/payment.js"></script>
+
 
 <%- include('../partials/footer') %>

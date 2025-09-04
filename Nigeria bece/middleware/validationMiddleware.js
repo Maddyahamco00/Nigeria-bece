@@ -1,11 +1,13 @@
 // middleware/validationMiddleware.js
-const { body, validationResult } = require('express-validator');
+import { body, validationResult } from 'express-validator';
 
-const validatePayment = [
+export const validatePayment = [
   body('amount')
-    .isFloat({ min: 1 }).withMessage('Amount must be a positive number'),
+    .isFloat({ min: 1 })
+    .withMessage('Amount must be a positive number'),
   body('email')
-    .isEmail().withMessage('Invalid email address'),
+    .isEmail()
+    .withMessage('Invalid email address'),
   (req, res, next) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
@@ -16,13 +18,16 @@ const validatePayment = [
   }
 ];
 
-const validateRegistration = [
+export const validateRegistration = [
   body('username')
-    .isLength({ min: 3 }).withMessage('Username must be at least 3 characters long'),
+    .isLength({ min: 3 })
+    .withMessage('Username must be at least 3 characters long'),
   body('email')
-    .isEmail().withMessage('Invalid email address'),
+    .isEmail()
+    .withMessage('Invalid email address'),
   body('password')
-    .isLength({ min: 6 }).withMessage('Password must be at least 6 characters long'),
+    .isLength({ min: 6 })
+    .withMessage('Password must be at least 6 characters long'),
   (req, res, next) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
@@ -32,5 +37,3 @@ const validateRegistration = [
     next();
   }
 ];
-
-module.exports = { validatePayment, validateRegistration };

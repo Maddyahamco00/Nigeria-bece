@@ -1,5 +1,5 @@
 // utils/sendEmail.js
-const nodemailer = require('nodemailer');
+import nodemailer from 'nodemailer';
 
 const transporter = nodemailer.createTransport({
   host: process.env.MAIL_HOST, // e.g. smtp.gmail.com
@@ -11,7 +11,7 @@ const transporter = nodemailer.createTransport({
   }
 });
 
-module.exports = async function sendEmail(to, subject, html) {
+export default async function sendEmail(to, subject, html) {
   try {
     await transporter.sendMail({
       from: `"My School" <${process.env.MAIL_USER}>`,
@@ -23,4 +23,4 @@ module.exports = async function sendEmail(to, subject, html) {
   } catch (err) {
     console.error(`❌ Failed to send email to ${to}:`, err.message);
   }
-};
+}

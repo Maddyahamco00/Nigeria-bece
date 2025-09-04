@@ -1,42 +1,38 @@
-//Handles user authentication (login, registration, logout).
 // controllers/authController.js
-
-const bcrypt = require('bcryptjs');
-const passport = require('passport');
-const User = require('../models/User');
+import bcrypt from 'bcryptjs';
+import passport from 'passport';
+import User from '../models/User.js';
 
 // GET login page
-exports.getLogin = (req, res) => {
+export const getLogin = (req, res) => {
   res.render('auth/login', { title: 'Login', error: req.flash('error') });
 };
 
 // POST login
-exports.postLogin = passport.authenticate('local', {
+export const postLogin = passport.authenticate('local', {
   successRedirect: '/admin/dashboard',
   failureRedirect: '/auth/login',
   failureFlash: true
 });
 
 // GET register page
-exports.getRegister = (req, res) => {
+export const getRegister = (req, res) => {
   res.render('auth/register', { title: 'Register', error: req.flash('error') });
 };
 
-// POST register (Sequelize)
-exports.postRegister = async (req, res) => {
+// POST register
+export const postRegister = async (req, res) => {
   const { email, password, name } = req.body;
+
   try {
-    // Check if email exists
     const existingUser = await User.findOne({ where: { email } });
     if (existingUser) {
       req.flash('error', 'Email already exists.');
       return res.redirect('/auth/register');
     }
 
-    // Hash password
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    // Create user
     await User.create({ email, password: hashedPassword, name });
 
     req.flash('success', 'Registration successful. Please log in.');
@@ -49,7 +45,7 @@ exports.postRegister = async (req, res) => {
 };
 
 // Logout
-exports.logout = (req, res, next) => {
+export const logout = (req, res, next) => {
   req.logout(err => {
     if (err) return next(err);
     res.redirect('/auth/login');

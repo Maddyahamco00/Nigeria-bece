@@ -1,18 +1,19 @@
-//This file configures the MySQL database connection using environment variables.
 // config/database.js
+import { Sequelize } from 'sequelize';
+import dotenv from 'dotenv';
 
-const mysql = require('mysql2/promise');
-require('dotenv').config();
+dotenv.config();
 
-const pool = mysql.createPool({
-  port: process.env.DB_PORT || 3306,
-  host: process.env.DB_HOST || 'localhost',
-  user: process.env.DB_USER || 'root',
-  password: process.env.DB_PASSWORD || '1234567890#',
-  database: process.env.DB_NAME || 'nigeria_bece_db',
-  waitForConnections: true,
-  connectionLimit: 10,
-  queueLimit: 0
-});
+const sequelize = new Sequelize(
+  process.env.DB_NAME || 'nigeria_bece_db',
+  process.env.DB_USER || 'root',
+  process.env.DB_PASSWORD || '1234567890#',
+  {
+    host: process.env.DB_HOST || 'localhost',
+    port: process.env.DB_PORT || 3306,
+    dialect: 'mysql',
+    logging: false, // optional: disable SQL logging
+  }
+);
 
-module.exports = pool;
+export default sequelize;

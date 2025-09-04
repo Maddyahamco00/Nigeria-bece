@@ -1,29 +1,41 @@
-//  routes/admin.js
-const express = require('express');
+// routes/admin.js
+import express from 'express';
+import { Student, School } from '../models/index.js';
+
 const router = express.Router();
-router.post('/profile', async (req, res) => {
-  const { name, email } = req.body;
+
+// Admin Students Page
+router.get('/students', async (req, res) => {
   try {
-    await User.update({ name, email }, { where: { id: req.user.id } });
-    req.flash('success', 'Profile updated');
-    res.redirect('/admin/profile');
+    const students = await Student.findAll({ include: School });
+    const schools = await School.findAll();
+
+    res.render('admin/students', { 
+      title: 'Manage Students', 
+      students, 
+      schools 
+    });
   } catch (err) {
-    req.flash('error', 'Update failed');
-    res.redirect('/admin/profile');
-  }
-});
-router.get('/profile', (req, res) => {
-  res.render('admin/profile', { user: req.user });
-});
-router.get('/users', async (req, res) => {
-  try {
-    const users = await User.findAll();
-    res.render('admin/users', { users });
-  } catch (err) {
-    req.flash('error', 'Failed to fetch users');
+    console.error("Admin Students Error:", err);
+    req.flash('error', 'Failed to load students');
     res.redirect('/admin/dashboard');
   }
 });
-module.exports = router;
 
-// routes/admin.js
+// Handle Student Registration from Admin
+router.post('/students', async (req, res) => {
+  try {
+    const { name, email, schoolId } = req.body;
+    const regNumber = "REG" + Date.now();
+
+    await Student.create({ name, email, regNumber, schoolId });
+    req.flash('success', 'Student registered successfully');
+    res.redirect('/admin/students');
+  } catch (err) {
+    console.error("Student Registration Error:", err);
+    req.flash('error', 'Failed to register student');
+    res.redirect('/admin/students');
+  }
+});
+
+export default router;

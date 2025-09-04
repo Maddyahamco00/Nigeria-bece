@@ -1,6 +1,6 @@
 // scripts/testUser.js
-const User = require('../models/User');
-const sequelize = require('../config/db');
+import User from '../models/User.js';
+import sequelize from '../config/db.js';
 
 (async () => {
   try {

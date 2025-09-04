@@ -1,13 +1,25 @@
- <!-- views/public/success.ejs--> 
+<!-- views/public/success.ejs -->
 <%- include('../partials/head', { title: 'Payment Success' }) %>
 <%- include('../partials/header') %>
 
-<main class="flex items-center justify-center min-h-screen">
-  <div class="text-center">
-    <h2 class="text-2xl font-bold mb-4">Payment Successful!</h2>
-    <p class="text-lg mb-4">Your BECE code is: <strong><%= code %></strong></p>
-    <p class="mb-6">Use this code to register or check your results.</p>
-    <a href="/public/home" class="bg-blue-600 text-white px-6 py-3 rounded hover:bg-blue-700">Back to Home</a>
+<main class="flex items-center justify-center min-h-screen bg-gray-50">
+  <div class="bg-white shadow-lg rounded-2xl p-8 text-center max-w-md w-full">
+    <h2 class="text-3xl font-bold text-green-600 mb-6">✅ Payment Successful!</h2>
+
+    <% if (code) { %>
+      <p class="text-lg mb-4">Your BECE code is:</p>
+      <p class="text-2xl font-mono font-bold text-blue-700 bg-gray-100 inline-block px-4 py-2 rounded-lg mb-6">
+        <%= code %>
+      </p>
+      <p class="mb-6 text-gray-600">Use this code to register or check your results.</p>
+    <% } else { %>
+      <p class="text-gray-600 mb-6">Payment confirmed, but no code found. Please check your email.</p>
+    <% } %>
+
+    <a href="/public/home" 
+       class="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition">
+      Back to Home
+    </a>
   </div>
 </main>
 

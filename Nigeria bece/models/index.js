@@ -1,15 +1,21 @@
 // models/index.js
-const sequelize = require('./db');
-const User = require('./User');
-const Student = require('./Student');
-const School = require('./School');
-const Payment = require('./Payment');
+import sequelize from '../config/database.js';
+import User from './User.js';
+import Payment from './Payment.js';
+import State from "./State.js";
+import School from "./School.js";
+import Student from "./Student.js";
 
 // Associations
-School.hasMany(Student, { foreignKey: { name: 'schoolId', allowNull: false }, onDelete: 'CASCADE' });
-Student.belongsTo(School, { foreignKey: { name: 'schoolId', allowNull: false } });
+State.hasMany(School, { foreignKey: "stateId", onDelete: "CASCADE" });
+School.belongsTo(State, { foreignKey: "stateId" });
 
-School.hasMany(Payment, { foreignKey: { name: 'schoolId', allowNull: false }, onDelete: 'CASCADE' });
-Payment.belongsTo(School, { foreignKey: { name: 'schoolId', allowNull: false } });
+School.hasMany(Student, { foreignKey: "schoolId", onDelete: "CASCADE" });
+Student.belongsTo(School, { foreignKey: "schoolId" });
+School.hasMany(Payment, {
+  foreignKey: { name: 'schoolId', allowNull: true },
+  onDelete: 'CASCADE',
+});
+Payment.belongsTo(School, { foreignKey: { name: 'schoolId', allowNull: true } });
 
-module.exports = { sequelize, User, Student, School, Payment };
+export { sequelize, User, Student, School, Payment };

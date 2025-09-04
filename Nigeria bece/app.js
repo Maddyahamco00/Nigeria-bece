@@ -1,11 +1,13 @@
-const express = require('express');
-const path = require('path');
-const dotenv = require('dotenv');
-const session = require('express-session');
-const passport = require('passport');
-const flash = require('connect-flash');
-const morgan = require('morgan');
-const { errorHandler } = require('./middleware/errorMiddleware');
+// app.js
+import express from 'express';
+import path from 'path';
+import dotenv from 'dotenv';
+import session from 'express-session';
+import passport from 'passport';
+import flash from 'connect-flash';
+import morgan from 'morgan';
+
+import { errorHandler } from './middleware/errorMiddleware.js';
 
 // Load environment variables
 dotenv.config();
@@ -14,32 +16,45 @@ dotenv.config();
 const app = express();
 
 // Database
-const sequelize = require('./models/db');
-const User = require('./models/User');
+import sequelize from './config/database.js';   // ✅ use your database.js
+import './models/index.js';                     // ✅ ensure models are registered
+
+// Models
+import User from './models/User.js';
+import Student from './models/Student.js';
+import School from './models/School.js';
 
 // Sync database
 sequelize.authenticate()
   .then(() => console.log('✅ Database connected'))
-  .then(() => User.sync())
-  .then(() => console.log('✅ User table synced'))
+  .then(() => sequelize.sync()) // ✅ sync all models in one go
+  .then(() => console.log('✅ Models synced'))
   .catch(err => console.error('❌ DB error:', err));
 
 // Middleware
 app.use(morgan('dev'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+
+// __dirname replacement for ESM
+import { fileURLToPath } from 'url';
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
 app.use(express.static(path.join(__dirname, 'public')));
 
 // Session & Flash
 app.use(session({
-  secret: process.env.SESSION_SECRET,
+  secret: process.env.SESSION_SECRET || 'keyboard cat',
   resave: false,
   saveUninitialized: false,
 }));
 app.use(flash());
 
-// Passport
-require('./config/passport')(passport);
+// Passport config
+import configurePassport from './config/passport.js';
+configurePassport(passport);
+
 app.use(passport.initialize());
 app.use(passport.session());
 
@@ -55,10 +70,22 @@ app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
 
 // Routes
-app.use('/', require('./routes/public'));
-app.use('/auth', require('./routes/auth'));
-app.use('/admin', require('./routes/admin'));
-app.use('/payment', require('./routes/payment'));
+import publicRoutes from './routes/public.js';
+import authRoutes from './routes/auth.js';
+import adminRoutes from './routes/admin.js';
+import paymentRoutes from './routes/payment.js';
+import studentRoutes from './routes/studentRoutes.js';
+import dashboardRoutes from './routes/dashboard.js';
+// import resultsRoutes from './routes/results.js';
+
+app.use('/', publicRoutes);
+app.use('/auth', authRoutes);
+app.use('/admin', adminRoutes);
+app.use('/payment', paymentRoutes);
+app.use('/admin/students', studentRoutes);
+app.use('/students', studentRoutes);
+app.use('/dashboard', dashboardRoutes);
+// app.use('/admin/results', resultsRoutes);
 
 // Debug route list
 app._router.stack.forEach(r => {

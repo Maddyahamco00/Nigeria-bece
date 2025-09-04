@@ -1,0 +1,38 @@
+ <!-- views/public/landing.ejs--> 
+<%- include('../partials/head', { title: 'Welcome to BECE Portal' }) %>
+<%- include('../partials/header') %>
+
+<main class="min-h-screen flex flex-col items-center justify-center bg-gray-50 py-12">
+  <div class="max-w-3xl w-full text-center">
+
+    <!-- Logo -->
+    <img src="/images/logo.svg" alt="BECE Logo" class="mx-auto mb-6 w-20 h-20">
+
+    <h1 class="text-3xl font-bold mb-4">Welcome to the BECE Portal</h1>
+    <p class="text-gray-600 mb-8">Register for exams, check your results, or continue with your student code.</p>
+
+    <!-- Action buttons -->
+    <div class="flex justify-center gap-6 mb-10">
+      <a href="/students/register" 
+         class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg shadow">
+         Register Now
+      </a>
+      <a href="/students/login" 
+         class="bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-lg shadow">
+         Login with PIN/Code
+      </a>
+    </div>
+
+    <!-- Blog/announcement section -->
+    <section class="bg-white rounded-xl shadow p-6 text-left">
+      <h2 class="text-xl font-semibold mb-3">Latest News</h2>
+      <ul class="list-disc pl-5 text-gray-700 space-y-2">
+        <li>Registration for the upcoming BECE session is now open.</li>
+        <li>Remember: You need your PIN/Code to check results.</li>
+        <li>Contact support for issues with payments or login.</li>
+      </ul>
+    </section>
+  </div>
+</main>
+
+<%- include('../partials/footer') %>

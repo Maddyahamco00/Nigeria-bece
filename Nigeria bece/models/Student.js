@@ -1,19 +1,26 @@
 // models/Student.js
-const { DataTypes } = require('sequelize');
-const sequelize = require('../config/db');
-const School = require('./School');
+import { DataTypes } from "sequelize";
+import sequelize from "../config/database.js";
 
-const Student = sequelize.define('Student', {
-  name: { type: DataTypes.STRING, allowNull: false },
-  email: { type: DataTypes.STRING, unique: true },
-  studentCode: { type: DataTypes.STRING, unique: true },
-  gender: { type: DataTypes.ENUM('Male', 'Female'), allowNull: true },
-  dateOfBirth: { type: DataTypes.DATEONLY, allowNull: true },
-  guardianPhone: { type: DataTypes.STRING, allowNull: true }
-});
+const Student = sequelize.define(
+  "Student",
+  {
+    name: { type: DataTypes.STRING, allowNull: false },
+    email: { type: DataTypes.STRING, unique: true },
+    regNumber: { type: DataTypes.STRING, unique: true }, // e.g. BECE2505136711
+    gender: { type: DataTypes.ENUM("Male", "Female"), allowNull: true },
+    dateOfBirth: { type: DataTypes.DATEONLY, allowNull: true },
+    guardianPhone: { type: DataTypes.STRING, allowNull: true },
+    schoolId: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+      references: { model: "schools", key: "id" },
+    },
+  },
+  {
+    tableName: "students",
+    timestamps: false,
+  }
+);
 
-// associations
-Student.belongsTo(School, { foreignKey: 'schoolId' });
-School.hasMany(Student, { foreignKey: 'schoolId' });
-
-module.exports = Student;
+export default Student;
