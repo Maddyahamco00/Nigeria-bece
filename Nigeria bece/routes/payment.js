@@ -1,4 +1,4 @@
-import express from 'express';
+/* import express from 'express';
 import paymentController from '../controllers/paymentController.js';
 
 const router = express.Router();
@@ -18,3 +18,4 @@ router.post('/verify', paymentController.verifyPayment);
 router.get('/success', paymentController.renderSuccessPage);
 
 export default router;
+*/

@@ -1,4 +1,4 @@
-document.addEventListener("DOMContentLoaded", () => {
+  /* document.addEventListener("DOMContentLoaded", () => {
   const paymentForm = document.getElementById("payment-form");
   const paymentButton = document.getElementById("payment-button");
   const errorDiv = document.getElementById("payment-error");
@@ -31,7 +31,7 @@ document.addEventListener("DOMContentLoaded", () => {
         }
 
         // ====== Paystack real mode (disabled) ======
-        /*
+       
         const handler = PaystackPop.setup({
           key: "pk_test_459ec26b716655348ae00e8403393696999e59a0", 
           email,
@@ -58,7 +58,7 @@ document.addEventListener("DOMContentLoaded", () => {
           }
         });
         handler.openIframe();
-        */
+        
       } catch (err) {
         console.error(err);
         errorDiv.textContent = "Payment initialization failed.";
@@ -67,3 +67,4 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 });
+*/

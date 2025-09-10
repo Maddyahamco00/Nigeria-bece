@@ -1,89 +1,27 @@
 // routes/auth.js
 import express from 'express';
-import { check, validationResult } from 'express-validator';
-import bcrypt from 'bcrypt';
-import User from '../models/User.js';
+import passport from 'passport';
+import authController from '../controllers/authController.js';
 
 const router = express.Router();
 
-// 🔐 REGISTER ROUTE
-router.get('/register', (req, res) => {
-  res.render('auth/register', { title: 'Register' });
-});
+// Register routes
+router.get('/register', authController.showRegister);
+router.post('/register', authController.register);
 
-router.post(
-  '/register',
-  [
-    check('name').notEmpty().withMessage('Name is required'),
-    check('email').isEmail().withMessage('Enter a valid email'),
-    check('password')
-      .isLength({ min: 6 })
-      .withMessage('Password must be at least 6 characters'),
-  ],
-  async (req, res) => {
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-      return res.status(400).json({ errors: errors.array() });
-    }
-
-    const { name, email, password } = req.body;
-    try {
-      const existingUser = await User.findOne({ where: { email } });
-      if (existingUser) {
-        return res.status(409).send('User already exists');
-      }
-      await User.create({ name, email, password });
-      return res.status(201).send('User registered successfully!');
-    } catch (error) {
-      console.error('Registration error:', error);
-      return res.status(500).send('Internal server error');
-    }
-  }
-);
-
-// 🔐 LOGIN ROUTE
-router.get('/login', (req, res) => {
-  res.render('auth/login', { title: 'Login' });
-});
-
+// Login routes
+router.get('/login', authController.showLogin);
 router.post(
   '/login',
-  [
-    check('email').isEmail().withMessage('Enter a valid email'),
-    check('password').notEmpty().withMessage('Password is required'),
-  ],
-  async (req, res) => {
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-      return res
-        .status(400)
-        .render('auth/login', { title: 'Login', errors: errors.array() });
-    }
-
-    const { email, password } = req.body;
-    try {
-      const user = await User.findOne({ where: { email } });
-      if (!user) {
-        return res
-          .status(401)
-          .render('auth/login', { title: 'Login', error: 'User not found' });
-      }
-
-      const isPasswordValid = await bcrypt.compare(password, user.password);
-      if (!isPasswordValid) {
-        return res
-          .status(401)
-          .render('auth/login', { title: 'Login', error: 'Invalid credentials' });
-      }
-
-      return res.redirect('/dashboard');
-    } catch (error) {
-      console.error('Login error:', error);
-      return res
-        .status(500)
-        .render('auth/login', { title: 'Login', error: 'Internal server error' });
-    }
-  }
+  passport.authenticate('local', {
+    successRedirect: '/admin/dashboard',
+    failureRedirect: '/auth/login',
+    failureFlash: true,
+  })
 );
 
+// Logout
+router.get('/logout', authController.logout);
+
 export default router;
+
