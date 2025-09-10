@@ -1,62 +1,101 @@
-<%- include('../partials/head', { title: 'Students' }) %>
+<!-- views/admin/students.ejs-->
+<%- include('../partials/head', { title: 'Manage Students' }) %>
 <%- include('../partials/header') %>
-<%- include('../partials/sidebar') %>
 
-<main class="ml-64 p-6">
-  <h2 class="text-2xl font-bold mb-6">Manage Students</h2>
-  <div class="bg-white p-6 rounded-lg shadow">
+<div class="d-flex">
+  <!-- Sidebar -->
+  <%- include('../partials/sidebar') %>
 
-    <!-- Register Student Form -->
-    <form action="/admin/students" method="POST" class="mb-6">
-      <div class="flex space-x-4">
-        <input type="text" name="name" placeholder="Student Name" required class="border p-2 rounded w-1/3">
-        <input type="email" name="email" placeholder="Email" required class="border p-2 rounded w-1/3">
-        
-        <select name="schoolId" required class="border p-2 rounded w-1/3">
-          <% if (schools && schools.length > 0) { %>
-            <% schools.forEach(school => { %>
-              <option value="<%= school.id %>"><%= school.name %></option>
-            <% }) %>
-          <% } else { %>
-            <option disabled>No schools available</option>
-          <% } %>
-        </select>
-        
-        <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded">Register</button>
-      </div>
-    </form>
+  <!-- Main Content -->
+  <main id="mainContent" class="flex-grow-1 ms-auto p-4" style="margin-left: 250px; transition: margin-left 0.3s ease;">
+    <!-- Mobile Toggle Button -->
+    <button id="toggleSidebar" class="btn btn-outline-primary mb-3 d-md-none">
+      <i class="bi bi-list"></i> Menu
+    </button>
+
+    <!-- Page Title -->
+    <h2 class="fw-bold text-primary mb-4">Manage Students</h2>
+
+    <!-- Add Student Button -->
+    <div class="mb-3 text-end">
+      <a href="/admin/students/new" class="btn btn-success">
+        <i class="bi bi-person-plus"></i> Add Student
+      </a>
+    </div>
 
     <!-- Students Table -->
-    <table class="w-full table-auto">
-      <thead>
-        <tr class="bg-gray-200">
-          <th class="p-2">Name</th>
-          <th class="p-2">Reg Number</th>
-          <th class="p-2">School</th>
-          <th class="p-2">Actions</th>
-        </tr>
-      </thead>
-      <tbody>
-        <% if (students && students.length > 0) { %>
-          <% students.forEach(student => { %>
-            <tr>
-              <td class="p-2"><%= student.name %></td>
-              <td class="p-2"><%= student.regNumber %></td>
-              <td class="p-2"><%= student.school ? student.school.name : 'N/A' %></td>
-              <td class="p-2">
-                <a href="/admin/students/edit/<%= student.id %>" class="text-blue-600 hover:underline">Edit</a>
-                <a href="/admin/students/delete/<%= student.id %>" class="text-red-600 hover:underline ml-2">Delete</a>
-              </td>
-            </tr>
-          <% }) %>
-        <% } else { %>
-          <tr>
-            <td colspan="4" class="p-4 text-center text-gray-500">No students found</td>
-          </tr>
-        <% } %>
-      </tbody>
-    </table>
-  </div>
-</main>
+    <div class="card shadow-sm border-0 rounded-4">
+      <div class="card-body">
+        <div class="table-responsive">
+          <table class="table table-hover align-middle">
+            <thead class="table-dark">
+              <tr>
+                <th>#</th>
+                <th>Reg Number</th>
+                <th>Full Name</th>
+                <th>Email</th>
+                <th>School</th>
+                <th>Payment</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% students.forEach((student, index) => { %>
+                <tr>
+                  <td><%= index + 1 %></td>
+                  <td class="fw-bold text-primary"><%= student.regNumber %></td>
+                  <td><%= student.name %></td>
+                  <td><%= student.email %></td>
+                  <td><%= student.school ? student.school.name : 'N/A' %></td>
+                  <td>
+                    <% if (student.paymentStatus === 'Paid') { %>
+                      <span class="badge bg-success">Paid</span>
+                    <% } else { %>
+                      <span class="badge bg-danger">Pending</span>
+                    <% } %>
+                  </td>
+                  <td>
+                    <a href="/admin/students/<%= student.id %>" class="btn btn-sm btn-primary">
+                      <i class="bi bi-eye"></i>
+                    </a>
+                    <a href="/admin/students/<%= student.id %>/edit" class="btn btn-sm btn-warning">
+                      <i class="bi bi-pencil-square"></i>
+                    </a>
+                    <form action="/admin/students/<%= student.id %>?_method=DELETE" method="POST" class="d-inline">
+                      <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Are you sure?')">
+                        <i class="bi bi-trash"></i>
+                      </button>
+                    </form>
+                  </td>
+                </tr>
+              <% }) %>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<script>
+  const sidebar = document.getElementById("sidebar");
+  const mainContent = document.getElementById("mainContent");
+  const toggleBtn = document.getElementById("toggleSidebar");
+
+  toggleBtn.addEventListener("click", () => {
+    if (sidebar.style.transform === "translateX(-100%)") {
+      sidebar.style.transform = "translateX(0)";
+      mainContent.style.marginLeft = "250px";
+    } else {
+      sidebar.style.transform = "translateX(-100%)";
+      mainContent.style.marginLeft = "0";
+    }
+  });
+
+  if (window.innerWidth < 768) {
+    sidebar.style.transform = "translateX(-100%)";
+    mainContent.style.marginLeft = "0";
+  }
+</script>
 
 <%- include('../partials/footer') %>
