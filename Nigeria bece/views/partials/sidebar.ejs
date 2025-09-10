@@ -1,31 +1,40 @@
-<!-- views/partials/sidebar.ejs-->
-<aside class="bg-blue-900 text-white w-64 h-screen fixed p-6">
-  <div class="mb-8">
-    <img src="/images/logo.svg" alt="Logo" class="h-12 mb-4">
-    <h2 class="text-lg font-semibold">Admin Panel</h2>
+<!-- views/partials/sidebar.ejs -->
+<!-- Sidebar / Offcanvas -->
+<aside id="sidebar" class="d-flex flex-column bg-dark text-white vh-100 p-4 position-fixed shadow-lg" style="width: 250px; transition: transform 0.3s ease;">
+  <!-- Logo + Title -->
+  <div class="mb-5 d-flex align-items-center">
+    <img src="/images/logo.svg" alt="Logo" class="me-3" style="height: 40px;">
+    <h2 class="h5 mb-0 fw-bold">Admin Panel</h2>
   </div>
+
+  <!-- Nav links -->
   <nav>
-    <ul>
-      <li class="mb-4">
-        <a href="/admin/dashboard" class="flex items-center hover:bg-blue-700 p-2 rounded">
-          <img src="/images/icons/icon-book.svg" alt="Dashboard" class="h-6 mr-2"> Dashboard
+    <ul class="nav flex-column">
+      <li class="nav-item mb-2">
+        <a href="/admin/dashboard" class="nav-link text-white d-flex align-items-center rounded px-3 py-2 hover-bg">
+          <i class="bi bi-speedometer2 me-2"></i> Dashboard
         </a>
       </li>
-      <li class="mb-4">
-        <a href="/admin/students" class="flex items-center hover:bg-blue-700 p-2 rounded">
-          <img src="/images/icons/icon-users.svg" alt="Students" class="h-6 mr-2"> Students
+      <li class="nav-item mb-2">
+        <a href="/admin/students" class="nav-link text-white d-flex align-items-center rounded px-3 py-2 hover-bg">
+          <i class="bi bi-people-fill me-2"></i> Students
         </a>
       </li>
-      <li class="mb-4">
-        <a href="/admin/schools" class="flex items-center hover:bg-blue-700 p-2 rounded">
-          <img src="/images/icons/icon-school.svg" alt="Schools" class="h-6 mr-2"> Schools
+      <li class="nav-item mb-2">
+        <a href="/admin/schools" class="nav-link text-white d-flex align-items-center rounded px-3 py-2 hover-bg">
+          <i class="bi bi-building me-2"></i> Schools
         </a>
       </li>
-      <li class="mb-4">
-        <a href="/admin/results" class="flex items-center hover:bg-blue-700 p-2 rounded">
-          <img src="/images/icons/icon-results.svg" alt="Results" class="h-6 mr-2"> Results
+      <li class="nav-item mb-2">
+        <a href="/admin/results" class="nav-link text-white d-flex align-items-center rounded px-3 py-2 hover-bg">
+          <i class="bi bi-journal-check me-2"></i> Results
         </a>
       </li>
     </ul>
   </nav>
 </aside>
+
+<!-- Sidebar toggle button (only visible on mobile) -->
+<button id="sidebarToggle" class="btn btn-primary d-md-none position-fixed top-0 start-0 m-3">
+  <i class="bi bi-list"></i>
+</button>

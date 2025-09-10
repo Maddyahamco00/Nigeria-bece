@@ -1,23 +1,35 @@
 <!-- views/auth/reset.ejs-->
- <!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <title>Reset Password</title>
-</head>
-<body>
-  <h2>Request a Password Reset</h2>
-  <% if (messages.error) { %>
-    <p style="color: red;"><%= messages.error %></p>
-  <% } %>
-  <% if (messages.success) { %>
-    <p style="color: green;"><%= messages.success %></p>
-  <% } %>
+<%- include('../partials/head', { title: 'Reset Password' }) %>
+<%- include('../partials/header') %>
 
-  <form action="/auth/reset" method="POST">
-    <label for="email">Enter your email:</label>
-    <input type="email" name="email" required>
-    <button type="submit">Send Reset Link</button>
-  </form>
-</body>
-</html>
+<main class="d-flex align-items-center justify-content-center min-vh-100 bg-light">
+  <div class="card shadow-lg border-0 rounded-4" style="max-width: 460px; width: 100%;">
+    <div class="card-body p-4">
+      <h2 class="text-center fw-bold mb-4 text-primary">Reset Password</h2>
+
+      <% if (messages.error) { %>
+        <div class="alert alert-danger py-2"><%= messages.error %></div>
+      <% } %>
+      <% if (messages.success) { %>
+        <div class="alert alert-success py-2"><%= messages.success %></div>
+      <% } %>
+
+      <form action="/auth/reset" method="POST" class="needs-validation" novalidate>
+        <div class="mb-3">
+          <label for="email" class="form-label">Enter your email</label>
+          <input type="email" id="email" name="email" class="form-control" required>
+          <div class="invalid-feedback">Please enter a valid email.</div>
+        </div>
+
+        <button type="submit" class="btn btn-primary w-100 py-2">Send Reset Link</button>
+      </form>
+
+      <p class="mt-3 text-center">
+        Remember your password? 
+        <a href="/auth/login" class="text-decoration-none fw-semibold text-primary">Login</a>
+      </p>
+    </div>
+  </div>
+</main>
+
+<%- include('../partials/footer') %>

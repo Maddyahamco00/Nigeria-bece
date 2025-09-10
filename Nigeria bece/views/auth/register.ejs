@@ -1,31 +1,43 @@
 <!-- views/auth/register.ejs-->
- <%- include('../partials/head', { title: 'Register' }) %>
+<%- include('../partials/head', { title: 'Register' }) %>
 <%- include('../partials/header') %>
 
-<main class="flex items-center justify-center min-h-screen">
-  <div class="bg-white p-8 rounded-lg shadow-lg w-full max-w-md">
-    <h2 class="text-2xl font-bold mb-6 text-center">Register</h2>
-    <% if (messages.error) { %>
-      <p class="text-red-500 mb-4"><%= messages.error %></p>
-    <% } %>
-    <form action="/auth/register" method="POST">
-      <div class="mb-4">
-        <label for="name" class="block text-sm font-medium">Full Name</label>
-        <input type="text" id="name" name="name" class="w-full p-2 border rounded" required>
-      </div>
-      <div class="mb-4">
-        <label for="email" class="block text-sm font-medium">Email</label>
-        <input type="email" id="email" name="email" class="w-full p-2 border rounded" required>
-      </div>
-      <div class="mb-4">
-        <label for="password" class="block text-sm font-medium">Password</label>
-        <input type="password" id="password" name="password" class="w-full p-2 border rounded" required>
-      </div>
-      <button type="submit" class="w-full bg-blue-600 text-white p-2 rounded hover:bg-blue-700">Register</button>
-    </form>
-    <p class="mt-4 text-center">
-      Already have an account? <a href="/auth/login" class="text-blue-600 hover:underline">Login</a>
-    </p>
+<main class="d-flex align-items-center justify-content-center min-vh-100 bg-light">
+  <div class="card shadow-lg border-0 rounded-4" style="max-width: 460px; width: 100%;">
+    <div class="card-body p-4">
+      <h2 class="text-center fw-bold mb-4 text-primary">Create an Account</h2>
+
+      <% if (messages.error) { %>
+        <div class="alert alert-danger py-2"><%= messages.error %></div>
+      <% } %>
+
+      <form action="/auth/register" method="POST" class="needs-validation" novalidate>
+        <div class="mb-3">
+          <label for="name" class="form-label">Full Name</label>
+          <input type="text" id="name" name="name" class="form-control" required>
+          <div class="invalid-feedback">Please enter your full name.</div>
+        </div>
+
+        <div class="mb-3">
+          <label for="email" class="form-label">Email</label>
+          <input type="email" id="email" name="email" class="form-control" required>
+          <div class="invalid-feedback">Please enter a valid email.</div>
+        </div>
+
+        <div class="mb-3">
+          <label for="password" class="form-label">Password</label>
+          <input type="password" id="password" name="password" class="form-control" required>
+          <div class="invalid-feedback">Please enter a password.</div>
+        </div>
+
+        <button type="submit" class="btn btn-primary w-100 py-2">Register</button>
+      </form>
+
+      <p class="mt-3 text-center">
+        Already have an account?
+        <a href="/auth/login" class="text-decoration-none fw-semibold text-primary">Login</a>
+      </p>
+    </div>
   </div>
 </main>
 
