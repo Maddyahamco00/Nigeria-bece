@@ -73,19 +73,22 @@ app.set('views', path.join(__dirname, 'views'));
 import publicRoutes from './routes/public.js';
 import authRoutes from './routes/auth.js';
 import adminRoutes from './routes/admin.js';
-import paymentRoutes from './routes/payment.js';
+//import paymentRoutes from './routes/payment.js';
 import studentRoutes from './routes/studentRoutes.js';
 import dashboardRoutes from './routes/dashboard.js';
 // import resultsRoutes from './routes/results.js';
+import apiRoutes from './routes/apiRoutes.js';
+
 
 app.use('/', publicRoutes);
 app.use('/auth', authRoutes);
 app.use('/admin', adminRoutes);
-app.use('/payment', paymentRoutes);
+//app.use('/payment', paymentRoutes);
 app.use('/admin/students', studentRoutes);
 app.use('/students', studentRoutes);
-app.use('/dashboard', dashboardRoutes);
+app.use('/admin/dashboard', dashboardRoutes);
 // app.use('/admin/results', resultsRoutes);
+app.use('/api', apiRoutes);
 
 // Debug route list
 app._router.stack.forEach(r => {

@@ -2,34 +2,33 @@
 <%- include('../partials/head', { title: 'Welcome to BECE Portal' }) %>
 <%- include('../partials/header') %>
 
-<main class="min-h-screen flex flex-col items-center justify-center bg-gray-50 py-12">
-  <div class="max-w-3xl w-full text-center">
-
+<main class="d-flex align-items-center justify-content-center min-vh-100 bg-light">
+  <div class="container text-center py-5">
+    
     <!-- Logo -->
-    <img src="/images/logo.svg" alt="BECE Logo" class="mx-auto mb-6 w-20 h-20">
+    <img src="/images/logo.svg" alt="BECE Logo" class="mb-4" style="width: 90px; height: 90px;" />
 
-    <h1 class="text-3xl font-bold mb-4">Welcome to the BECE Portal</h1>
-    <p class="text-gray-600 mb-8">Register for exams, check your results, or continue with your student code.</p>
+    <!-- Title -->
+    <h1 class="fw-bold mb-3 text-primary">Welcome to the BECE Portal</h1>
+    <p class="text-muted mb-4">Register for exams, check your results, or continue with your student code.</p>
 
     <!-- Action buttons -->
-    <div class="flex justify-center gap-6 mb-10">
-      <a href="/students/register" 
-         class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg shadow">
-         Register Now
+    <div class="d-flex justify-content-center gap-3 mb-5 flex-wrap">
+      <a href="/students/register" class="btn btn-primary px-4 py-2 rounded-pill shadow">
+        Register Now
       </a>
-      <a href="/students/login" 
-         class="bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-lg shadow">
-         Login with PIN/Code
+      <a href="/students/login" class="btn btn-success px-4 py-2 rounded-pill shadow">
+        Login with PIN/Code
       </a>
     </div>
 
-    <!-- Blog/announcement section -->
-    <section class="bg-white rounded-xl shadow p-6 text-left">
-      <h2 class="text-xl font-semibold mb-3">Latest News</h2>
-      <ul class="list-disc pl-5 text-gray-700 space-y-2">
-        <li>Registration for the upcoming BECE session is now open.</li>
-        <li>Remember: You need your PIN/Code to check results.</li>
-        <li>Contact support for issues with payments or login.</li>
+    <!-- Announcements -->
+    <section class="bg-white rounded-4 shadow-sm p-4 mx-auto" style="max-width: 600px;">
+      <h2 class="h5 fw-semibold mb-3 text-dark">📢 Latest News</h2>
+      <ul class="list-unstyled text-start small text-muted">
+        <li class="mb-2">✅ Registration for the upcoming BECE session is now open.</li>
+        <li class="mb-2">📌 Remember: You need your PIN/Code to check results.</li>
+        <li class="mb-2">☎️ Contact support for payment or login issues.</li>
       </ul>
     </section>
   </div>

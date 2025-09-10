@@ -2,12 +2,46 @@
 <%- include('../partials/head', { title: 'Home' }) %>
 <%- include('../partials/header') %>
 
-<main class="flex items-center justify-center min-h-screen">
-  <div class="text-center">
-    <h1 class="text-4xl font-bold mb-4">Welcome to Nigeria BECE Admin</h1>
-    <p class="text-lg mb-6">Purchase a code to register for the BECE examination or check your results.</p>
-    <a href="/payment" class="bg-blue-600 text-white px-6 py-3 rounded hover:bg-blue-700">Buy Code Now</a>
+<!-- Hero Section -->
+<section class="text-center text-white d-flex align-items-center justify-content-center" 
+         style="min-height: 70vh; background: linear-gradient(135deg, #1e3c72, #2a5298);">
+  <div class="container">
+    <h1 class="display-4 fw-bold mb-3">Nigeria BECE Portal</h1>
+    <p class="lead mb-4">Prepare, register, and manage your BECE exams with ease.</p>
+    <div class="d-flex justify-content-center gap-3 flex-wrap">
+      <a href="/auth/register" class="btn btn-light btn-lg px-4 py-2 rounded-pill shadow">
+        Register Now
+      </a>
+      <a href="/auth/login" class="btn btn-outline-light btn-lg px-4 py-2 rounded-pill shadow">
+        Login with PIN
+      </a>
+    </div>
   </div>
-</main>
+</section>
 
-<%- include('../partials/footer') %> 
+<!-- Updates Section -->
+<section class="py-5 bg-light">
+  <div class="container">
+    <h2 class="text-center fw-bold mb-4 text-primary">Latest Updates</h2>
+    
+    <% if (updates && updates.length > 0) { %>
+      <div class="row g-4">
+        <% updates.forEach(update => { %>
+          <div class="col-md-6 col-lg-4">
+            <div class="card shadow-sm h-100 border-0 rounded-4">
+              <div class="card-body">
+                <h5 class="card-title fw-semibold text-dark"><%= update.title %></h5>
+                <p class="card-text text-muted small"><%= update.content %></p>
+              </div>
+            </div>
+          </div>
+        <% }) %>
+      </div>
+    <% } else { %>
+      <p class="text-center text-muted">No updates yet. Please check back soon.</p>
+    <% } %>
+  </div>
+</section>
+
+<%- include('../partials/footer') %>
+
