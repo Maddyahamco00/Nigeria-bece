@@ -1,6 +1,6 @@
 // models/Payment.js
 import { DataTypes } from 'sequelize';
-import sequelize from '../models/db.js';
+import sequelize from '../config/database.js';
 
 const Payment = sequelize.define(
   'Payment',
@@ -31,7 +31,7 @@ const Payment = sequelize.define(
   },
   {
     tableName: 'payments',
-    timestamps: false,
+    timestamps: true, // prefer createdAt/updatedAt for payments
   }
 );
 

@@ -1,21 +1,69 @@
 // models/index.js
 import sequelize from '../config/database.js';
+
+// Import model definitions
 import User from './User.js';
+import Student from './Student.js';
+import School from './School.js';
+import State from './State.js';
+import LGA from './LGA.js';
 import Payment from './Payment.js';
-import State from "./State.js";
-import School from "./School.js";
-import Student from "./Student.js";
+import Result from './Result.js';
 
-// Associations
-State.hasMany(School, { foreignKey: "stateId", onDelete: "CASCADE" });
-School.belongsTo(State, { foreignKey: "stateId" });
+// Ensure models are initialized (the model files should call sequelize.define and export default)
+const models = {
+  User,
+  Student,
+  School,
+  State,
+  LGA,
+  Payment,
+  Result,
+};
 
-School.hasMany(Student, { foreignKey: "schoolId", onDelete: "CASCADE" });
-Student.belongsTo(School, { foreignKey: "schoolId" });
-School.hasMany(Payment, {
-  foreignKey: { name: 'schoolId', allowNull: true },
-  onDelete: 'CASCADE',
-});
-Payment.belongsTo(School, { foreignKey: { name: 'schoolId', allowNull: true } });
+// ----- Associations -----
 
-export { sequelize, User, Student, School, Payment };
+// State <-> LGA
+State.hasMany(LGA, { foreignKey: 'stateId', onDelete: 'CASCADE' });
+LGA.belongsTo(State, { foreignKey: 'stateId' });
+
+// LGA <-> School
+LGA.hasMany(School, { foreignKey: 'lgaId', onDelete: 'CASCADE' });
+School.belongsTo(LGA, { foreignKey: 'lgaId' });
+
+// School <-> Student
+School.hasMany(Student, { foreignKey: 'schoolId', onDelete: 'CASCADE' });
+Student.belongsTo(School, { foreignKey: 'schoolId' });
+
+// School <-> Payment
+School.hasMany(Payment, { foreignKey: 'schoolId', onDelete: 'CASCADE' });
+Payment.belongsTo(School, { foreignKey: 'schoolId' });
+
+// Student <-> Result
+Student.hasMany(Result, { foreignKey: 'studentId', onDelete: 'CASCADE' });
+Result.belongsTo(Student, { foreignKey: 'studentId' });
+
+// ✅ NEW: Result <-> School
+School.hasMany(Result, { foreignKey: 'schoolId', onDelete: 'CASCADE' });
+Result.belongsTo(School, { foreignKey: 'schoolId' });
+
+// ✅ NEW: Payment <-> Student
+Student.hasMany(Payment, { foreignKey: 'studentId', onDelete: 'CASCADE' });
+Payment.belongsTo(Student, { foreignKey: 'studentId' });
+
+// Export everything for convenient imports
+export {
+  sequelize,
+  User,
+  Student,
+  School,
+  State,
+  LGA,
+  Payment,
+  Result,
+};
+
+export default {
+  sequelize,
+  ...models,
+};

@@ -1,21 +1,29 @@
 // models/Result.js
 import { DataTypes } from 'sequelize';
-import sequelize from '../models/db.js';
-import Student from './Student.js';
+import sequelize from '../config/database.js';
 
-const Result = sequelize.define('Result', {
-  subject: {
-    type: DataTypes.STRING,
-    allowNull: false,
+const Result = sequelize.define(
+  'Result',
+  {
+    subject: {
+      type: DataTypes.STRING,
+      allowNull: false,
+    },
+    score: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+      validate: { min: 0, max: 100 },
+    },
+    studentId: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+      references: { model: 'students', key: 'id' },
+    },
   },
-  score: {
-    type: DataTypes.INTEGER,
-    allowNull: false,
-    validate: { min: 0, max: 100 },
-  },
-});
-
-Result.belongsTo(Student);
-Student.hasMany(Result);
+  {
+    tableName: 'results',
+    timestamps: true,
+  }
+);
 
 export default Result;

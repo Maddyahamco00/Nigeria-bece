@@ -1,7 +1,7 @@
 // models/User.js
 import { DataTypes } from 'sequelize';
 import bcrypt from 'bcryptjs';
-import sequelize from '../models/db.js';
+import sequelize from '../config/database.js';
 
 const User = sequelize.define(
   'User',
@@ -18,12 +18,16 @@ const User = sequelize.define(
       validate: { isEmail: { msg: 'Must be a valid email' } },
     },
     password: { type: DataTypes.STRING, allowNull: false },
+    role: {
+      type: DataTypes.ENUM('admin', 'user'),
+      defaultValue: 'user',
+    },
     resetToken: { type: DataTypes.STRING, allowNull: true },
     resetTokenExpiration: { type: DataTypes.DATE, allowNull: true },
   },
   {
     tableName: 'users',
-    timestamps: false,
+    timestamps: true,
     hooks: {
       beforeCreate: async (user) => {
         if (user.password) {
@@ -32,7 +36,7 @@ const User = sequelize.define(
         }
       },
       beforeUpdate: async (user) => {
-        if (user.changed('password')) {
+        if (user.changed && user.changed('password')) {
           const salt = await bcrypt.genSalt(10);
           user.password = await bcrypt.hash(user.password, salt);
         }

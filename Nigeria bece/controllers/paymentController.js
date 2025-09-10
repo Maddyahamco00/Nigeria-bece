@@ -1,4 +1,4 @@
-// controllers/paymentController.js
+/* // controllers/paymentController.js
 import axios from 'axios';
 import sendEmail from '../utils/sendEmail.js';
 import { Payment } from '../models/index.js';
@@ -27,7 +27,7 @@ const paymentController = {
       const { email, amount } = req.body;
 
       // ===== REAL PAYSTACK (disabled for now) =====
-      /*
+      
       const response = await axios.post(
         'https://api.paystack.co/transaction/initialize',
         { email, amount: amount * 100 }, // Paystack requires kobo
@@ -41,7 +41,7 @@ const paymentController = {
       const { authorization_url, reference } = response.data.data;
       await Payment.create({ email, amount, reference, status: 'pending' });
       return res.json({ authorization_url, reference });
-      */
+    
 
       // ===== LOCAL SIMULATION =====
       const reference = "LOCAL_REF_" + Date.now();
@@ -66,13 +66,13 @@ const paymentController = {
       const { reference } = req.body;
 
       // ===== REAL PAYSTACK VERIFY (disabled) =====
-      /*
+      
       const response = await axios.get(
         `https://api.paystack.co/transaction/verify/${reference}`,
         { headers: { Authorization: `Bearer ${PAYSTACK_SECRET_KEY}` } }
       );
       const { status, customer, amount } = response.data.data;
-      */
+      
 
       // ===== LOCAL SIMULATION =====
       if (!reference) {
@@ -139,3 +139,4 @@ const paymentController = {
 };
 
 export default paymentController;
+*/
