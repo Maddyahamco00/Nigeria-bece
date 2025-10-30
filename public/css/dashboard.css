@@ -1,0 +1,131 @@
+/* public/css/dashboard.css */
+/* =======================
+   Dashboard Layout
+======================= */
+#mainContent {
+  margin-left: 250px;
+  transition: margin-left 0.3s ease;
+}
+
+.dashboard-container {
+  display: flex;
+  min-height: 100vh;
+}
+
+/* Main content base */
+.main-content {
+  flex-grow: 1;
+  padding: 2rem;
+  margin-left: 250px; /* space for sidebar */
+  background-color: #f8f9fa; /* light bg */
+  color: #212529; /* dark text */
+}
+
+/* Dark mode for main content */
+body.dark-mode .main-content {
+  background-color: #121212; /* dark bg */
+  color: #f1f1f1;            /* light text */
+}
+
+
+/* Sidebar base */
+#sidebar {
+  background-color: #fff;
+  color: #000;
+}
+body.dark-mode #sidebar {
+  background-color: #1e1e1e;
+  color: #f1f1f1;
+}
+
+/* Sidebar links */
+#sidebar .nav-link {
+  color: inherit;
+  background: transparent;
+  border-radius: 6px;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+#sidebar .nav-link:hover {
+  background-color: rgba(0,0,0,0.05);
+}
+body.dark-mode #sidebar .nav-link:hover {
+  background-color: rgba(255,255,255,0.1);
+}
+
+/* Desktop: sidebar is visible, part of layout */
+@media (min-width: 768px) {
+  #sidebar {
+    position: relative;
+    transform: none !important;
+  }
+  #mainContent {
+    margin-left: 250px;
+  }
+}
+
+/* Mobile: sidebar is off-canvas */
+@media (max-width: 767px) {
+  #sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 100%;
+    transform: translateX(-100%);
+    z-index: 1050;
+  }
+  #sidebar.open {
+    transform: translateX(0);
+  }
+  #mainContent {
+    margin-left: 0 !important;
+  }
+}
+
+/* =======================
+   Dark Mode
+======================= */
+body.dark-mode {
+  background-color: #121212;
+  color: #f1f1f1;
+}
+
+body.dark-mode .main-content {
+  background-color: #1e1e1e;
+  color: #f1f1f1;
+}
+
+body.dark-mode #sidebar {
+  background-color: #1e1e1e;
+  color: #f1f1f1;
+}
+
+body.dark-mode #sidebar .nav-link {
+  color: #ddd;
+}
+body.dark-mode #sidebar .nav-link:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+  color: #fff;
+}
+
+body.dark-mode .card {
+  background-color: #2a2a2a;
+  color: #f1f1f1;
+}
+
+body.dark-mode .list-group-item {
+  background-color: #2a2a2a;
+  color: #ddd;
+}
+
+body.dark-mode .btn-outline-primary {
+  border-color: #aaa;
+  color: #ddd;
+}
+body.dark-mode .btn-outline-primary:hover {
+  background-color: #444;
+  border-color: #fff;
+  color: #fff;
+}
+body.dark-mode .text-muted {
+  color: #bbb !important;
+}

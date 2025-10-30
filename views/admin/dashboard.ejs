@@ -1,0 +1,140 @@
+
+<!-- views/admin/dashboard.ejs-->
+
+<div class="dashboard-container">
+  <%- include('../partials/sidebar') %>
+
+  <div id="mainContent" class="main-content">
+    <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap">
+      <h2 class="fw-bold text-primary mb-2 mb-md-0">Dashboard Overview</h2>
+      <div>
+        <% if (user.role === 'superadmin') { %>
+          <a href="/admin/users" class="btn btn-outline-primary btn-sm me-2 mb-2 mb-md-0">
+            <i class="bi bi-people"></i> Manage Users
+          </a>
+        <% } %>
+      </div>
+    </div>
+
+    <!-- Analytics Cards -->
+    <div class="row g-4 mb-4">
+      <div class="col-xl-3 col-md-6">
+        <div class="card border-0 shadow-sm rounded-4 bg-gradient-primary text-white">
+          <div class="card-body">
+            <div class="d-flex justify-content-between align-items-center">
+              <div>
+                <h6 class="card-title">Total Students</h6>
+                <h2 class="fw-bold"><%= analytics.totalStudents %></h2>
+              </div>
+              <i class="bi bi-people-fill display-6 opacity-75"></i>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-xl-3 col-md-6">
+        <div class="card border-0 shadow-sm rounded-4 bg-gradient-success text-white">
+          <div class="card-body">
+            <div class="d-flex justify-content-between align-items-center">
+              <div>
+                <h6 class="card-title">Total Schools</h6>
+                <h2 class="fw-bold"><%= analytics.totalSchools %></h2>
+              </div>
+              <i class="bi bi-building display-6 opacity-75"></i>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-xl-3 col-md-6">
+        <div class="card border-0 shadow-sm rounded-4 bg-gradient-warning text-white">
+          <div class="card-body">
+            <div class="d-flex justify-content-between align-items-center">
+              <div>
+                <h6 class="card-title">Total Payments</h6>
+                <h2 class="fw-bold"><%= analytics.totalPayments %></h2>
+              </div>
+              <i class="bi bi-credit-card display-6 opacity-75"></i>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-xl-3 col-md-6">
+        <div class="card border-0 shadow-sm rounded-4 bg-gradient-info text-white">
+          <div class="card-body">
+            <div class="d-flex justify-content-between align-items-center">
+              <div>
+                <h6 class="card-title">Monthly Revenue</h6>
+                <h2 class="fw-bold">₦<%= (analytics.monthlyRevenue || 0).toLocaleString() %></h2>
+              </div>
+              <i class="bi bi-graph-up display-6 opacity-75"></i>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Recent Activity & Charts -->
+    <div class="row g-4">
+      <!-- Recent Students -->
+      <div class="col-lg-6">
+        <div class="card border-0 shadow-sm rounded-4 h-100">
+          <div class="card-header bg-transparent border-0">
+            <h5 class="fw-bold mb-0">Recent Registrations</h5>
+          </div>
+          <div class="card-body">
+            <% if (analytics.recentStudents && analytics.recentStudents.length > 0) { %>
+              <div class="list-group list-group-flush">
+                <% analytics.recentStudents.forEach(student => { %>
+                  <div class="list-group-item d-flex justify-content-between align-items-center">
+                    <div>
+                      <h6 class="mb-1"><%= student.name %></h6>
+                      <small class="text-muted"><%= student.School?.name || 'No School' %></small>
+                    </div>
+                    <span class="badge bg-<%= student.paymentStatus === 'Paid' ? 'success' : 'warning' %>">
+                      <%= student.paymentStatus %>
+                    </span>
+                  </div>
+                <% }) %>
+              </div>
+            <% } else { %>
+              <p class="text-muted text-center">No recent registrations</p>
+            <% } %>
+          </div>
+        </div>
+      </div>
+
+      <!-- Recent Payments -->
+      <div class="col-lg-6">
+        <div class="card border-0 shadow-sm rounded-4 h-100">
+          <div class="card-header bg-transparent border-0 d-flex justify-content-between align-items-center">
+            <h5 class="fw-bold mb-0">Recent Payments</h5>
+            <a href="/admin/export/payments" class="btn btn-sm btn-outline-primary">
+              <i class="bi bi-download"></i> Export
+            </a>
+          </div>
+          <div class="card-body">
+            <% if (analytics.recentPayments && analytics.recentPayments.length > 0) { %>
+              <div class="list-group list-group-flush">
+                <% analytics.recentPayments.forEach(payment => { %>
+                  <div class="list-group-item d-flex justify-content-between align-items-center">
+                    <div>
+                      <h6 class="mb-1">₦<%= payment.amount %></h6>
+                      <small class="text-muted"><%= payment.Student?.name || payment.email %></small>
+                    </div>
+                    <small class="text-muted"><%= payment.createdAt.toLocaleDateString() %></small>
+                  </div>
+                <% }) %>
+              </div>
+            <% } else { %>
+              <p class="text-muted text-center">No recent payments</p>
+            <% } %>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<!-- Sidebar & theme behavior handled globally in /public/js/main.js -->

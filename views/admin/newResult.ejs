@@ -1,0 +1,33 @@
+<!-- views/admin/newResult.ejs-->
+
+<div class="container py-5">
+  <h1 class="mb-4 text-primary">Add New Result</h1>
+
+  <% if (messages.error) { %>
+    <div class="alert alert-danger"><%= messages.error %></div>
+  <% } %>
+  <% if (messages.success) { %>
+    <div class="alert alert-success"><%= messages.success %></div>
+  <% } %>
+
+  <form action="/admin/results" method="POST" class="card p-4 shadow-sm">
+    <div class="mb-3">
+      <label for="studentId" class="form-label">Student Reg Number</label>
+      <input type="text" class="form-control" id="studentId" name="studentId" required>
+    </div>
+
+    <div class="mb-3">
+      <label for="subject" class="form-label">Subject</label>
+      <input type="text" class="form-control" id="subject" name="subject" required>
+    </div>
+
+    <div class="mb-3">
+      <label for="score" class="form-label">Score</label>
+      <input type="number" class="form-control" id="score" name="score" min="0" max="100" required>
+    </div>
+
+    <button type="submit" class="btn btn-primary">Save Result</button>
+    <a href="/admin/results" class="btn btn-secondary">Cancel</a>
+  </form>
+</div>
+

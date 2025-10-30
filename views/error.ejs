@@ -1,0 +1,8 @@
+ <!-- views/error.ejs-->
+<main class="d-flex justify-content-center align-items-center vh-100">
+  <div class="card shadow-lg p-5 text-center bg-white rounded w-100" style="max-width: 500px;">
+    <h1 class="text-danger mb-3">Error</h1>
+    <p class="mb-4"><%= typeof message !== 'undefined' ? message : 'Something went wrong.' %></p>
+    <a href="/" class="btn btn-primary">Back to Home</a>
+  </div>
+</main>

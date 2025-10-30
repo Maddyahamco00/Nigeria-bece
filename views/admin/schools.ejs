@@ -1,0 +1,95 @@
+
+<!-- views/admin/schools.ejs-->
+
+<div class="d-flex">
+  <!-- Sidebar -->
+  <%- include('../partials/sidebar') %>
+
+  <!-- Main Content -->
+  <div id="mainContent" class="flex-grow-1 ms-auto p-4" style="margin-left: 250px; transition: margin-left 0.3s ease;">
+    <!-- Mobile Toggle Button -->
+    <button id="toggleSidebar" class="btn btn-outline-primary mb-3 d-md-none">
+      <i class="bi bi-list"></i> Menu
+    </button>
+
+    <!-- Page Title -->
+    <h2 class="fw-bold text-primary mb-4">Manage Schools</h2>
+
+    <!-- Add School Button -->
+    <div class="mb-3 text-end">
+      <a href="/admin/schools/add" class="btn btn-success">
+        <i class="bi bi-building-add"></i> Add School
+      </a>
+    </div>
+
+    <!-- Schools Table -->
+    <div class="card shadow-sm border-0 rounded-4">
+      <div class="card-body">
+        <div class="table-responsive">
+          <table class="table table-hover align-middle">
+            <thead class="table-dark">
+              <tr>
+                <th>#</th>
+                <th>School Name</th>
+                <th>State</th>
+                <th>LGA</th>
+                <th>Students</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% schools.forEach((school, index) => { %>
+                <tr>
+                  <td><%= index + 1 %></td>
+                  <td class="fw-semibold text-primary"><%= school.name %></td>
+                  <td><%= school.state ? school.state.name : 'N/A' %></td>
+                  <td><%= school.lga ? school.lga.name : 'N/A' %></td>
+                  <td>
+                    <span class="badge bg-info text-dark">
+                      <%= school.students ? school.students.length : 0 %>
+                    </span>
+                  </td>
+                  <td>
+                    <a href="/admin/schools/<%= school.id %>" class="btn btn-sm btn-primary">
+                      <i class="bi bi-eye"></i>
+                    </a>
+                    <a href="/admin/schools/<%= school.id %>/edit" class="btn btn-sm btn-warning">
+                      <i class="bi bi-pencil-square"></i>
+                    </a>
+                    <form action="/admin/schools/<%= school.id %>?_method=DELETE" method="POST" class="d-inline">
+                      <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Are you sure?')">
+                        <i class="bi bi-trash"></i>
+                      </button>
+                    </form>
+                  </td>
+                </tr>
+              <% }) %>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<script>
+  const sidebar = document.getElementById("sidebar");
+  const mainContent = document.getElementById("mainContent");
+  const toggleBtn = document.getElementById("toggleSidebar");
+
+  toggleBtn.addEventListener("click", () => {
+    if (sidebar.style.transform === "translateX(-100%)") {
+      sidebar.style.transform = "translateX(0)";
+      mainContent.style.marginLeft = "250px";
+    } else {
+      sidebar.style.transform = "translateX(-100%)";
+      mainContent.style.marginLeft = "0";
+    }
+  });
+
+  if (window.innerWidth < 768) {
+    sidebar.style.transform = "translateX(-100%)";
+    mainContent.style.marginLeft = "0";
+  }
+</script>
+

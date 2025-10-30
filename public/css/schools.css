@@ -1,0 +1,54 @@
+/* public/css/schools.css */
+/* Styling for school management page */
+.school-table {
+  width: 100%;
+  background-color: #fff;
+  border-radius: 0.5rem;
+  box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1), 0 4px 6px -4px rgba(0,0,0,0.1);
+}
+
+.school-table th,
+.school-table td {
+  padding: 1rem;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.school-table th {
+  background-color: #f3f4f6;
+  text-align: left;
+  font-weight: 600;
+}
+
+.school-table tr:hover {
+  background-color: #f9fafb;
+}
+
+.action-button {
+  padding-left: 1rem;
+  padding-right: 1rem;
+  padding-top: 0.5rem;
+  padding-bottom: 0.5rem;
+  border-radius: 0.5rem;
+  color: #fff;
+  border: none;
+  cursor: pointer;
+  font-size: 1rem;
+}
+
+.action-button.edit {
+  background-color: #3b82f6;
+  transition: background-color 0.2s;
+}
+
+.action-button.edit:hover {
+  background-color: #2563eb;
+}
+
+.action-button.delete {
+  background-color: #ef4444;
+  transition: background-color 0.2s;
+}
+
+.action-button.delete:hover {
+  background-color: #dc2626;
+}

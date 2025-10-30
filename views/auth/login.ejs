@@ -1,0 +1,46 @@
+<!-- views/auth/admin-login.ejs -->
+
+<main class="d-flex align-items-center justify-content-center min-vh-100 bg-light">
+  <div class="container">
+    <div class="row justify-content-center">
+      <div class="col-md-8 text-center">
+        <h1 class="fw-bold text-primary mb-4">BECE Portal Login</h1>
+        <p class="lead mb-5">Select your login portal</p>
+        
+        <div class="row g-4">
+          <!-- Admin Login Card -->
+          <div class="col-md-6">
+            <div class="card shadow-lg border-0 rounded-4 h-100">
+              <div class="card-body p-5">
+                <div class="text-primary mb-4">
+                  <i class="bi bi-person-gear display-1"></i>
+                </div>
+                <h3 class="card-title fw-bold">Admin Portal</h3>
+                <p class="card-text text-muted">School administrators and staff</p>
+                <a href="/auth/admin" class="btn btn-primary btn-lg w-100">Admin Login</a>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Student Login Card -->
+          <div class="col-md-6">
+            <div class="card shadow-lg border-0 rounded-4 h-100">
+              <div class="card-body p-5">
+                <div class="text-success mb-4">
+                  <i class="bi bi-person-check display-1"></i>
+                </div>
+                <h3 class="card-title fw-bold">Student Portal</h3>
+                <p class="card-text text-muted">Students and guardians</p>
+                <a href="/auth/student/login" class="btn btn-success btn-lg w-100">Student Login</a>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <div class="mt-5">
+          <a href="/public" class="btn btn-outline-secondary">Back to Public Site</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</main>

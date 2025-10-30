@@ -1,0 +1,289 @@
+/* public/css/styles.css 
+@import url('auth.css');
+@import url('students.css');
+@import url('dashboard.css');
+@import url('payment.css');
+@import url('schools.css');
+*/
+/* Enhanced Global Styles */
+:root {
+  --primary: #2563eb;
+  --primary-dark: #1d4ed8;
+  --success: #16a34a;
+  --warning: #d97706;
+  --danger: #dc2626;
+  --dark: #1f2937;
+  --light: #f8fafc;
+}
+
+/* Gradient backgrounds */
+.bg-gradient-primary {
+  background: linear-gradient(135deg, var(--primary), #3b82f6) !important;
+}
+
+.bg-gradient-success {
+  background: linear-gradient(135deg, var(--success), #22c55e) !important;
+}
+
+.bg-gradient-warning {
+  background: linear-gradient(135deg, var(--warning), #f59e0b) !important;
+}
+
+.bg-gradient-info {
+  background: linear-gradient(135deg, #06b6d4, #0ea5e9) !important;
+}
+
+/* Enhanced Cards */
+.card {
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  border: none;
+}
+
+.card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(0,0,0,0.15) !important;
+}
+
+/* Buttons */
+.btn {
+  border-radius: 8px;
+  font-weight: 600;
+  transition: all 0.3s ease;
+}
+
+.btn-primary {
+  background: var(--primary);
+  border-color: var(--primary);
+}
+
+.btn-primary:hover {
+  background: var(--primary-dark);
+  border-color: var(--primary-dark);
+  transform: translateY(-1px);
+}
+
+/* Tables */
+.table th {
+  border-top: none;
+  font-weight: 600;
+  color: var(--dark);
+  background-color: #f8fafc;
+}
+
+/* Alerts */
+.alert {
+  border: none;
+  border-radius: 10px;
+  font-weight: 500;
+}
+
+/* Sidebar enhancements
+   Default (light) appearance; dark-mode will override below. */
+.sidebar {
+  background: #ffffff;
+  color: var(--dark);
+  border-right: 1px solid rgba(0,0,0,0.06);
+}
+
+.sidebar .nav-link {
+  color: var(--dark);
+  border-radius: 8px;
+  margin: 6px 0;
+  transition: all 0.15s ease;
+}
+
+.sidebar .nav-link:hover {
+  background-color: rgba(37,99,235,0.06); /* subtle primary tint */
+  color: var(--primary-dark);
+  transform: translateX(4px);
+}
+
+.sidebar .nav-link.active {
+  background: var(--primary);
+  color: white;
+}
+
+/* Dashboard stats */
+.stat-card {
+  border-left: 4px solid;
+}
+
+.stat-card.primary { border-left-color: var(--primary); }
+.stat-card.success { border-left-color: var(--success); }
+.stat-card.warning { border-left-color: var(--warning); }
+.stat-card.info { border-left-color: #06b6d4; }
+
+/* Responsive improvements */
+@media (max-width: 768px) {
+  .sidebar {
+    position: fixed;
+    z-index: 1000;
+    transform: translateX(-100%);
+    transition: transform 0.3s ease;
+  }
+  
+  .sidebar.show {
+    transform: translateX(0);
+  }
+  
+  .main-content {
+    margin-left: 0 !important;
+  }
+}
+
+/* Mobile: when sidebar links are included inside the header collapse, make them look like buttons */
+@media (max-width: 767px) {
+  .navbar-collapse .sidebar-links {
+    padding-top: 0.5rem;
+    padding-bottom: 0.5rem;
+  }
+
+  .navbar-collapse .sidebar-links .nav-link {
+    display: block;
+    padding: 0.5rem 0.75rem;
+    margin: 0.25rem 0;
+    border-radius: 8px;
+    background-color: rgba(255,255,255,0.08); /* translucent white on header */
+    color: #fff !important;
+  }
+
+  .navbar-collapse .sidebar-links .nav-link i {
+    margin-right: 0.5rem;
+  }
+
+  .navbar-collapse .sidebar-links .nav-link:hover,
+  .navbar-collapse .sidebar-links .nav-link:focus {
+    background-color: rgba(255,255,255,0.14);
+    color: #fff !important;
+  }
+
+  /* Active state */
+  .navbar-collapse .sidebar-links .nav-link.active {
+    background-color: rgba(255,255,255,0.18) !important;
+    color: #fff !important;
+  }
+
+  /* Dark-mode: keep contrast */
+  body.dark-mode .navbar-collapse .sidebar-links .nav-link {
+    background-color: rgba(255,255,255,0.06);
+    color: #e5e7eb !important;
+  }
+}
+
+/* Loading animations */
+.loading-spinner {
+  display: inline-block;
+  width: 20px;
+  height: 20px;
+  border: 3px solid #f3f3f3;
+  border-top: 3px solid var(--primary);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* Form enhancements */
+.form-control, .form-select {
+  border-radius: 8px;
+  border: 2px solid #e5e7eb;
+  transition: border-color 0.3s ease;
+}
+
+.form-control:focus, .form-select:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 0.2rem rgba(37, 99, 235, 0.25);
+}
+
+/* Badge enhancements */
+.badge {
+  font-size: 0.75em;
+  padding: 0.35em 0.65em;
+  border-radius: 6px;
+}
+
+/* ----------------------------
+   Dark mode compatibility tweaks
+   These override common Bootstrap utility classes when body.dark-mode
+   is present so templates that use bg-light/text-dark still look good.
+   ---------------------------- */
+body.dark-mode {
+  --bg: #0f1724;
+  --surface: #121212;
+  --muted: #9ca3af;
+}
+
+body.dark-mode .bg-light {
+  background-color: #0f1724 !important;
+  color: #e5e7eb !important;
+}
+
+body.dark-mode .bg-white {
+  background-color: #121212 !important;
+  color: #e5e7eb !important;
+}
+
+body.dark-mode .text-dark {
+  color: #e5e7eb !important;
+}
+
+body.dark-mode .text-muted {
+  color: #9ca3af !important;
+}
+
+body.dark-mode .table-light th,
+body.dark-mode .table thead th {
+  background-color: transparent !important;
+  color: #e5e7eb !important;
+  border-bottom-color: rgba(255,255,255,0.06) !important;
+}
+
+body.dark-mode .alert-light {
+  background-color: #1f2937 !important;
+  color: #e5e7eb !important;
+  border: 1px solid rgba(255,255,255,0.04) !important;
+}
+
+body.dark-mode .card,
+body.dark-mode .card-body {
+  background-color: #111111 !important;
+  color: #e5e7eb !important;
+  border: 1px solid rgba(255,255,255,0.04) !important;
+}
+
+/* Dark-mode specific sidebar look */
+body.dark-mode .sidebar {
+  background: linear-gradient(180deg, var(--dark), #374151) !important;
+  color: #e5e7eb !important;
+  border-right-color: rgba(255,255,255,0.04) !important;
+}
+
+body.dark-mode .sidebar .nav-link {
+  color: #e5e7eb !important;
+}
+
+body.dark-mode .sidebar .nav-link:hover {
+  background: rgba(255,255,255,0.06) !important;
+  color: #fff !important;
+}
+
+body.dark-mode .form-control,
+body.dark-mode .form-select {
+  background-color: #0b1220 !important;
+  color: #e5e7eb !important;
+  border-color: rgba(255,255,255,0.06) !important;
+}
+
+/* Ensure buttons remain readable */
+body.dark-mode .btn-primary {
+  background-color: #2563eb !important;
+  border-color: #2563eb !important;
+}
+
+/* small helper for components using bg-primary/text-light in header */
+body.dark-mode .navbar-dark .navbar-nav .nav-link {
+  color: #e5e7eb !important;
+}

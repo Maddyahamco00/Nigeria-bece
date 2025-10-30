@@ -1,0 +1,29 @@
+<div class="card mt-3">
+  <div class="card-body">
+    <h5 class="card-title">Users</h5>
+    <% if (typeof users !== 'undefined' && users.length) { %>
+      <table class="table table-striped">
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>Email</th>
+            <th>Role</th>
+            <th>Joined</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% users.forEach(u => { %>
+            <tr>
+              <td><%= u.name %></td>
+              <td><%= u.email %></td>
+              <td><%= u.role %></td>
+              <td><%= u.createdAt ? u.createdAt.toLocaleString() : '' %></td>
+            </tr>
+          <% }) %>
+        </tbody>
+      </table>
+    <% } else { %>
+      <p class="text-muted">No users found.</p>
+    <% } %>
+  </div>
+</div>

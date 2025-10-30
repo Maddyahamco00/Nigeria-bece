@@ -1,0 +1,59 @@
+
+ <!-- views/public/payment.ejs--> 
+
+<main class="container-fluid d-flex align-items-center justify-content-center py-5" 
+      style="min-height: 100vh; background: linear-gradient(135deg, #fdfdfd, #e8f1f9);">
+
+  <div class="card shadow-lg border-0 rounded-4 p-4" style="max-width: 500px; width: 100%;">
+    <div class="card-body">
+
+      <!-- Header -->
+      <h3 class="text-center fw-bold text-primary mb-3">Payment Portal</h3>
+      <p class="text-center text-muted mb-4">
+        Complete your payment to proceed with registration.
+      </p>
+
+      <!-- Error / Success Messages -->
+      <% if (messages.error) { %>
+        <div class="alert alert-danger"><%= messages.error %></div>
+      <% } %>
+      <% if (messages.success) { %>
+        <div class="alert alert-success"><%= messages.success %></div>
+      <% } %>
+
+      <!-- Payment Form -->
+      <form id="payment-form">
+        <div class="mb-3">
+          <label for="email" class="form-label fw-semibold">Email</label>
+          <input type="email" id="email" name="email" class="form-control" 
+                 placeholder="Enter your email" required>
+        </div>
+
+        <div class="mb-3">
+          <label for="amount" class="form-label fw-semibold">Amount (NGN)</label>
+          <input type="number" id="amount" name="amount" 
+                 value="5000" class="form-control" readonly>
+        </div>
+
+        <button type="submit" id="payment-button" 
+                class="btn btn-primary w-100 fw-bold shadow-sm mb-3">
+          Pay Now
+        </button>
+      </form>
+
+      <!-- Error Display -->
+      <div id="payment-error" class="text-danger small mt-2"></div>
+
+      <!-- Cancel / Back -->
+      <div class="text-center mt-3">
+        <a href="/students/dashboard" class="btn btn-outline-secondary rounded-pill px-4">
+          Cancel / Back
+        </a>
+      </div>
+    </div>
+  </div>
+</main>
+
+<script src="https://js.paystack.co/v1/inline.js"></script>
+<script src="/js/payment.js"></script>
+

@@ -1,0 +1,31 @@
+ <!-- views/public/landing.ejs--> 
+
+<div class="d-flex align-items-center justify-content-center min-vh-100 bg-light">
+  <div class="container text-center py-5">
+    
+    <!-- Logo -->
+    <img src="/images/logo.svg" alt="BECE Logo" class="mb-4" style="width: 90px; height: 90px;" />
+
+    <!-- Title -->
+    <h1 class="fw-bold mb-3 text-primary">Welcome to the BECE Portal</h1>
+    <p class="text-muted mb-4">Register for exams, check your results, or continue with your student code.</p>
+
+    <!-- Action buttons -->
+    <div class="d-flex justify-content-center gap-3 mb-5 flex-wrap">
+      <a href="http://localhost:3000/auth/login" class="btn btn-primary px-4 py-2 rounded-pill shadow">
+        Continue to Login
+      </a>
+    </div>
+
+    <!-- Announcements -->
+    <section class="bg-white rounded-4 shadow-sm p-4 mx-auto" style="max-width: 600px;">
+      <h2 class="h5 fw-semibold mb-3 text-dark">📢 Latest News</h2>
+      <ul class="list-unstyled text-start small text-muted">
+        <li class="mb-2">✅ Registration for the upcoming BECE session is now open.</li>
+        <li class="mb-2">📌 Remember: You need your PIN/Code to check results.</li>
+        <li class="mb-2">☎️ Contact support for payment or login issues.</li>
+      </ul>
+    </section>
+  </div>
+</div>
+

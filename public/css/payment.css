@@ -1,0 +1,82 @@
+/* public/css/payment.css */
+/* Styling for payment page */
+.payment-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  background-color: #f3f4f6;
+}
+
+.payment-card {
+  background-color: #fff;
+  padding: 2rem;
+  border-radius: 0.5rem;
+  box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1), 0 4px 6px -4px rgba(0,0,0,0.1);
+  width: 100%;
+  max-width: 28rem;
+}
+
+.payment-card h2 {
+  font-size: 1.5rem;
+  font-weight: 700;
+  text-align: center;
+  color: #1f2937;
+  margin-bottom: 1.5rem;
+}
+
+.payment-card input,
+.payment-card select {
+  width: 100%;
+  padding: 0.75rem;
+  margin-bottom: 1rem;
+  border-width: 1px;
+  border-style: solid;
+  border-color: #d1d5db;
+  border-radius: 0.5rem;
+  outline: none;
+  transition: box-shadow 0.2s, border-color 0.2s;
+}
+
+.payment-card input:focus,
+.payment-card select:focus {
+  box-shadow: 0 0 0 2px #3b82f6;
+  border-color: #3b82f6;
+}
+
+.payment-button {
+  width: 100%;
+  padding: 0.75rem;
+  background-color: #16a34a;
+  color: #fff;
+  border-radius: 0.5rem;
+  transition: background-color 0.2s;
+  border: none;
+  font-size: 1rem;
+}
+
+.payment-button:hover {
+  background-color: #15803d;
+}
+
+.payment-error {
+  color: #ef4444;
+  font-size: 0.875rem;
+  margin-bottom: 1rem;
+}
+
+.payment-success {
+  color: #22c55e;
+  font-size: 0.875rem;
+  margin-bottom: 1rem;
+}
+
+
+
+
+
+
+.payment-footer {
+  text-align: center;
+  margin-top: 1rem;
+}

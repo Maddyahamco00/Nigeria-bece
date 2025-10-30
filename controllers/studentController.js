@@ -1,0 +1,354 @@
+// controllers/studentController.js
+import bcrypt from 'bcryptjs';
+import { Student, State, LGA, School, Result } from '../models/index.js';
+
+// Render Student Registration Page
+export const renderRegister = async (req, res) => {
+  try {
+    const states = await State.findAll();
+  // Render the student registration view. Use the canonical auth template so
+  // both /students/register and /auth/student/register show the same UI.
+  res.render('auth/student-registration', { states, messages: req.flash() });
+  } catch (err) {
+    console.error("❌ Error loading states:", err);
+    res.status(500).send("Server error");
+  }
+};
+
+// Handle Student Registration
+export const registerStudent = async (req, res) => {
+  console.log("🚀 Starting student registration process...");
+  
+  try {
+    console.log("📥 Incoming form data:", req.body);
+
+  const { name, email, password, confirmPassword, stateId, lgaId, schoolId, gender, dob, guardianPhone, payment } = req.body;
+
+    // Basic validation - only check absolutely required fields
+    if (!name || !password || !confirmPassword || !stateId || !lgaId || !schoolId) {
+      console.log("❌ Missing required fields");
+      req.flash('error', 'Name, password, and school selection are required');
+      return res.redirect('/students/register');
+    }
+
+    if (password !== confirmPassword) {
+      console.log("❌ Passwords do not match");
+      req.flash('error', 'Passwords do not match');
+      return res.redirect('/students/register');
+    }
+
+    if (password.length < 6) {
+      console.log("❌ Password too short");
+      req.flash('error', 'Password must be at least 6 characters');
+      return res.redirect('/students/register');
+    }
+
+    // Check if student email already exists (if email provided)
+    if (email) {
+      console.log("🔍 Checking if student email already exists...");
+      const existingStudent = await Student.findOne({ where: { email } });
+      if (existingStudent) {
+        console.log("❌ Email already registered:", email);
+        req.flash('error', 'Email already registered');
+        return res.redirect('/students/register');
+      }
+      console.log("✅ Email is available");
+    }
+
+    console.log("🔍 Validating references...");
+    console.log("State ID:", stateId, "LGA ID:", lgaId, "School ID:", schoolId);
+
+    // Convert to integers
+    const stateIdInt = parseInt(stateId);
+    const lgaIdInt = parseInt(lgaId);
+    const schoolIdInt = parseInt(schoolId);
+
+    const [school, state, lga] = await Promise.all([
+      School.findByPk(schoolIdInt),
+      State.findByPk(stateIdInt),
+      LGA.findByPk(lgaIdInt)
+    ]);
+
+    console.log("Validation results:", { school: !!school, state: !!state, lga: !!lga });
+
+    if (!school || !state || !lga) {
+      console.log("❌ Invalid references selected");
+      req.flash('error', 'Invalid school, state, or LGA selected');
+      return res.redirect('/students/register');
+    }
+    console.log("✅ All references validated");
+
+    console.log("🔍 Hashing password...");
+    const hashedPassword = await bcrypt.hash(password, 10);
+    console.log("✅ Password hashed");
+
+    console.log("🔍 Creating student record...");
+    
+    // Create student with only the fields that match database structure
+    const studentData = {
+      name: name.trim(),
+      password: hashedPassword,
+      stateId: stateIdInt,
+      lgaId: lgaIdInt,
+      schoolId: schoolIdInt,
+  paymentStatus: (typeof payment !== 'undefined' && (payment === 'on' || payment === 'paid' || payment === 'true')) ? 'paid' : 'pending'
+
+    };
+
+    // Add optional fields only if they exist
+    if (email) studentData.email = email.toLowerCase().trim();
+    if (gender) studentData.gender = gender;
+    if (dob) studentData.dateOfBirth = dob;
+    if (guardianPhone) studentData.guardianPhone = guardianPhone.trim();
+
+    console.log("Student data to create:", studentData);
+
+    let student;
+    try {
+      student = await Student.create(studentData);
+      console.log("✅ Student created successfully with ID:", student.id);
+      console.log("Student record:", student.toJSON());
+    } catch (createErr) {
+      console.error("❌ Student creation error details:");
+      console.error("Error name:", createErr.name);
+      console.error("Error message:", createErr.message);
+      if (createErr.errors) {
+        createErr.errors.forEach(err => {
+          console.error("Field error:", err.path, "-", err.message);
+          console.error("Value that caused error:", err.value);
+        });
+      }
+      throw createErr;
+    }
+
+    // Generate registration number
+    console.log("🔍 Generating registration number...");
+    const currentYear = new Date().getFullYear().toString().slice(-2);
+    const regNumber = `BECE${currentYear}${stateIdInt.toString().padStart(2, '0')}${lgaIdInt.toString().padStart(2, '0')}${schoolIdInt.toString().padStart(3, '0')}${student.id.toString().padStart(4, '0')}`;
+    
+    console.log("Registration number:", regNumber);
+
+    // Update student with registration number
+    student.regNumber = regNumber;
+    await student.save();
+    console.log("✅ Registration number saved");
+
+    // Verify the student was saved
+    const savedStudent = await Student.findByPk(student.id);
+    console.log("✅ Student verified in database:", savedStudent ? "YES" : "NO");
+    if (savedStudent) {
+      console.log("Final student record:", savedStudent.toJSON());
+    }
+
+    console.log("🎉 Registration process completed successfully!");
+    
+    req.flash('success', `Registration successful! Your Registration Number: <strong>${regNumber}</strong>. Please proceed to login.`);
+    return res.redirect('/students/login');
+
+  } catch (err) {
+    console.error("💥 Registration process failed with error:");
+    console.error("Error type:", err.name);
+    console.error("Error message:", err.message);
+    console.error("Full error stack:", err.stack);
+    
+    req.flash('error', 'Registration failed due to a system error. Please try again.');
+    return res.redirect('/students/register');
+  }
+};
+
+// Render Student Login Page
+export const renderLogin = async (req, res) => {
+  try {
+    // Use the auth login template so /students/login and /auth/student/login
+    // render the same page and avoid duplicate templates.
+    res.render('auth/student-login', { messages: req.flash() });
+  } catch (err) {
+    console.error("❌ Error rendering login:", err);
+    res.status(500).send("Server error");
+  }
+};
+
+// Handle Student Login
+export const loginStudent = async (req, res) => {
+  try {
+    const { regNumber, password } = req.body;
+    const student = await Student.findOne({ where: { regNumber } });
+
+    if (!student) {
+      req.flash('error', 'Invalid registration number or password');
+      return res.redirect('/students/login');
+    }
+
+    const isMatch = await bcrypt.compare(password, student.password);
+    if (!isMatch) {
+      req.flash('error', 'Invalid registration number or password');
+      return res.redirect('/students/login');
+    }
+
+    // Save student info in session
+    req.session.student = {
+      id: student.id,
+      name: student.name,
+      regNumber: student.regNumber,
+      paymentStatus: student.paymentStatus,
+      email: student.email
+    };
+
+    res.redirect('/students/dashboard');
+  } catch (err) {
+    console.error('❌ Student login error:', err);
+    req.flash('error', 'Login failed. Try again.');
+    res.redirect('/students/login');
+  }
+};
+
+// Render Student Dashboard
+export const renderDashboard = async (req, res) => {
+  try {
+    const student = req.session.student;
+    if (!student) {
+      req.flash('error', 'Please login first');
+      return res.redirect('/students/login');
+    }
+
+    // Get fresh student data with relationships
+    const studentData = await Student.findByPk(student.id, {
+      include: [
+        { model: School, attributes: ['name', 'address'] },
+        { model: State, attributes: ['name'] },
+        { model: LGA, attributes: ['name'] }
+      ]
+    });
+
+    if (!studentData) {
+      req.flash('error', 'Student not found');
+      return res.redirect('/students/login');
+    }
+
+    // Fetch results for the student (if any)
+    const results = await Result.findAll({ where: { studentId: student.id }, order: [['createdAt', 'DESC']] });
+
+    res.render('students/dashboard', { 
+      student: studentData, 
+      results,
+      messages: req.flash()
+    });
+  } catch (err) {
+    console.error('❌ Dashboard error:', err);
+    req.flash('error', 'Error loading dashboard');
+    res.redirect('/students/login');
+  }
+};
+
+// Student Profile Management
+export const renderProfile = async (req, res) => {
+  try {
+    const student = req.session.student;
+    if (!student) {
+      req.flash('error', 'Please login first');
+      return res.redirect('/students/login');
+    }
+
+    const studentData = await Student.findByPk(student.id, {
+      include: [School, State, LGA],
+      attributes: { exclude: ['password'] }
+    });
+
+    const states = await State.findAll();
+
+    res.render('students/profile', {
+      student: studentData,
+      states,
+      messages: req.flash()
+    });
+  } catch (err) {
+    console.error('❌ Profile error:', err);
+    req.flash('error', 'Error loading profile');
+    res.redirect('/students/dashboard');
+  }
+};
+
+export const updateProfile = async (req, res) => {
+  try {
+    const studentId = req.session.student.id;
+    const { name, email, guardianPhone, stateId, lgaId } = req.body;
+
+    const student = await Student.findByPk(studentId);
+    if (!student) {
+      req.flash('error', 'Student not found');
+      return res.redirect('/students/profile');
+    }
+
+    // Check if email is already used by another student
+    if (email !== student.email) {
+      const existingStudent = await Student.findOne({ where: { email } });
+      if (existingStudent) {
+        req.flash('error', 'Email already registered by another student');
+        return res.redirect('/students/profile');
+      }
+    }
+
+    await student.update({
+      name,
+      email,
+      guardianPhone,
+      stateId,
+      lgaId
+    });
+
+    // Update session
+    req.session.student.name = name;
+    req.session.student.email = email;
+
+    req.flash('success', 'Profile updated successfully');
+    res.redirect('/students/profile');
+  } catch (err) {
+    console.error('❌ Profile update error:', err);
+    req.flash('error', 'Error updating profile');
+    res.redirect('/students/profile');
+  }
+};
+
+// Change Password - REMOVE DUPLICATE
+export const changePassword = async (req, res) => {
+  try {
+    const studentId = req.session.student.id;
+    const { currentPassword, newPassword, confirmPassword } = req.body;
+
+    if (newPassword !== confirmPassword) {
+      req.flash('error', 'New passwords do not match');
+      return res.redirect('/students/profile');
+    }
+
+    if (newPassword.length < 6) {
+      req.flash('error', 'New password must be at least 6 characters');
+      return res.redirect('/students/profile');
+    }
+
+    const student = await Student.findByPk(studentId);
+    if (!student) {
+      req.flash('error', 'Student not found');
+      return res.redirect('/students/login');
+    }
+
+    // Verify current password
+    const isMatch = await bcrypt.compare(currentPassword, student.password);
+    if (!isMatch) {
+      req.flash('error', 'Current password is incorrect');
+      return res.redirect('/students/profile');
+    }
+
+    // Update password
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+    student.password = hashedPassword;
+    await student.save();
+
+    req.flash('success', 'Password changed successfully');
+    res.redirect('/students/profile');
+  } catch (err) {
+    console.error('❌ Password change error:', err);
+    req.flash('error', 'Error changing password');
+    res.redirect('/students/profile');
+  }
+};
+
