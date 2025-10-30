@@ -1,190 +1,155 @@
-/*# .env
+/*
+# 🇳🇬 Nigeria BECE Admin & Student Portal
+
+This repository contains the full-stack web application for managing student registrations, schools, payments, and results for the **Basic Education Certificate Examination (BECE)** in Nigeria. Built with **Node.js**, **Express**, **EJS**, **Sequelize (MySQL)**, and **Paystack** for payments.
+
+---
+
+## 🚀 Features
+
+- Admin dashboard for managing students, schools, and results  
+- Secure authentication with Passport.js  
+- Paystack integration for payment processing  
+- Public-facing pages for payments and information  
+- Responsive design with custom CSS  
+- Continuous Integration via GitHub Actions  
+- Optional Docker support  
+- Easy deployment to Render
 
-# Server Configuration
-PORT=3000
-NODE_ENV=development
+---
 
-# MySQL Database Configuration
+## 🧰 Technologies
 
-DB_USER=root
-DB_PASSWORD="1234567890#"
-DB_HOST=localhost
-DB_NAME=nigeria_bece_db
+| Layer       | Stack                     |
+|------------|---------------------------|
+| Backend     | Node.js, Express.js       |
+| Database    | MySQL, Sequelize ORM      |
+| Auth        | Passport.js               |
+| Payment     | Paystack                  |
+| Templating  | EJS                       |
+| CI/CD       | GitHub Actions            |
+| Deployment  | Render / Docker           |
 
-# Session Secret
-SESSION_SECRET=maddy
+---
 
-# Paystack API Keys
-PAYSTACK_SECRET_KEY=sk_test_8e34251ab4a825a3516648d6878d420bc06a90e8
-PAYSTACK_PUBLIC_KEY=pk_test_459ec26b716655348ae00e8403393696999e59a0
+## 🖥️ Local Development
 
-# Email Configuration (Optional, e.g., for Nodemailer)
-EMAIL_HOST=smtp.example.com
-EMAIL_PORT=587
-EMAIL_USER=your_email@example.com
-EMAIL_PASS=your_email_password
+1. **Clone the repo**  
+   ```bash
+   git clone https://github.com/Maddyahamco00/Nigeria-bece.git
+   cd nigeria-bece-admin
+   ```
 
-# SMS Configuration (Optional, e.g., for Termii or Twilio)
-SMS_API_KEY=your_sms_api_key
-SMS_SENDER_ID=BECE_NG
+2. **Install dependencies**  
+   ```powershell
+   npm ci
+   ```
 
-#Replace `your_mysql_password`, `your_session_secret_here`, `sk_test_your_paystack_secret_key`, and `pk_test_your_paystack_public_key` with actual values.
-#- The email and SMS configurations are optional and depend on whether you use services like Nodemailer or an SMS provider (e.g., Termii, Twilio).
-#- Ensure the `.env` file is added to `.gitignore` to prevent exposing sensitive data. 
+3. **Set up MySQL database**  
+   Create a database named `nigeria_bece_db`.
 
+4. **Create `.env` file**  
+   Copy from `.env.example` and fill in your credentials:
 
+   ```plaintext
+   PORT=3000
+   DB_HOST=localhost
+   DB_USER=root
+   DB_PASSWORD=your_password
+   DB_NAME=nigeria_bece_db
+   PAYSTACK_SECRET_KEY=your_paystack_secret
+   PAYSTACK_PUBLIC_KEY=your_paystack_public_key
+   SESSION_SECRET=your_session_secret
+   ```
 
+5. **Start the server**  
+   ```powershell
+   npm run dev  # Development
+   npm start    # Production
+   ```
 
+App runs at [http://localhost:3000](http://localhost:3000)
 
+---
 
-curl https://api.paystack.co/transaction/initialize \
--H "Authorization: Bearer sk_test_8e34251ab4a825a3516648d6878d420bc06a90e8" \
--H "Content-Type: application/json" \
--d '{"email":"maddyahamco00@gmail.com","amount":500000}' 
+## 📁 Directory Structure
 
+```
+nigeria-bece-admin/
+├── config/       # DB, Passport, States
+├── controllers/  # Logic handlers
+├── models/       # DB schemas
+├── public/       # CSS, JS, images
+├── routes/       # API routes
+├── views/        # EJS templates
+├── .env          # Environment vars
+└── app.js        # Main app file
+```
 
+---
 
+## 🔐 Usage
 
-====================login====================
-<%- include('../partials/head', { title: 'Student Login' }) %>
-<%- include('../partials/header') %>
+- **Public Pages**: `/`, `/payment`, `/success`  
+- **Admin Portal**: `/auth/login`, `/admin/dashboard`, `/admin/students`
 
-<main class="max-w-lg mx-auto mt-12 p-8 bg-white rounded-lg shadow">
-  <h1 class="text-2xl font-bold mb-6">Login</h1>
-  <% if (typeof error !== 'undefined') { %>
-    <p class="text-red-500 mb-4"><%= error %></p>
-  <% } %>
-  <form action="/students/login" method="POST" class="space-y-4">
-    <input type="text" name="code" placeholder="Enter PIN/BECE Code" required class="w-full border p-2 rounded">
-    <button type="submit" class="w-full bg-green-600 text-white py-2 rounded">Login</button>
-  </form>
-</main>
+---
 
-<%- include('../partials/footer') %>
+## ☁️ Deployment to Render
 
+1. Sign up at [Render](https://render.com) and connect your GitHub.
+2. Create a new **Web Service** and select this repo.
+3. Use these settings:
+   - Build Command: `npm ci`
+   - Start Command: `npm start`
+   - Instance Port: `3000`
+4. Add environment variables: `DB_HOST`, `DB_USER`, `DB_PASSWORD`, `DB_NAME`, `SESSION_SECRET`, etc.
 
+Render will auto-deploy on every push to the connected branch.
 
+---
 
+## 🐳 Optional: Docker
 
+A `Dockerfile` is included for container-based deployment.
 
+---
 
-===========================reg======================
-<%- include('../partials/head', { title: 'Register Student' }) %>
-<%- include('../partials/header') %>
-<%- include('../partials/sidebar') %>
+## 🔄 GitHub Setup
 
-<main class="ml-64 p-6">
-  <h2 class="text-2xl font-bold mb-6">Register Student</h2>
+If not yet connected to GitHub:
 
-  <% if (messages.success) { %>
-    <p class="text-green-600"><%= messages.success %></p>
-  <% } %>
+```powershell
+git init
+git add .
+git commit -m "Initial commit"
+git remote add origin https://github.com/Maddyahamco00/Nigeria-bece.git
+git branch -M main
+git push -u origin main
+```
 
-  <% if (errors.length > 0) { %>
-    <ul class="text-red-600">
-      <% errors.forEach(e => { %>
-        <li><%= e.msg %></li>
-      <% }) %>
-    </ul>
-  <% } %>
+To push updates:
 
-  <form method="POST" action="/student/register" class="space-y-4">
-    <div>
-      <label class="block">Full Name</label>
-      <input type="text" name="name" class="border p-2 w-full" value="<%= data.name || '' %>">
-    </div>
+```powershell
+git add .
+git commit -m "Your concise message"
+git push
+```
 
-    <div>
-      <label class="block">Email</label>
-      <input type="email" name="email" class="border p-2 w-full" value="<%= data.email || '' %>">
-    </div>
+---
 
-    <div>
-      <label class="block">Student Code</label>
-      <input type="text" name="studentCode" class="border p-2 w-full" value="<%= data.studentCode || '' %>">
-    </div>
+## ⚙️ Continuous Integration
 
-    <div>
-      <label class="block">Gender</label>
-      <select name="gender" class="border p-2 w-full">
-        <option value="">--Select--</option>
-        <option value="Male" <%= data.gender === 'Male' ? 'selected' : '' %>>Male</option>
-        <option value="Female" <%= data.gender === 'Female' ? 'selected' : '' %>>Female</option>
-      </select>
-    </div>
+A basic GitHub Actions workflow is included. It runs:
 
-    <div>
-      <label class="block">Date of Birth</label>
-      <input type="date" name="dateOfBirth" class="border p-2 w-full" value="<%= data.dateOfBirth || '' %>">
-    </div>
+- `npm ci`
+- `npm test` (if present)
 
-    <div>
-      <label class="block">Guardian Phone</label>
-      <input type="text" name="guardianPhone" class="border p-2 w-full" value="<%= data.guardianPhone || '' %>">
-    </div>
+Triggers on pushes and pull requests.
 
-    <div>
-      <label class="block">School</label>
-      <select name="schoolId" class="border p-2 w-full">
-        <% schools.forEach(school => { %>
-          <option value="<%= school.id %>"><%= school.name %></option>
-        <% }) %>
-      </select>
-    </div>
+---
 
-    <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded">Register</button>
-  </form>
-</main>
+## 📌 License
 
-<%- include('../partials/footer') %>
-
-
-
-
-
-
-
-
-
-
-
-
-'===========================css======================
-Email: superadmin@bece.gov.ng
-
-Password: admin123
-
-'''''''''''''''''''''''''''''''''''''''''''''''''''''
-
-
-
-
-/views  
- ├── layouts/  
- │    └── main.ejs  
- ├── partials/  
- │    ├── head.ejs  
- │    ├── header.ejs  
- │    └── footer.ejs  
- ├── auth/  
- │    ├── student-login.ejs  
- │    ├── student-register.ejs  
- │    └── admin-login.ejs  
- ├── dashboard/  
- │    ├── admin-dashboard.ejs  
- │    └── student-dashboard.ejs  
- └── landing.ejs  
-  
-  
-I want new for all to copy ( well organized and add sidebar{ for student and for admin all after login}, make superadmin@gmail.com to be the only email for login and admin123 as password) then we move to dashboard and profile for both students and admin 
-
-
-
-
-
-
-
-, , 
-
-
+MIT License. See [LICENSE](LICENSE).
 */
