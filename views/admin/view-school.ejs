@@ -1,0 +1,23 @@
+<!-- views/admin/view-school.ejs -->
+
+<h2>School Details</h2>
+<p><strong>Name:</strong> <%= school.name %></p>
+<p><strong>LGA ID:</strong> <%= school.lgaId %></p>
+<p><strong>State ID:</strong> <%= school.stateId %></p>
+
+<h3>Students</h3>
+<table border="1" cellpadding="8">
+  <tr>
+    <th>Name</th>
+    <th>Email</th>
+    <th>Gender</th>
+  </tr>
+  <% school.Students.forEach(s => { %>
+    <tr>
+      <td><%= s.name %></td>
+      <td><%= s.email %></td>
+      <td><%= s.gender %></td>
+    </tr>
+  <% }) %>
+</table>
+

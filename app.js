@@ -23,6 +23,8 @@ import paymentRoutes from './routes/payment.js';
 // Admin route group (single consolidated router)
 import adminRoutes from './routes/admin.js';
 
+process.removeAllListeners('warning');
+
 const app = express();
 
 // ------------------------------
