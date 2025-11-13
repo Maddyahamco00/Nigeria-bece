@@ -21,7 +21,7 @@ This repository contains the full-stack web application for managing student reg
 ## 🧰 Technologies
 
 | Layer       | Stack                     |
-|------------|---------------------------|
+|-------------|---------------------------|
 | Backend     | Node.js, Express.js       |
 | Database    | MySQL, Sequelize ORM      |
 | Auth        | Passport.js               |
