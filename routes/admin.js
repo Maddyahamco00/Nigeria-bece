@@ -1,10 +1,16 @@
 // routes/admin.js
 import express from 'express';
 import { Student, School, Payment, Result, User, State, LGA } from '../models/index.js';
+import getGrade from '../utils/grade.js';
+import sendEmail from '../utils/sendEmail.js';
+import db from '../config/database.js';
 import { requireAdmin, requireSuperAdmin } from '../middleware/roleMiddleware.js';
 import { isAuthenticated, isAdmin } from '../middleware/auth.js';
+//import { getGrade } from '../utils/grade.js';
 
 const router = express.Router();
+import { Parser } from 'json2csv';
+import { Op } from 'sequelize';
 
 // protect all admin routes
 router.use(isAuthenticated, isAdmin);
@@ -12,22 +18,101 @@ router.use(isAuthenticated, isAdmin);
 /* ---------------- Dashboard ---------------- */
 router.get('/dashboard', requireAdmin, async (req, res) => {
   try {
-    const stats = {
-      students: await Student.count(),
-      schools: await School.count(),
-      payments: await Payment.count({ where: { status: 'success' } }),
-      pendingPayments: await Payment.count({ where: { status: 'pending' } })
+    // Basic counters
+    const totalStudents = await Student.count();
+    const totalSchools = await School.count();
+    const totalPayments = await Payment.count({ where: { status: 'success' } });
+
+    // Monthly revenue (last 30 days sum)
+    const [revRows] = await db.query(
+      `SELECT IFNULL(SUM(amount),0) as revenue FROM payments WHERE status = 'success' AND \`createdAt\` >= DATE_SUB(NOW(), INTERVAL 30 DAY)`
+    );
+    const monthlyRevenue = revRows && revRows[0] ? revRows[0].revenue : 0;
+
+    // Recent students and payments (limit 5)
+    const recentStudents = await Student.findAll({ include: [School], order: [['createdAt','DESC']], limit: 5 });
+    const recentPayments = await Payment.findAll({ include: [Student], order: [['createdAt','DESC']], limit: 5 });
+
+    const analytics = {
+      totalStudents,
+      totalSchools,
+      totalPayments,
+      monthlyRevenue,
+      recentStudents,
+      recentPayments
     };
 
     res.render('admin/dashboard', {
       title: 'Admin Dashboard',
-      analytics: stats,
+      analytics,
       user: req.user
     });
   } catch (err) {
     console.error('Dashboard error:', err);
     req.flash('error', 'Failed to load dashboard');
     res.redirect('/admin/dashboard');
+  }
+});
+
+// Live counters for AJAX refresh
+router.get('/dashboard/live/counters', requireAdmin, async (req, res) => {
+  try {
+    const counters = {
+      students: await Student.count(),
+      schools: await School.count(),
+      paid: await Payment.count({ where: { status: 'success' } })
+    };
+    res.json({ success: true, counters });
+  } catch (err) {
+    console.error('Live counters error:', err);
+    res.json({ success: false, error: 'Failed to fetch counters' });
+  }
+});
+
+// Live recent activity
+router.get('/dashboard/live/recent', requireAdmin, async (req, res) => {
+  try {
+    const recentStudents = await Student.findAll({ include: [School], order: [['createdAt','DESC']], limit: 5 });
+    const recentPayments = await Payment.findAll({ include: [Student], order: [['createdAt','DESC']], limit: 5 });
+
+    res.json({ success: true, recentStudents, recentPayments });
+  } catch (err) {
+    console.error('Live recent error:', err);
+    res.json({ success: false, error: 'Failed to fetch recent activity' });
+  }
+});
+
+// Stats for charts (monthly payments over last 6 months)
+router.get('/dashboard/stats', requireAdmin, async (req, res) => {
+  try {
+    // Monthly payments sums for last 6 months
+    const sql = `
+      SELECT DATE_FORMAT(\`createdAt\`, '%Y-%m') as month, IFNULL(SUM(amount),0) as total
+      FROM payments
+      WHERE status = 'success' AND \`createdAt\` >= DATE_SUB(CURDATE(), INTERVAL 6 MONTH)
+      GROUP BY month
+      ORDER BY month ASC
+    `;
+
+    const [rows] = await db.query(sql);
+    const labels = rows.map(r => r.month);
+    const data = rows.map(r => Number(r.total));
+
+    // Students per state
+    const [stateRows] = await db.query(`
+      SELECT st.name as state, COUNT(s.id) as count
+      FROM students s
+      LEFT JOIN schools sc ON s.schoolId = sc.id
+      LEFT JOIN states st ON sc.stateId = st.id
+      GROUP BY st.name
+      ORDER BY count DESC
+      LIMIT 10
+    `);
+
+    res.json({ success: true, chart: { labels, data }, studentsByState: stateRows });
+  } catch (err) {
+    console.error('Stats error:', err);
+    res.json({ success: false, error: 'Failed to fetch stats' });
   }
 });
 
@@ -52,20 +137,122 @@ router.get('/users', requireSuperAdmin, async (req, res) => {
 });
 
 /* ---------------- Export ---------------- */
-router.get('/export/:type', requireAdmin, async (req, res) => {
+router.get('/admin/export-results', async (req,res)=>{
   try {
-    const { type } = req.params;
-    if (!['students', 'payments', 'schools'].includes(type)) {
-      req.flash('error', 'Invalid export type');
-      return res.redirect('/admin/dashboard');
+    const [results] = await db.query("SELECT r.id, r.student_name, r.subject, r.score FROM results r ORDER BY r.createdAt DESC");
+    const csvFields = ['id','student_name','subject','score','grade'];
+    const data = results.map(r => ({
+        id: r.id,
+        student_name: r.student_name,
+        subject: r.subject,
+        score: r.score,
+        grade: getGrade(r.score)
+    }));
+
+    const parser = new Parser({ fields: csvFields });
+    const csv = parser.parse(data);
+
+    res.header('Content-Type','text/csv');
+    res.attachment('bece_results.csv');
+    res.send(csv);
+  } catch (err) {
+    console.error('Export results error:', err);
+    req.flash('error', 'Failed to export results');
+    res.redirect('/admin/results');
+  }
+});
+
+// Export only the current results page as CSV using pagination params
+router.get('/admin/export-results-page', requireAdmin, async (req, res) => {
+  try {
+    const page = Math.max(1, parseInt(req.query.page, 10) || 1);
+    const limit = Math.min(100, Math.max(10, parseInt(req.query.limit, 10) || 20));
+    const offset = (page - 1) * limit;
+
+    const { rows } = await Result.findAndCountAll({
+      include: [Student, School],
+      order: [['createdAt', 'DESC']],
+      limit,
+      offset
+    });
+
+    const csvFields = ['id','student_name','subject','score','grade'];
+    const data = rows.map(r => ({
+      id: r.id,
+      student_name: r.student ? r.student.name : (r.Student ? r.Student.name : ''),
+      subject: r.subject,
+      score: r.score,
+      grade: getGrade(r.score)
+    }));
+
+    const parser = new Parser({ fields: csvFields });
+    const csv = parser.parse(data);
+
+    res.header('Content-Type','text/csv');
+    res.attachment(`bece_results_page_${page}.csv`);
+    res.send(csv);
+  } catch (err) {
+    console.error('Export results page error:', err);
+    req.flash('error', 'Failed to export results page');
+    res.redirect('/admin/results');
+  }
+});
+
+// Export payments CSV with optional filters: schoolId, stateId, from, to
+router.get('/admin/export-payments', requireAdmin, async (req, res) => {
+  try {
+    const { schoolId, stateId, from, to } = req.query;
+    let sql = `SELECT p.id, p.email, p.amount, p.status, p.reference, p.transactionReference, p.createdAt as created_at, s.name as school_name, st.name as state_name
+               FROM payments p
+               LEFT JOIN schools s ON p.schoolId = s.id
+               LEFT JOIN states st ON s.stateId = st.id
+               WHERE 1=1`;
+    const replacements = [];
+
+    if (schoolId) {
+      sql += ' AND p.schoolId = ?';
+      replacements.push(schoolId);
+    }
+    if (stateId) {
+      sql += ' AND st.id = ?';
+      replacements.push(stateId);
+    }
+    if (from) {
+      sql += ' AND p.`createdAt` >= ?';
+      replacements.push(from);
+    }
+    if (to) {
+      sql += ' AND p.`createdAt` <= ?';
+      replacements.push(to);
     }
 
-    // TODO: Add export logic
-    res.redirect('/admin/dashboard');
+    sql += ' ORDER BY p.`createdAt` DESC';
+
+    const [rows] = await db.query(sql, { replacements });
+
+    const csvFields = ['id','email','amount','status','reference','transactionReference','created_at','school_name','state_name'];
+    const data = rows.map(r => ({
+      id: r.id,
+      email: r.email,
+      amount: r.amount,
+      status: r.status,
+      reference: r.reference,
+      transactionReference: r.transactionReference || '',
+      created_at: r.created_at,
+      school_name: r.school_name || '',
+      state_name: r.state_name || ''
+    }));
+
+    const parser = new Parser({ fields: csvFields });
+    const csv = parser.parse(data);
+
+    res.header('Content-Type','text/csv');
+    res.attachment('bece_payments.csv');
+    res.send(csv);
   } catch (err) {
-    console.error('Export error:', err);
-    req.flash('error', 'Export failed');
-    res.redirect('/admin/dashboard');
+    console.error('Export payments error:', err);
+    req.flash('error', 'Failed to export payments');
+    res.redirect('/admin/payments');
   }
 });
 
@@ -214,15 +401,31 @@ router.get('/students/new', requireAdmin, (req, res) => {
 /* ---------------- Results ---------------- */
 router.get('/results', requireAdmin, async (req, res) => {
   try {
-    const results = await Result.findAll({
+    // Pagination params
+    const page = Math.max(1, parseInt(req.query.page, 10) || 1);
+    const limit = Math.min(100, Math.max(10, parseInt(req.query.limit, 10) || 20));
+    const offset = (page - 1) * limit;
+
+    const { count, rows } = await Result.findAndCountAll({
       include: [Student, School],
-      order: [['createdAt', 'DESC']]
+      order: [['createdAt', 'DESC']],
+      limit,
+      offset
     });
+
+    // Add grade to each result
+    const gradedResults = rows.map(result => ({
+      ...result.get({ plain: true }),
+      grade: getGrade(result.score)
+    }));
+
+    const totalPages = Math.ceil(count / limit) || 1;
 
     res.render('admin/results', {
       title: 'Manage Results',
-      results,
-      user: req.user
+      results: gradedResults,
+      user: req.user,
+      pagination: { page, limit, total: count, totalPages }
     });
   } catch (err) {
     console.error('Results error:', err);
@@ -275,12 +478,32 @@ router.post('/results', requireAdmin, async (req, res) => {
     }
 
     // Create result record; use student's schoolId to satisfy NOT NULL constraint
-    await Result.create({
+    const newResult = await Result.create({
       subject: subject.trim(),
       score: parseInt(score, 10) || 0,
       studentId: student.id,
       schoolId: student.schoolId || null
     });
+
+    // Notify student by email (non-blocking)
+    try {
+      if (student.email) {
+        const grade = getGrade(newResult.score);
+        const html = `
+          <p>Hello ${student.name || 'Student'},</p>
+          <p>A new result has been published on your account:</p>
+          <ul>
+            <li><strong>Subject:</strong> ${newResult.subject}</li>
+            <li><strong>Score:</strong> ${newResult.score}</li>
+            <li><strong>Grade:</strong> ${grade}</li>
+          </ul>
+          <p>Login to your dashboard to view all results.</p>
+        `;
+        sendEmail(student.email, 'New Result Published - Nigeria BECE Portal', html);
+      }
+    } catch (err) {
+      console.error('Failed to send result email:', err);
+    }
 
     req.flash('success', 'Result saved successfully');
     res.redirect('/admin/results');

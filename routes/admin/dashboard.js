@@ -3,7 +3,7 @@ import express from 'express';
 import { Op, fn, col, literal } from 'sequelize';
 import { Student, School, Payment, User } from '../../models/index.js';
 import { requireAdmin } from '../../middleware/roleMiddleware.js';
-import { sequelize } from '../../config/database.js'; // Make sure you import your sequelize instance
+import { sequelize } from '../../config/database.js';
 
 const router = express.Router();
 
@@ -12,55 +12,85 @@ const router = express.Router();
 // -----------------------------
 router.get('/dashboard', requireAdmin, async (req, res) => {
   try {
-    // Fetch dashboard analytics in parallel
+    const startOfMonth = new Date();
+    startOfMonth.setDate(1);
+    startOfMonth.setHours(0, 0, 0, 0);
+
+    // Parallel DB queries
     const [
       totalStudents,
       totalSchools,
       totalPayments,
       pendingPayments,
+      monthlyRevenue,
       recentStudents,
       recentPayments,
       schoolStats
     ] = await Promise.all([
+
       Student.count(),
       School.count(),
+
+      // total successful payments
       Payment.count({ where: { status: 'success' } }),
+
+      // pending payments
       Payment.count({ where: { status: 'pending' } }),
+
+      // monthly revenue total
+      Payment.sum('amount', {
+        where: {
+          status: 'success',
+          createdAt: { [Op.gte]: startOfMonth }
+        }
+      }),
+
+      // Latest students with their schools
       Student.findAll({
         limit: 5,
         order: [['createdAt', 'DESC']],
-        include: [School]
+        include: [
+          { model: School, attributes: ['name'] }
+        ]
       }),
+
+      // latest successful payments
       Payment.findAll({
         limit: 5,
         order: [['createdAt', 'DESC']],
-        include: [Student, School],
-        where: { status: 'success' }
+        where: { status: 'success' },
+        include: [
+          { model: Student, attributes: ['name'] },
+          { model: School, attributes: ['name'] }
+        ]
       }),
-      // Use a subquery literal to get student counts per school. This avoids Sequelize
-      // generating a subquery that references the Students alias inside the inner
-      // SELECT (which caused "Unknown column 'Students.id'" errors).
+
+      // Students count per school
       School.findAll({
         attributes: [
           'id',
           'name',
-          [sequelize.literal('(SELECT COUNT(*) FROM students WHERE students.schoolId = School.id)'), 'studentCount']
+          [
+            sequelize.literal(
+              '(SELECT COUNT(*) FROM students WHERE students.schoolId = School.id)'
+            ),
+            'studentCount'
+          ]
         ],
         order: [[literal('studentCount'), 'DESC']],
         limit: 5
       })
     ]);
 
-    // Render dashboard page
     res.render('admin/dashboard', {
       title: 'Admin Dashboard',
       admin: req.user,
-      messages: req.flash(),
       analytics: {
-        totalStudents: totalStudents || 0,
-        totalSchools: totalSchools || 0,
-        totalPayments: totalPayments || 0,
-        pendingPayments: pendingPayments || 0,
+        totalStudents,
+        totalSchools,
+        totalPayments,
+        pendingPayments,
+        monthlyRevenue: monthlyRevenue || 0,
         recentStudents,
         recentPayments,
         schoolStats
@@ -69,8 +99,6 @@ router.get('/dashboard', requireAdmin, async (req, res) => {
 
   } catch (err) {
     console.error('❌ Dashboard error:', err);
-    // Render the generic error view (views/error.ejs) because views/admin/error
-    // does not exist in the project and would cause a secondary crash.
     res.status(500).render('error', { message: 'Server Error' });
   }
 });

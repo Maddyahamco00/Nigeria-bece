@@ -1,0 +1,17 @@
+<div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+  <div style="text-align: center; margin-bottom: 20px;">
+    <h2 style="color: #16a34a;">New Result Published</h2>
+  </div>
+
+  <div style="background-color: #f0fdf4; padding: 20px; border-radius: 8px;">
+    <p>Hello <strong><%= student?.name || 'Student' %></strong>,</p>
+    <p>Your new BECE result has been published. You can view it using your BECE code or by logging in to your account.</p>
+
+    <div style="margin-top: 12px;">
+      <a href="<%= process.env.BASE_URL %>/students/results" 
+         style="background-color: #16a34a; color: white; padding: 10px 20px; text-decoration: none; border-radius: 6px;">
+        View Result
+      </a>
+    </div>
+  </div>
+</div>

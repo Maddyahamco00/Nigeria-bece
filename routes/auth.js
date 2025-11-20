@@ -2,9 +2,11 @@
 import express from 'express';
 import passport from 'passport';
 import { User, Student, State, LGA, School } from '../models/index.js';
+import sendEmail, { sendTemplateEmail } from '../utils/sendEmail.js';
 import bcrypt from 'bcryptjs';
 import crypto from 'crypto';
 import { Op } from 'sequelize';
+import db from '../config/database.js';
 
 const router = express.Router();
 
@@ -14,7 +16,8 @@ const router = express.Router();
 router.get('/login', (req, res) => {
   res.render('auth/login', {
     title: 'Login Portal',
-    messages: req.flash()
+    messages: req.flash(),
+    logged_out: req.query.logged_out
   });
 });
 
@@ -60,6 +63,58 @@ router.post('/admin',
 );
 
 /* ===== STUDENT AUTHENTICATION ===== */
+
+// Show Registration Form
+router.get('/register', async (req, res) => {
+    const { payment_ref } = req.query;
+
+    let preData = {};
+    if(payment_ref){
+      const [rows] = await db.query(
+        "SELECT * FROM pre_reg_payments WHERE payment_reference = ? AND payment_status = 'Paid'",
+        { replacements: [payment_ref] }
+      );
+      if(rows.length > 0){
+        preData = rows[0];
+      } else {
+        return res.send("Invalid or expired payment reference.");
+      }
+    }
+
+    res.render('register', { preData, error: null });
+});
+
+// Handle Registration Submission
+router.post('/register', async (req, res) => {
+    const { name, email, guardian_number, password, payment_ref } = req.body;
+
+    if(!name || !email || !guardian_number || !password){
+        return res.render('register', { preData: req.body, error: "All fields are required!" });
+    }
+
+    try {
+        // Insert student (use createdAt column compatible with Sequelize timestamps)
+        await db.query(
+          "INSERT INTO students (name, email, guardian_number, password, `createdAt`) VALUES (?, ?, ?, ?, NOW())",
+          { replacements: [name, email, guardian_number, password] }
+        );
+
+        // Optional: mark payment as linked
+        await db.query(
+          "UPDATE pre_reg_payments SET payment_status='Registered' WHERE payment_reference=?",
+          { replacements: [payment_ref] }
+        );
+
+        // Auto-login (session)
+        req.session.user = { name, email }; 
+
+        res.redirect('/dashboard');
+
+    } catch (err) {
+        console.log(err);
+        res.render('register', { preData: req.body, error: "Registration failed!" });
+    }
+});
 
 // Student registration page
 router.get('/student/register', async (req, res) => {
@@ -169,6 +224,21 @@ router.post('/forgot-password', async (req, res) => {
     const resetUrl = `${process.env.BASE_URL}/auth/reset-password/${resetToken}?type=${userType}`;
     console.log('Password reset URL:', resetUrl);
 
+    // Send reset link by email (non-blocking)
+    try {
+      if (user.email) {
+        const html = `
+          <p>Hello,</p>
+          <p>A password reset was requested for your account. Click the link below to reset your password (valid for 1 hour):</p>
+          <p><a href="${resetUrl}">Reset your password</a></p>
+          <p>If you did not request this, please ignore this email.</p>
+        `;
+        sendEmail(user.email, 'Password Reset - Nigeria BECE Portal', html);
+      }
+    } catch (err) {
+      console.error('Failed to send reset email:', err);
+    }
+
     req.flash('success', 'Password reset link generated. Check console for demo.');
     res.redirect('/auth/forgot-password');
   } catch (err) {
@@ -259,6 +329,17 @@ router.post('/reset-password/:token', async (req, res) => {
     await user.save();
 
     req.flash('success', 'Password reset successful. You can now login with your new password.');
+    try {
+      if (user.email) {
+        const html = `
+          <p>Hello,</p>
+          <p>Your password has been changed successfully. If you did not perform this action, contact support immediately.</p>
+        `;
+        sendEmail(user.email, 'Password Changed - Nigeria BECE Portal', html);
+      }
+    } catch (err) {
+      console.error('Failed to send password changed email:', err);
+    }
     res.redirect(userType === 'admin' ? '/auth/admin' : '/auth/student/login');
   } catch (err) {
     console.error('Reset password error:', err);
@@ -271,13 +352,20 @@ router.post('/reset-password/:token', async (req, res) => {
 
 router.get('/logout', (req, res) => {
   req.logout((err) => {
-    if (err) console.error('Admin logout error:', err);
+    if (err) console.error('Logout error:', err);
 
-    req.session.destroy((err) => {
-      if (err) console.error('Student session destroy error:', err);
-      req.flash('success', 'Logged out successfully');
-      res.redirect('/auth/login');
-    });
+    // If a session exists, destroy it. Redirect with a query flag so
+    // the login page can show a friendly message without relying on flash.
+    const redirectUrl = '/auth/login?logged_out=1';
+
+    if (req.session) {
+      req.session.destroy((err) => {
+        if (err) console.error('Session destroy error:', err);
+        res.redirect(redirectUrl);
+      });
+    } else {
+      res.redirect(redirectUrl);
+    }
   });
 });
 

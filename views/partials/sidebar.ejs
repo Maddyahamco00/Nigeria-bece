@@ -1,6 +1,6 @@
 <!-- views/partials/sidebar.ejs -->
-<aside id="sidebar" class="d-flex flex-column vh-100 p-4 shadow-lg" 
-       style="width: 250px; transition: transform 0.3s ease;">
+<aside id="sidebar" class="d-none d-lg-flex flex-column vh-100 p-4 shadow-lg" 
+  style="width: 250px; transition: transform 0.3s ease;">
   <!-- Logo + Title -->
   <div class="mb-5 d-flex align-items-center">
     <!--img src="/images/logo.svg" alt="Logo" class="me-3" style="height: 40px;"-->
@@ -14,3 +14,19 @@
 </aside>
 
 <!-- Mobile: the header's collapse now contains the sidebar links, so remove the separate mobile toggle -->
+
+<script>
+  // Close sidebar when clicking outside on small screens (no-op on lg+ where sidebar is visible)
+  document.addEventListener('click', (e) => {
+    const sidebar = document.getElementById('sidebar');
+    if (!sidebar) return;
+    if (window.innerWidth >= 992) return; // lg breakpoint
+    if (sidebar.contains(e.target)) return;
+    // collapse any open navbar collapse so mobile nav hides
+    const navCollapse = document.getElementById('mainNavbar');
+    if (navCollapse && navCollapse.classList.contains('show')) {
+      // Use Bootstrap collapse toggle if available
+      try { new bootstrap.Collapse(navCollapse).hide(); } catch (err) { /* ignore */ }
+    }
+  });
+</script>

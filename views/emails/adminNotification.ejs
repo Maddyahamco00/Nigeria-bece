@@ -1,0 +1,14 @@
+<div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+  <h3 style="color: #2563eb;">New Payment Notification</h3>
+  <div style="background-color: #f8fafc; padding: 20px; border-radius: 8px;">
+    <p>A new payment has been received:</p>
+    <div style="background-color: white; padding: 15px; border-radius: 6px; margin: 15px 0;">
+      <p><strong>Student:</strong> <%= student?.name || 'N/A' %></p>
+      <p><strong>Email:</strong> <%= payment?.email || 'N/A' %></p>
+      <p><strong>Amount:</strong> ₦<%= (payment?.amount || 0).toLocaleString() %></p>
+      <p><strong>Reference:</strong> <%= payment?.reference || payment?.transactionReference || 'N/A' %></p>
+      <p><strong>BECE Code:</strong> <%= payment?.code || 'N/A' %></p>
+      <p><strong>Time:</strong> <%= new Date(payment?.createdAt || Date.now()).toLocaleString() %></p>
+    </div>
+  </div>
+</div>

@@ -20,6 +20,10 @@ const Payment = sequelize.define(
       unique: true,
       allowNull: false,
     },
+    transactionReference: {
+      type: DataTypes.STRING,
+      allowNull: true,
+    },
     code: {
       type: DataTypes.STRING,
       allowNull: true,

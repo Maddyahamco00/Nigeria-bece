@@ -19,6 +19,7 @@ import schoolRoutes from './routes/schoolRoutes.js';
 import studentRoutes from './routes/studentRoutes.js';
 import authRoutes from './routes/auth.js';
 import paymentRoutes from './routes/payment.js';
+import webhookRoutes from './routes/webhook.js';
 
 // Admin route group (single consolidated router)
 import adminRoutes from './routes/admin.js';
@@ -64,6 +65,8 @@ app.use((req, res, next) => {
   res.locals.messages = req.flash();
   res.locals.user = req.user || null;
   res.locals.title = 'Nigeria BECE Portal';
+  // expose current path for active link highlighting in templates
+  res.locals.currentPath = req.path || req.originalUrl || '';
   next();
 });
 
@@ -90,6 +93,7 @@ app.use('/', publicRoutes);
 app.use('/students', studentRoutes);
 app.use('/auth', authRoutes);
 app.use('/payment', paymentRoutes);
+app.use('/webhook', webhookRoutes);
 app.use('/api', apiRoutes);
 app.use('/api', schoolRoutes);
 

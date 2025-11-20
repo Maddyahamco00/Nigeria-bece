@@ -6,6 +6,9 @@
       <div class="col-md-8 text-center">
         <h1 class="fw-bold text-primary mb-4">BECE Portal Login</h1>
         <p class="lead mb-5">Select your login portal</p>
+        <% if (logged_out) { %>
+          <div class="alert alert-success">You have been logged out successfully.</div>
+        <% } %>
         
         <div class="row g-4">
           <!-- Admin Login Card -->

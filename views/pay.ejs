@@ -1,0 +1,44 @@
+<div class="container py-5">
+  <h1 class="h3 mb-4">Make a Payment (Demo)</h1>
+
+  <div id="alert" style="display:none"></div>
+
+  <form id="payForm" class="row g-3" onsubmit="return false;">
+    <div class="col-md-6">
+      <label class="form-label">Full name</label>
+      <input type="text" id="name" class="form-control" placeholder="Jane Doe" required>
+    </div>
+
+    <div class="col-md-6">
+      <label class="form-label">Email</label>
+      <input type="email" id="email" class="form-control" placeholder="you@example.com" required>
+    </div>
+
+    <div class="col-md-6">
+      <label class="form-label">Guardian phone</label>
+      <input type="text" id="guardian" class="form-control" placeholder="0803xxxxxxx" required>
+    </div>
+
+    <div class="col-md-3">
+      <label class="form-label">Amount (₦)</label>
+      <input type="number" id="amount" class="form-control" value="1000" required>
+    </div>
+
+    <div class="col-md-3">
+      <label class="form-label">School ID (optional)</label>
+      <input type="number" id="schoolId" class="form-control" placeholder="1">
+    </div>
+
+    <div class="col-12">
+      <button id="payBtn" class="btn btn-primary">Pay with Paystack (Test)</button>
+    </div>
+  </form>
+</div>
+
+<!-- Paystack inline JS -->
+<script src="https://js.paystack.co/v1/inline.js"></script>
+<script>
+  // Expose public key to client script
+  window.PAYSTACK_PUBLIC_KEY = '<%= typeof publicKey !== "undefined" ? publicKey : "" %>';
+</script>
+<script src="/js/pay-init.js"></script>

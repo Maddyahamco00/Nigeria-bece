@@ -40,10 +40,11 @@
               </tr>
             </thead>
             <tbody>
+              <% const currentPage = pagination?.page || 1; const perPage = pagination?.limit || 20; %>
               <% results.forEach((result, index) => { %>
                 <tr>
-                  <td><%= index + 1 %></td>
-                  <td class="fw-semibold text-primary"><%= result.student ? result.student.name : 'N/A' %></td>
+                  <td><%= (currentPage - 1) * perPage + index + 1 %></td>
+                  <td class="fw-semibold text-primary"><%= result.Student ? result.Student.name : (result.student ? result.student.name : 'N/A') %></td>
                   <td><%= result.school ? result.school.name : 'N/A' %></td>
                   <td><%= result.subject %></td>
                   <td><%= result.score %></td>
@@ -77,6 +78,26 @@
             </tbody>
           </table>
         </div>
+        <!-- Pagination Controls -->
+        <% if (pagination && pagination.totalPages > 1) { %>
+          <nav aria-label="Results pagination" class="mt-3">
+            <ul class="pagination justify-content-center">
+              <li class="page-item <%= pagination.page <= 1 ? 'disabled' : '' %>">
+                <a class="page-link" href="?page=<%= pagination.page - 1 %>&limit=<%= pagination.limit %>">Previous</a>
+              </li>
+
+              <% for (let p = 1; p <= pagination.totalPages; p++) { %>
+                <li class="page-item <%= p === pagination.page ? 'active' : '' %>">
+                  <a class="page-link" href="?page=<%= p %>&limit=<%= pagination.limit %>"><%= p %></a>
+                </li>
+              <% } %>
+
+              <li class="page-item <%= pagination.page >= pagination.totalPages ? 'disabled' : '' %>">
+                <a class="page-link" href="?page=<%= pagination.page + 1 %>&limit=<%= pagination.limit %>">Next</a>
+              </li>
+            </ul>
+          </nav>
+        <% } %>
       </div>
     </div>
   </main>

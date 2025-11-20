@@ -1,6 +1,7 @@
  // controllers/paymentController.js
 import axios from 'axios';
 import { Payment, Student, School } from '../models/index.js';
+import sendEmail, { sendTemplateEmail } from '../utils/sendEmail.js';
 import { generateStudentCode } from '../utils/codeGenerator.js';
 
 const PAYSTACK_SECRET_KEY = process.env.PAYSTACK_SECRET_KEY;
@@ -41,7 +42,8 @@ export const initializePayment = async (req, res) => {
       
       return res.json({
         authorization_url: `/payment/success?code=${beceCode}&reference=${reference}`,
-        reference
+        reference,
+        publicKey: process.env.PAYSTACK_PUBLIC_KEY || ''
       });
     }
 
@@ -73,7 +75,7 @@ export const initializePayment = async (req, res) => {
       schoolId: schoolId || null
     });
     
-    res.json({ authorization_url, reference });
+    res.json({ authorization_url, reference, publicKey: process.env.PAYSTACK_PUBLIC_KEY || '' });
     
   } catch (error) {
     console.error("Payment Init Error:", error.response?.data || error.message);
@@ -141,6 +143,12 @@ export const verifyPayment = async (req, res) => {
             schoolId: metadata?.schoolId || null
           }
         });
+        // Send payment confirmation email
+        try {
+          await sendTemplateEmail(customer.email, 'paymentSuccess', { payment: { amount: amount/100, reference, code: beceCode, createdAt: new Date() }, student: { name: customer.first_name } });
+        } catch (err) {
+          console.error('Failed to send payment success email:', err);
+        }
       }
       
       return res.json({

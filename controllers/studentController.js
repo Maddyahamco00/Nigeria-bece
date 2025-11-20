@@ -1,6 +1,8 @@
 // controllers/studentController.js
 import bcrypt from 'bcryptjs';
 import { Student, State, LGA, School, Result } from '../models/index.js';
+import db from '../config/database.js';
+import sendEmail, { sendTemplateEmail } from '../utils/sendEmail.js';
 
 // Render Student Registration Page
 export const renderRegister = async (req, res) => {
@@ -22,7 +24,7 @@ export const registerStudent = async (req, res) => {
   try {
     console.log("📥 Incoming form data:", req.body);
 
-  const { name, email, password, confirmPassword, stateId, lgaId, schoolId, gender, dob, guardianPhone, payment } = req.body;
+  const { name, email, password, confirmPassword, stateId, lgaId, schoolId, gender, dob, guardianPhone, payment, payment_ref } = req.body;
 
     // Basic validation - only check absolutely required fields
     if (!name || !password || !confirmPassword || !stateId || !lgaId || !schoolId) {
@@ -40,6 +42,13 @@ export const registerStudent = async (req, res) => {
     if (password.length < 6) {
       console.log("❌ Password too short");
       req.flash('error', 'Password must be at least 6 characters');
+      return res.redirect('/students/register');
+    }
+
+    // Guardian phone server-side validation: accept +234xxxxxxxxxx or 0xxxxxxxxxx
+    if (guardianPhone && !/^(?:\+234|0)\d{10}$/.test(guardianPhone)) {
+      console.log('❌ Invalid guardian phone:', guardianPhone);
+      req.flash('error', 'Guardian phone must be in +234xxxxxxxxxx or 0xxxxxxxxxx format');
       return res.redirect('/students/register');
     }
 
@@ -136,14 +145,63 @@ export const registerStudent = async (req, res) => {
     // Verify the student was saved
     const savedStudent = await Student.findByPk(student.id);
     console.log("✅ Student verified in database:", savedStudent ? "YES" : "NO");
-    if (savedStudent) {
-      console.log("Final student record:", savedStudent.toJSON());
+    if (savedStudent) console.log("Final student record:", savedStudent.toJSON());
+
+    // If a payment_ref was supplied, mark the pre-registration as Registered and set payment status
+    if (payment_ref) {
+      try {
+        await db.query(
+          `UPDATE pre_reg_payments SET payment_status = 'Registered' WHERE payment_reference = ?`,
+          { replacements: [payment_ref] }
+        );
+        student.paymentStatus = 'Paid';
+        await student.save();
+        console.log('✅ Linked payment_ref to student and updated payment status');
+      } catch (err) {
+        console.error('Error linking payment_ref:', err);
+      }
     }
 
     console.log("🎉 Registration process completed successfully!");
-    
-    req.flash('success', `Registration successful! Your Registration Number: <strong>${regNumber}</strong>. Please proceed to login.`);
-    return res.redirect('/students/login');
+
+    // Auto-login the student by using Passport's req.login (if available) and populate legacy session
+    return new Promise((resolve) => {
+      if (typeof req.login === 'function') {
+        req.login(student, async (err) => {
+          if (err) {
+            console.error('Auto-login error:', err);
+            req.flash('success', `Registration successful! Your Registration Number: <strong>${regNumber}</strong>. Please login.`);
+            res.redirect('/students/login');
+            return resolve();
+          }
+
+          // Populate legacy session.student used across the app
+          req.session.student = {
+            id: student.id,
+            name: student.name,
+            regNumber: student.regNumber,
+            paymentStatus: student.paymentStatus || 'pending',
+            email: student.email || ''
+          };
+
+          req.flash('success', `Welcome ${student.name}! Registration complete.`);
+          res.redirect('/students/dashboard');
+          return resolve();
+        });
+      } else {
+        // Fallback: set session manually
+        req.session.student = {
+          id: student.id,
+          name: student.name,
+          regNumber: student.regNumber,
+          paymentStatus: student.paymentStatus || 'pending',
+          email: student.email || ''
+        };
+        req.flash('success', `Welcome ${student.name}! Registration complete.`);
+        res.redirect('/students/dashboard');
+        return resolve();
+      }
+    });
 
   } catch (err) {
     console.error("💥 Registration process failed with error:");
@@ -302,6 +360,19 @@ export const updateProfile = async (req, res) => {
 
     req.flash('success', 'Profile updated successfully');
     res.redirect('/students/profile');
+    // Send notification email about profile change (non-blocking)
+    try {
+      if (student.email) {
+        const html = `
+          <p>Hello ${student.name},</p>
+          <p>Your profile details were updated successfully on Nigeria BECE Portal.</p>
+          <p>If you did not make this change, contact support immediately.</p>
+        `;
+        sendEmail(student.email, 'Profile Updated - Nigeria BECE Portal', html);
+      }
+    } catch (err) {
+      console.error('Failed to send profile update email:', err);
+    }
   } catch (err) {
     console.error('❌ Profile update error:', err);
     req.flash('error', 'Error updating profile');

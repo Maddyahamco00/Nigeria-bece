@@ -20,7 +20,8 @@ export const isAuthenticated = (req, res, next) => {
 
 // Middleware to check if user is an admin
 export const isAdmin = (req, res, next) => {
-  if (req.user && req.user.role === 'admin') {
+  // Allow both 'admin' and 'superadmin' roles to access admin sections
+  if (req.user && (req.user.role === 'admin' || req.user.role === 'superadmin')) {
     return next();
   }
   req.flash('error', 'Admins only');

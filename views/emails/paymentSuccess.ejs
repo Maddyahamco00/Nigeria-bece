@@ -1,0 +1,21 @@
+<div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+  <div style="text-align: center; margin-bottom: 20px;">
+    <h2 style="color: #16a34a;">Payment Successful! 🎉</h2>
+  </div>
+
+  <div style="background-color: #f0fdf4; padding: 20px; border-radius: 8px; border-left: 4px solid #16a34a;">
+    <p>Hello <strong><%= student?.name || 'Student' %></strong>,</p>
+    <p>Your payment has been processed successfully. Here are your payment details:</p>
+
+    <div style="background-color: white; padding: 15px; border-radius: 6px; margin: 15px 0;">
+      <p><strong>Amount:</strong> ₦<%= (payment?.amount || 0).toLocaleString() %></p>
+      <p><strong>Reference:</strong> <%= payment?.reference || payment?.transactionReference || 'N/A' %></p>
+      <% if (payment?.code) { %>
+      <p><strong>BECE Code:</strong> <code style="background: #f1f5f9; padding: 4px 8px; border-radius: 4px;"><%= payment.code %></code></p>
+      <% } %>
+      <p><strong>Date:</strong> <%= new Date(payment?.createdAt || Date.now()).toLocaleString() %></p>
+    </div>
+
+    <p>Keep your BECE code safe as you'll need it to check your results.</p>
+  </div>
+</div>

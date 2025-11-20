@@ -8,6 +8,7 @@ import {
   renderDashboard
 } from '../controllers/studentController.js';
 import { Student, School, State, LGA, Result, Payment } from '../models/index.js';
+import db from '../config/database.js';
 
 const router = express.Router();
 
@@ -46,13 +47,31 @@ router.get('/', (req, res) => {
 });
 
 // Controller-based routes
-// Student registration page
+// Student registration page (supports payment_ref for pre-filling)
 router.get('/register', async (req, res) => {
   try {
     const states = await State.findAll({ order: [['name', 'ASC']] }); // fetch from DB
+
+    const { payment_ref } = req.query;
+    let preData = {};
+
+    if (payment_ref) {
+      try {
+        const [rows] = await db.query(
+          `SELECT * FROM pre_reg_payments WHERE payment_reference = ? AND payment_status = 'Paid' LIMIT 1`,
+          { replacements: [payment_ref] }
+        );
+        if (rows.length > 0) preData = rows[0];
+      } catch (err) {
+        console.error('Error loading pre-registration data:', err);
+      }
+    }
+
     res.render('auth/student-registration', {
       title: 'Student Registration',
-      states, // 👈 pass states here
+      states,
+      preData,
+      messages: req.flash()
     });
   } catch (err) {
     console.error(err);

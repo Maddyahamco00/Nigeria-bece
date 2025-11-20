@@ -1,3 +1,4 @@
+// scripts/check_views.cjs
 const fs = require('fs');
 const path = require('path');
 
