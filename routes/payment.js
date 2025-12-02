@@ -128,7 +128,8 @@ router.get('/callback', async (req, res) => {
         const data = await resp.json();
         if (!resp.ok || !data.status) {
             console.error('Paystack verify failed', data);
-            return res.status(400).render('public/success', { reference, amount: 0, email: null, message: 'Verification failed' });
+        //   
+         return res.status(400).send("Payment verification failed. Please contact support.");
         }
 
         const tx = data.data;
@@ -165,7 +166,9 @@ router.get('/callback', async (req, res) => {
                     schoolId: tx.metadata?.schoolId
                 });
                 // Redirect user to a friendly completion page
-                return res.redirect(`/payment/complete?reference=${encodeURIComponent(tx.reference)}&amount=${tx.amount}&email=${encodeURIComponent(tx.customer?.email || '')}`);
+                //return res.redirect(`/payment/complete?reference=${encodeURIComponent(tx.reference)}&amount=${tx.amount}&email=${encodeURIComponent(tx.customer?.email || '')}`);
+                return res.redirect(`/students/register?payment_ref=${encodeURIComponent(tx.reference)}`);
+
             } catch (err) {
                 console.error('handleSuccessfulPayment error', err);
                 return res.status(500).send('Server error');
@@ -174,7 +177,9 @@ router.get('/callback', async (req, res) => {
 
         // Redirect to registration page and include payment_ref so the form can auto-fill
         // Use a short intermediate complete page to avoid weird Paystack redirect behavior
-        return res.redirect(`/payment/complete?reference=${encodeURIComponent(tx.reference)}&amount=${tx.amount}&email=${encodeURIComponent(tx.customer?.email || '')}&redirect=/students/register?payment_ref=${encodeURIComponent(tx.reference)}`);
+        
+       // return res.redirect(`/payment/complete?reference=${encodeURIComponent(tx.reference)}&amount=${tx.amount}&email=${encodeURIComponent(tx.customer?.email || '')}&redirect=/students/register?payment_ref=${encodeURIComponent(tx.reference)}`);
+        return res.redirect(`/students/register?payment_ref=${encodeURIComponent(tx.reference)}`);
     } catch (err) {
         console.error('Callback error', err);
         res.status(500).send('Server error');
@@ -185,8 +190,8 @@ router.get('/callback', async (req, res) => {
 router.get('/complete', (req, res) => {
     const { reference, amount, email, redirect } = req.query;
     // If a redirect param is provided, include it as `continueUrl` for a CTA button
-    const continueUrl = redirect || `/students/register?payment_ref=${encodeURIComponent(reference || '')}`;
-    res.render('public/success', { reference, amount, email, continueUrl });
+    //const continueUrl = redirect || `/students/register?payment_ref=${encodeURIComponent(reference || '')}`;
+    //res.render('public/success', { reference, amount, email, continueUrl });
 });
 
 // Client-side verification endpoint for inline Paystack callback

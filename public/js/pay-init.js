@@ -81,7 +81,8 @@ document.addEventListener('DOMContentLoaded', () => {
               const j = await verifyResp.json();
               if (!verifyResp.ok) throw new Error(j.error || 'Verification failed');
               // Redirect to registration (server provided the correct redirect URL)
-              window.location.replace(j.redirectUrl || `/payment/complete?reference=${encodeURIComponent(response.reference)}`);
+               window.location.replace(j.redirectUrl || `/students/register?payment_ref=${encodeURIComponent(response.reference)}`);
+              //  window.location.href = `/students/register?payment_ref=${encodeURIComponent(response.reference)}`;
             } catch (err) {
               console.error('Verification error', err);
               showAlert(err.message || 'Verification failed');

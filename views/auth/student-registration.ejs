@@ -26,42 +26,42 @@
     <% } %>
 
     <form action="/students/register" method="POST" class="row g-3" id="registrationForm">
-      <% const pre = (typeof preData !== 'undefined' && preData) ? preData : {} %>
-      <input type="hidden" name="payment_ref" value="<%= pre.payment_reference || '' %>">
       <!-- Inline client-side error placeholder -->
       <div id="formError" class="alert alert-danger d-none w-100" role="alert"></div>
 
+      <input type="hidden" name="payment_ref" value="<%= preData.payment_reference || '' %>">
+
       <!-- Full Name -->
       <div class="col-md-6">
-        <label for="name" class="form-label fw-bold">Full Name *</label>
-         <input id="name" type="text" name="name" class="form-control form-control-lg" 
-           placeholder="Enter full name" value="<%= pre.name || '' %>" required>
+        <label for="name" class="form-label fw-bold">Full Name</label>
+        <input id="name" type="text" name="name" class="form-control form-control-lg" 
+               placeholder="Enter full name" value="<%= preData.name || '' %>" required>
       </div>
 
       <!-- Email -->
       <div class="col-md-6">
-        <label for="email" class="form-label fw-bold">Email Address *</label>
-         <input id="email" type="email" name="email" class="form-control form-control-lg" 
-           placeholder="Enter email" value="<%= pre.email || '' %>" required>
+        <label for="email" class="form-label fw-bold">Email Address</label>
+        <input id="email" type="email" name="email" class="form-control form-control-lg" 
+               placeholder="Enter email" value="<%= preData.email || '' %>" required>
       </div>
 
       <!-- Password -->
       <div class="col-md-6">
-        <label for="password" class="form-label fw-bold">Password *</label>
+        <label for="password" class="form-label fw-bold">Password</label>
         <input id="password" type="password" name="password" class="form-control form-control-lg" 
                placeholder="Enter password (min. 6 characters)" required minlength="6">
       </div>
 
       <!-- Confirm Password -->
       <div class="col-md-6">
-        <label for="confirmPassword" class="form-label fw-bold">Confirm Password *</label>
+        <label for="confirmPassword" class="form-label fw-bold">Confirm Password</label>
         <input id="confirmPassword" type="password" name="confirmPassword" class="form-control form-control-lg" 
                placeholder="Confirm password" required minlength="6">
       </div>
 
       <!-- Gender -->
       <div class="col-md-6">
-        <label for="gender" class="form-label fw-bold">Gender *</label>
+        <label for="gender" class="form-label fw-bold">Gender</label>
         <select id="gender" name="gender" class="form-select form-select-lg" required>
           <option value="">Select Gender</option>
           <option value="Male">Male</option>
@@ -71,20 +71,20 @@
 
       <!-- Date of Birth -->
       <div class="col-md-6">
-        <label for="dob" class="form-label fw-bold">Date of Birth *</label>
+        <label for="dob" class="form-label fw-bold">Date of Birth</label>
         <input type="date" id="dob" name="dob" class="form-control form-control-lg" required>
       </div>
 
       <!-- Guardian Phone -->
       <div class="col-md-6">
-        <label for="guardianPhone" class="form-label fw-bold">Guardian Phone *</label>
-         <input type="text" id="guardianPhone" name="guardianPhone" class="form-control form-control-lg" 
-           placeholder="Enter phone number" value="<%= pre.guardian_number || '' %>" required>
+        <label for="guardianPhone" class="form-label fw-bold">Guardian Phone</label>
+        <input type="text" id="guardianPhone" name="guardianPhone" class="form-control form-control-lg" 
+               placeholder="Enter phone number" value="<%= preData.guardian_number || '' %>" required>
       </div>
 
       <!-- State -->
       <div class="col-md-6">
-        <label for="state" class="form-label fw-bold">State *</label>
+        <label for="state" class="form-label fw-bold">State</label>
         <select id="state" name="stateId" class="form-select form-select-lg" required>
           <option value="">Select State</option>
           <% states.forEach(state => { %>
@@ -95,7 +95,7 @@
 
       <!-- LGA -->
       <div class="col-md-6">
-        <label for="lga" class="form-label fw-bold">LGA *</label>
+        <label for="lga" class="form-label fw-bold">LGA</label>
         <select id="lga" name="lgaId" class="form-select form-select-lg" required disabled>
           <option value="">Select LGA</option>
         </select>
@@ -103,10 +103,24 @@
 
       <!-- School -->
       <div class="col-md-6">
-        <label for="school" class="form-label fw-bold">School *</label>
+        <label for="school" class="form-label fw-bold">School</label>
         <select id="school" name="schoolId" class="form-select form-select-lg" required disabled>
           <option value="">Select School</option>
         </select>
+      </div>
+
+      <!-- Subject Selection -->
+       <div class="form-group col-md-12">
+        <label for="subjects" class="form-label fw-bold">Select Subjects </label>
+        <div class="d-flex flex-wrap gap-3">
+          <% subjects.forEach(subject => { %>
+            <label>
+        <input type="checkbox" name="subjects" value="<%= subject.id %>">
+        <%= (subject.subject_name === 'Mathematics' || subject.subject_name === 'English') ? 'checked' : '' %>
+        <%= subject.subject_name %>
+        </label><br>
+          <% }) %>
+        </div>
       </div>
 
       <!-- Payment Confirmation -->
@@ -121,7 +135,7 @@
 
       <!-- Submit -->
       <div class="col-12 d-grid mt-3">
-        <button type="button" id="registerBtn" class="btn btn-primary btn-lg fw-bold shadow-sm rounded-pill">
+        <button type="submit" class="btn btn-primary btn-lg fw-bold shadow-sm rounded-pill">
           <i class="bi bi-person-plus me-2"></i> Register Now
         </button>
       </div>
@@ -198,17 +212,16 @@ lgaSelect.addEventListener('change', async (e) => {
   }
 });
 
-// Form validation (inline errors) + payment-first redirect
+// Form validation (inline errors)
 form.addEventListener('submit', (e) => {
-  e.preventDefault();
   const password = document.getElementById('password');
   const confirmPassword = document.getElementById('confirmPassword');
-  const guardianPhone = document.getElementById('guardianPhone');
   const errorEl = document.getElementById('formError');
   errorEl.classList.add('d-none');
   errorEl.textContent = '';
 
   if (password.value !== confirmPassword.value) {
+    e.preventDefault();
     errorEl.textContent = 'Passwords do not match!';
     errorEl.classList.remove('d-none');
     errorEl.focus();
@@ -216,67 +229,18 @@ form.addEventListener('submit', (e) => {
   }
 
   if (password.value.length < 6) {
+    e.preventDefault();
     errorEl.textContent = 'Password must be at least 6 characters long!';
     errorEl.classList.remove('d-none');
     errorEl.focus();
     return false;
   }
 
-  // Accept Nigerian formats: +234xxxxxxxxxx or 0xxxxxxxxxx (10 digits after code)
-  if (!/^(?:\+234|0)\d{10}$/.test(guardianPhone.value)) {
-    errorEl.textContent = 'Guardian phone must be in +234xxxxxxxxxx or 0xxxxxxxxxx format.';
-    errorEl.classList.remove('d-none');
-    guardianPhone.focus();
-    return false;
-  }
+  if (!/^\d+$/.test(guardianPhone)) {
+  req.flash('error', 'Guardian phone must contain digits only');
+  return res.redirect('/students/register');
+}
 
-  // If payment_ref already exists (user returned from payment), submit the form normally
-  const paymentRefInput = document.querySelector('input[name="payment_ref"]');
-  const paymentRef = paymentRefInput ? paymentRefInput.value : '';
-  if (paymentRef && paymentRef.length > 0) {
-    form.submit();
-    return true;
-  }
-
-  // Otherwise redirect to payment page with prefilled query params
-  const name = encodeURIComponent(document.getElementById('name').value || '');
-  const email = encodeURIComponent(document.getElementById('email').value || '');
-  const guardian = encodeURIComponent(document.getElementById('guardianPhone').value || '');
-  const schoolId = encodeURIComponent(document.getElementById('school').value || '');
-  const amount = 1000; // default amount (adjust if you have dynamic pricing)
-
-  window.location.href = `/payment/pay?name=${name}&email=${email}&guardian=${guardian}&amount=${amount}&schoolId=${schoolId}`;
-  return false;
-});
-
-// Register button handler: redirect to payment page when no payment_ref
-document.getElementById('registerBtn').addEventListener('click', (e) => {
-  const paymentRefInput = document.querySelector('input[name="payment_ref"]');
-  const paymentRef = paymentRefInput ? paymentRefInput.value : '';
-  if (paymentRef && paymentRef.length > 0) {
-    // Already paid — submit form
-    form.submit();
-    return;
-  }
-
-  // Basic guardian validation before redirecting to payment
-  const guardianPhoneVal = document.getElementById('guardianPhone').value || '';
-  if (!/^(?:\+234|0)\d{10}$/.test(guardianPhoneVal)) {
-    const errorEl = document.getElementById('formError');
-    errorEl.textContent = 'Guardian phone must be in +234xxxxxxxxxx or 0xxxxxxxxxx format.';
-    errorEl.classList.remove('d-none');
-    document.getElementById('guardianPhone').focus();
-    return;
-  }
-
-  // Redirect to payment page with prefilled values
-  const name = encodeURIComponent(document.getElementById('name').value || '');
-  const email = encodeURIComponent(document.getElementById('email').value || '');
-  const guardian = encodeURIComponent(document.getElementById('guardianPhone').value || '');
-  const schoolIdEl = document.getElementById('school');
-  const schoolId = schoolIdEl ? encodeURIComponent(schoolIdEl.value || '') : '';
-  const amount = 1000; // default amount — change if needed
-
-  window.location.href = `/payment/pay?name=${name}&email=${email}&guardian=${guardian}&amount=${amount}&schoolId=${schoolId}`;
+  return true;
 });
 </script>

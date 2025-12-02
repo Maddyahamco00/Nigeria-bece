@@ -1,4 +1,4 @@
-<!-- views/public/success.ejs -->
+views/public/success.ejs
 
 <div class="d-flex">
   <!-- Sidebar -->
@@ -41,12 +41,12 @@
             </a>
             <small class="text-muted mt-2">You will be forwarded to the registration page shortly...</small>
           <% } %>
-          <a href="/admin/dashboard" class="btn btn-primary">
+          <!--<a href="/admin/dashboard" class="btn btn-primary">
             <i class="bi bi-speedometer2"></i> Go to Dashboard
           </a>
           <a href="/admin/students" class="btn btn-outline-success">
             <i class="bi bi-people"></i> View Students
-          </a>
+          </a>-->
         </div>
       </div>
     </div>

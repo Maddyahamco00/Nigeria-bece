@@ -7,6 +7,7 @@ import Student from './Student.js';
 import School from './School.js';
 import State from './State.js';
 import LGA from './LGA.js';
+import Subject from './Subject.js';
 import Payment from './Payment.js';
 import Result from './Result.js';
 
@@ -17,6 +18,7 @@ const models = {
   School,
   State,
   LGA,
+  Subject,
   Payment,
   Result,
 };
@@ -63,6 +65,10 @@ Result.belongsTo(School, { foreignKey: 'schoolId' });
 Student.hasMany(Payment, { foreignKey: 'studentId', onDelete: 'CASCADE' });
 Payment.belongsTo(Student, { foreignKey: 'studentId' });
 
+// Subject <-> Result (Many-to-Many through ResultSubjects)
+Subject.belongsToMany(Result, { through: 'ResultSubjects', foreignKey: 'subjectId' });
+Result.belongsToMany(Subject, { through: 'ResultSubjects', foreignKey: 'resultId' });
+
 // Export everything for convenient imports
 export {
   sequelize,
@@ -71,6 +77,7 @@ export {
   School,
   State,
   LGA,
+  Subject,
   Payment,
   Result,
 };

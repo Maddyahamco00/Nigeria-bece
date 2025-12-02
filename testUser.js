@@ -1,4 +1,4 @@
-// scripts/testUser.js
+//testUser.js
 import bcrypt from 'bcryptjs';
 import User from './models/User.js';
 import sequelize from './config/database.js';

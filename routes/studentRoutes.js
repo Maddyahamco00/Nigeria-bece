@@ -7,7 +7,7 @@ import {
   renderLogin,
   renderDashboard
 } from '../controllers/studentController.js';
-import { Student, School, State, LGA, Result, Payment } from '../models/index.js';
+import { Student, School, State, LGA, Result, Payment, Subject } from '../models/index.js';
 import db from '../config/database.js';
 
 const router = express.Router();
@@ -48,37 +48,130 @@ router.get('/', (req, res) => {
 
 // Controller-based routes
 // Student registration page (supports payment_ref for pre-filling)
-router.get('/register', async (req, res) => {
-  try {
-    const states = await State.findAll({ order: [['name', 'ASC']] }); // fetch from DB
+// router.get('/register', async (req, res) => {
+//   try {
+//     const states = await State.findAll({ order: [['name', 'ASC']] }); // fetch from DB
 
+//     const { payment_ref } = req.query;
+//     let preData = {};
+
+//     if (payment_ref) {
+//       try {
+//         const [rows] = await db.query(
+//           `SELECT * FROM pre_reg_payments WHERE payment_reference = ? AND payment_status = 'Paid' LIMIT 1`,
+//           { replacements: [payment_ref] }
+//         );
+//         if (rows.length > 0) preData = rows[0];
+//       } catch (err) {
+//         console.error('Error loading pre-registration data:', err);
+//       }
+//     }
+
+//     // fetch subjects
+//     db.query("SELECT * FROM subjects", (err, subjects) => {
+//       if (err) {
+//         console.log(err);
+//         return res.status(500).send("Error fetching subjects");
+//       }
+
+//       return res.render('auth/student-registration', {
+//         title: 'Student Registration',
+//         states,
+//         preData,
+//         subjects,
+//         messages: req.flash()
+//      });
+//     });
+//   } catch (err) {
+//     console.error(err);
+//     req.flash('error', 'Could not load registration form.');
+//     res.redirect('/');
+//   }
+// });
+
+// Then in the route:
+// routes/studentRoutes.js - Updated with debug logging
+// routes/studentRoutes.js - Fixed version
+// routes/studentRoutes.js - WORKING VERSION
+router.get('/register', async (req, res) => {
+  console.log('=== DEBUG: /students/register route hit ===');
+  
+  try {
+    console.log('Fetching states...');
+    const states = await State.findAll({ order: [['name', 'ASC']] });
+    
+    console.log('Fetching subjects...');
+    
+    // Use raw SQL query that matches your actual database
+    let subjects = [];
+    try {
+      const [subjectRows] = await db.query(`
+        SELECT 
+          id,
+          subject_name as name  -- Only using subject_name, no code
+        FROM subjects 
+        ORDER BY subject_name ASC
+      `);
+      subjects = subjectRows;
+      console.log(`✓ Subjects found: ${subjects.length}`);
+    } catch (sqlErr) {
+      console.error('SQL Error fetching subjects:', sqlErr.message);
+      // Use empty array if query fails
+      subjects = [];
+    }
+    
     const { payment_ref } = req.query;
     let preData = {};
 
     if (payment_ref) {
+      console.log(`Looking for payment reference: ${payment_ref}`);
       try {
         const [rows] = await db.query(
           `SELECT * FROM pre_reg_payments WHERE payment_reference = ? AND payment_status = 'Paid' LIMIT 1`,
           { replacements: [payment_ref] }
         );
-        if (rows.length > 0) preData = rows[0];
+        
+        console.log(`✓ Pre-reg payment rows found: ${rows.length}`);
+        if (rows.length > 0) {
+          preData = rows[0];
+          console.log('✓ Pre-data loaded for:', preData.email || preData.name);
+        }
       } catch (err) {
         console.error('Error loading pre-registration data:', err);
       }
     }
 
-    res.render('auth/student-registration', {
+    console.log('✓ Rendering registration page...');
+    
+    return res.render('auth/student-registration', {
       title: 'Student Registration',
       states,
       preData,
+      subjects,
       messages: req.flash()
     });
+    
   } catch (err) {
-    console.error(err);
-    req.flash('error', 'Could not load registration form.');
-    res.redirect('/');
+    console.error('=== REGISTRATION ROUTE ERROR ===');
+    console.error('Error details:', err.message);
+    
+    // Fallback: try to render with minimal data
+    try {
+      return res.render('auth/student-registration', {
+        title: 'Student Registration',
+        states: [],
+        preData: {},
+        subjects: [],
+        messages: { ...req.flash(), error: ['Temporary issue loading form. Please try again.'] }
+      });
+    } catch (renderErr) {
+      console.error('Failed to render error page:', renderErr);
+      req.flash('error', 'Could not load registration form.');
+      res.redirect('/');
+    }
   }
 });
+
 
 // Fetch LGAs by state ID (AJAX)
 router.get('/api/lgas/:stateId', async (req, res) => {

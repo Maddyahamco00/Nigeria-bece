@@ -65,8 +65,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
         // Fallback: if server returned a hosted authorization_url, present a safe link
         if (authorization_url) {
-          errorDiv.innerHTML = `Inline checkout unavailable. <a href="${authorization_url}" target="_blank" rel="noopener">Open hosted checkout in a new tab</a>`;
-          paymentButton.disabled = false;
+          // errorDiv.innerHTML = `Inline checkout unavailable. <a href="${authorization_url}" target="_blank" rel="noopener">Open hosted checkout in a new tab</a>`;
+          // paymentButton.disabled = false;
+           window.location.href = authorization_url;
           return;
         }
 
