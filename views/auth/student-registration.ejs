@@ -115,10 +115,22 @@
         <div class="d-flex flex-wrap gap-3">
           <% subjects.forEach(subject => { %>
             <label>
-        <input type="checkbox" name="subjects" value="<%= subject.id %>">
+        <input type="checkbox" name="subjects[]" value="<%= subject.id %>">
+         <strong>
+                  <% if (subject.name) { %>
+                    <%= subject.name %>
+                  <% } else if (subject.subject_name) { %>
+                    <%= subject.subject_name %>
+                  <% } else if (subject.subjectName) { %>
+                    <%= subject.subjectName %>
+                  <% } else { %>
+                    Subject <%= index + 1 %>
+                  <% } %>
+                </strong>
         <%= (subject.subject_name === 'Mathematics' || subject.subject_name === 'English') ? 'checked' : '' %>
         <%= subject.subject_name %>
         </label><br>
+        
           <% }) %>
         </div>
       </div>
