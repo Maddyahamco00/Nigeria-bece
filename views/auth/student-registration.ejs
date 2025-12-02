@@ -109,29 +109,62 @@
         </select>
       </div>
 
-      <!-- Subject Selection -->
-       <div class="form-group col-md-12">
-        <label for="subjects" class="form-label fw-bold">Select Subjects </label>
-        <div class="d-flex flex-wrap gap-3">
-          <% subjects.forEach(subject => { %>
-            <label>
-        <input type="checkbox" name="subjects[]" value="<%= subject.id %>">
-         <strong>
-                  <% if (subject.name) { %>
-                    <%= subject.name %>
-                  <% } else if (subject.subject_name) { %>
-                    <%= subject.subject_name %>
-                  <% } else if (subject.subjectName) { %>
-                    <%= subject.subjectName %>
-                  <% } else { %>
-                    Subject <%= index + 1 %>
-                  <% } %>
-                </strong>
-        <%= (subject.subject_name === 'Mathematics' || subject.subject_name === 'English') ? 'checked' : '' %>
-        <%= subject.subject_name %>
-        </label><br>
-        
+      <!-- Subject Selection - FIXED VERSION -->
+      <div class="col-12">
+        <label class="form-label fw-bold mb-3">Select Subjects <small class="text-muted">(Choose at least 7 subjects)</small></label>
+        <div class="border rounded p-3 bg-light">
+          <% subjects.forEach((subject, index) => { 
+            // Get the subject name properly
+            const subjectName = subject.name || subject.subject_name || subject.subjectName || `Subject ${index + 1}`;
+            
+            // Check if it's Mathematics or English (case-insensitive)
+            const isMathOrEnglish = 
+              subjectName.toLowerCase().includes('math') || 
+              subjectName.toLowerCase().includes('english');
+          %>
+            <div class="form-check mb-2">
+              <% if (isMathOrEnglish) { %>
+                <!-- Core subjects (Mathematics & English) - checked and disabled -->
+                <input 
+                  type="checkbox" 
+                  name="subjects[]" 
+                  value="<%= subject.id %>" 
+                  id="subject-<%= subject.id %>" 
+                  class="form-check-input"
+                  checked 
+                  disabled
+                >
+                <input type="hidden" name="subjects[]" value="<%= subject.id %>">
+                <label for="subject-<%= subject.id %>" class="form-check-label fw-bold">
+                  <%= subjectName %>
+                  <span class="badge bg-success ms-2">Required</span>
+                </label>
+              <% } else { %>
+                <!-- Other subjects - normal checkbox -->
+                <input 
+                  type="checkbox" 
+                  name="subjects[]" 
+                  value="<%= subject.id %>" 
+                  id="subject-<%= subject.id %>" 
+                  class="form-check-input"
+                >
+                <label for="subject-<%= subject.id %>" class="form-check-label">
+                  <%= subjectName %>
+                </label>
+              <% } %>
+            </div>
           <% }) %>
+        </div>
+        
+        <!-- Selected count display -->
+        <div class="mt-2">
+          <small class="text-info">
+            <i class="bi bi-info-circle"></i> 
+            Selected: <span id="selected-count">2</span> subjects (Minimum: 5)
+            <span class="ms-2 text-success">
+              <i class="bi bi-check-circle"></i> Mathematics & English are required
+            </span>
+          </small>
         </div>
       </div>
 
@@ -140,7 +173,7 @@
         <div class="form-check">
           <input type="checkbox" id="payment" name="payment" class="form-check-input" required>
           <label for="payment" class="form-check-label">
-            I confirm I have made the required payment or will pay at the school
+            I confirm I have made the required payment
           </label>
         </div>
       </div>
@@ -169,6 +202,40 @@ const stateSelect = document.getElementById('state');
 const lgaSelect = document.getElementById('lga');
 const schoolSelect = document.getElementById('school');
 const form = document.getElementById('registrationForm');
+
+// Subject selection tracking
+const selectedCountElement = document.getElementById('selected-count');
+
+function updateSelectedCount() {
+  const checkboxes = document.querySelectorAll('input[name="subjects[]"]:not([disabled])');
+  const checkedCount = Array.from(checkboxes).filter(cb => cb.checked).length;
+  
+  // Add 2 for the required subjects (Math & English)
+  const totalSelected = checkedCount + 2;
+  selectedCountElement.textContent = totalSelected;
+  
+  // Update color based on minimum requirement
+  if (totalSelected >= 4) {
+    selectedCountElement.classList.remove('text-warning');
+    selectedCountElement.classList.add('text-success');
+  } else {
+    selectedCountElement.classList.remove('text-success');
+    selectedCountElement.classList.add('text-warning');
+  }
+}
+
+// Initialize subject count
+document.addEventListener('DOMContentLoaded', function() {
+  // Set initial count (2 for Math & English)
+  selectedCountElement.textContent = '2';
+  selectedCountElement.classList.add('text-success');
+  
+  // Add event listeners to all non-disabled subject checkboxes
+  const subjectCheckboxes = document.querySelectorAll('input[name="subjects[]"]:not([disabled])');
+  subjectCheckboxes.forEach(checkbox => {
+    checkbox.addEventListener('change', updateSelectedCount);
+  });
+});
 
 stateSelect.addEventListener('change', async (e) => {
   const stateId = e.target.value;
@@ -228,10 +295,12 @@ lgaSelect.addEventListener('change', async (e) => {
 form.addEventListener('submit', (e) => {
   const password = document.getElementById('password');
   const confirmPassword = document.getElementById('confirmPassword');
+  const guardianPhone = document.getElementById('guardianPhone');
   const errorEl = document.getElementById('formError');
   errorEl.classList.add('d-none');
   errorEl.textContent = '';
 
+  // Password validation
   if (password.value !== confirmPassword.value) {
     e.preventDefault();
     errorEl.textContent = 'Passwords do not match!';
@@ -248,10 +317,25 @@ form.addEventListener('submit', (e) => {
     return false;
   }
 
-  if (!/^\d+$/.test(guardianPhone)) {
-  req.flash('error', 'Guardian phone must contain digits only');
-  return res.redirect('/students/register');
-}
+  // Phone number validation
+  if (!/^\d+$/.test(guardianPhone.value)) {
+    e.preventDefault();
+    errorEl.textContent = 'Guardian phone must contain digits only!';
+    errorEl.classList.remove('d-none');
+    guardianPhone.focus();
+    return false;
+  }
+
+  // Subject selection validation (minimum 2 additional subjects)
+  const checkboxes = document.querySelectorAll('input[name="subjects[]"]:not([disabled])');
+  const checkedCount = Array.from(checkboxes).filter(cb => cb.checked).length;
+  
+  if (checkedCount < 2) { // Need at least 2 more subjects besides Math & English
+    e.preventDefault();
+    errorEl.textContent = 'Please select at least 2 additional subjects (4 total including Mathematics & English)!';
+    errorEl.classList.remove('d-none');
+    return false;
+  }
 
   return true;
 });
