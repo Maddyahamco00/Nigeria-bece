@@ -1,0 +1,69 @@
+<!-- views/students/payment.ejs -->
+<main class="d-flex align-items-center justify-content-center py-5" 
+      style="background: linear-gradient(135deg, #f8f9fa, #e3f2fd); min-height: 100vh;">
+
+  <div class="card shadow-lg border-0 rounded-4 p-4 w-100" style="max-width: 500px;">
+    <div class="text-center mb-4">
+      <img src="/images/logo.svg" alt="BECE Logo" class="mb-3" style="width: 70px;">
+      <h2 class="fw-bold text-primary">Step 3: Payment</h2>
+      <p class="text-muted">Confirm your details and proceed to payment.</p>
+    </div>
+
+    <div class="card-body">
+      <ul class="list-group list-group-flush mb-4">
+        <li class="list-group-item d-flex justify-content-between">
+          <strong>Full Name:</strong>
+          <span><%= student.name %></span>
+        </li>
+        <li class="list-group-item d-flex justify-content-between">
+          <strong>Email:</strong>
+          <span><%= student.email %></span>
+        </li>
+        <li class="list-group-item d-flex justify-content-between">
+          <strong>Amount:</strong>
+          <span class="fw-bold text-success">NGN 5,000</span>
+        </li>
+      </ul>
+
+      <form id="paymentForm">
+        <input type="hidden" id="email-address" value="<%= student.email %>" />
+        <input type="hidden" id="amount" value="5000" />
+        <input type="hidden" id="studentId" value="<%= student.id %>" />
+        
+        <div class="d-grid">
+          <button type="submit" class="btn btn-primary btn-lg fw-bold shadow-sm rounded-pill" onclick="payWithPaystack()">
+            Pay Now
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</main>
+
+<script src="https://js.paystack.co/v1/inline.js"></script>
+<script>
+const paymentForm = document.getElementById('paymentForm');
+paymentForm.addEventListener("submit", payWithPaystack, false);
+
+function payWithPaystack(e) {
+  e.preventDefault();
+
+  let handler = PaystackPop.setup({
+    key: '<%= paystackPublicKey %>',
+    email: document.getElementById("email-address").value,
+    amount: document.getElementById("amount").value * 100,
+    ref: ''+Math.floor((Math.random() * 1000000000) + 1),
+    onClose: function(){
+      alert('Window closed.');
+    },
+    callback: function(response){
+      let message = 'Payment complete! Reference: ' + response.reference;
+      alert(message);
+      // Redirect to a confirmation page
+      window.location.href = `/students/register/confirmation?studentId=${document.getElementById('studentId').value}&ref=${response.reference}`;
+    }
+  });
+
+  handler.openIframe();
+}
+</script>

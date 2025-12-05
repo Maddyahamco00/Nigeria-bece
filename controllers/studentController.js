@@ -1,19 +1,132 @@
 // controllers/studentController.js
 import bcrypt from 'bcryptjs';
-import { Student, State, LGA, School, Result } from '../models/index.js';
+import { Student, State, LGA, School, Result, Subject } from '../models/index.js';
 import db from '../config/database.js';
 import sendEmail, { sendTemplateEmail } from '../utils/sendEmail.js';
 
-// Render Student Registration Page
-export const renderRegister = async (req, res) => {
+// Step 1: Render Biodata Form
+export const renderBiodataForm = async (req, res) => {
   try {
-    const states = await State.findAll();
-  // Render the student registration view. Use the canonical auth template so
-  // both /students/register and /auth/student/register show the same UI.
-  res.render('auth/student-registration', { states, messages: req.flash() });
+    const states = await State.findAll({ order: [['name', 'ASC']] });
+    res.render('students/biodata', {
+      title: 'Student Registration - Biodata',
+      states,
+      messages: req.flash()
+    });
   } catch (err) {
-    console.error("❌ Error loading states:", err);
-    res.status(500).send("Server error");
+    console.error('Error loading biodata form:', err);
+    req.flash('error', 'Could not load registration form.');
+    res.redirect('/');
+  }
+};
+
+// Step 1: Handle Biodata Submission
+export const handleBiodata = async (req, res) => {
+  const { name, email, password, confirmPassword, gender, dob, guardianPhone, stateId, lgaId, schoolId } = req.body;
+
+  if (password !== confirmPassword) {
+    req.flash('error', 'Passwords do not match.');
+    return res.redirect('/students/register/biodata');
+  }
+
+  try {
+    const existingStudent = await Student.findOne({ where: { email } });
+    if (existingStudent) {
+      req.flash('error', 'Email is already registered.');
+      return res.redirect('/students/register/biodata');
+    }
+
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    const student = await Student.create({
+      name,
+      email,
+      password: hashedPassword,
+      gender,
+      dateOfBirth: dob,
+      guardianPhone,
+      stateId,
+      lgaId,
+      schoolId,
+      paymentStatus: 'pending'
+    });
+
+    req.session.studentId = student.id;
+    res.redirect('/students/register/subjects');
+  } catch (err) {
+    console.error('Error handling biodata:', err);
+    req.flash('error', 'An error occurred. Please try again.');
+    res.redirect('/students/register/biodata');
+  }
+};
+
+// Step 2: Render Subject Selection Form
+export const renderSubjectsForm = async (req, res) => {
+  try {
+    const student = await Student.findByPk(req.session.studentId);
+    const subjects = await Subject.findAll();
+    res.render('students/subjects', {
+      title: 'Student Registration - Subjects',
+      student,
+      subjects
+    });
+  } catch (err) {
+    console.error('Error loading subjects form:', err);
+    res.redirect('/students/register/biodata');
+  }
+};
+
+// Step 2: Handle Subject Selection
+export const handleSubjects = async (req, res) => {
+  const { studentId, subjects } = req.body;
+
+  try {
+    const student = await Student.findByPk(studentId);
+    await student.setSubjects(subjects);
+    res.redirect('/students/register/payment');
+  } catch (err) {
+    console.error('Error handling subjects:', err);
+    res.redirect('/students/register/subjects');
+  }
+};
+
+// Step 3: Render Payment Page
+export const renderPaymentPage = async (req, res) => {
+  try {
+    const student = await Student.findByPk(req.session.studentId);
+    res.render('students/payment', {
+      title: 'Student Registration - Payment',
+      student,
+      paystackPublicKey: process.env.PAYSTACK_PUBLIC_KEY
+    });
+  } catch (err) {
+    console.error('Error loading payment page:', err);
+    res.redirect('/students/register/subjects');
+  }
+};
+
+// Step 4: Render Confirmation Page
+export const renderConfirmationPage = async (req, res) => {
+  const { studentId, ref } = req.query;
+
+  try {
+    const student = await Student.findByPk(studentId);
+    await student.update({ paymentStatus: 'Paid', regNumber: ref });
+
+    // Generate registration number
+    const currentYear = new Date().getFullYear().toString().slice(-2);
+    const regNumber = `BECE${currentYear}${student.stateId.toString().padStart(2, '0')}${student.lgaId.toString().padStart(2, '0')}${student.schoolId.toString().padStart(3, '0')}${student.id.toString().padStart(4, '0')}`;
+    
+    await student.update({ regNumber });
+
+    res.render('students/confirmation', {
+      title: 'Registration Complete',
+      student,
+      paymentRef: ref
+    });
+  } catch (err) {
+    console.error('Error loading confirmation page:', err);
+    res.redirect('/');
   }
 };
 
@@ -422,4 +535,3 @@ export const changePassword = async (req, res) => {
     res.redirect('/students/profile');
   }
 };
-
