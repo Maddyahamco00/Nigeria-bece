@@ -1,0 +1,113 @@
+/* Layout Fixes for Sidebar Alignment */
+
+/* Main content area adjustment for sidebar */
+.main-content {
+  margin-left: 280px;
+  min-height: 100vh;
+  padding: 20px;
+  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+  transition: margin-left 0.3s ease;
+}
+
+/* Dashboard container adjustment */
+.dashboard-container {
+  display: flex;
+  min-height: 100vh;
+}
+
+.dashboard-container .main-content {
+  flex: 1;
+  margin-left: 0; /* Reset margin since flex handles layout */
+}
+
+/* Student dashboard layout */
+.student-dashboard .container {
+  max-width: none;
+  padding-left: 300px; /* Account for sidebar */
+  padding-right: 20px;
+}
+
+/* Admin dashboard layout */
+body.admin-layout {
+  padding-left: 280px;
+}
+
+body.admin-layout .container-fluid {
+  padding-left: 20px;
+  padding-right: 20px;
+}
+
+/* Header adjustments */
+.modern-header {
+  padding-left: 280px;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 999;
+}
+
+/* Footer adjustments */
+.modern-footer {
+  margin-left: 280px;
+}
+
+/* Mobile responsive */
+@media (max-width: 768px) {
+  .main-content,
+  .modern-header,
+  .modern-footer {
+    margin-left: 0;
+    padding-left: 20px;
+  }
+  
+  .student-dashboard .container {
+    padding-left: 20px;
+  }
+  
+  body.admin-layout {
+    padding-left: 0;
+  }
+}
+
+/* Page content wrapper */
+.page-wrapper {
+  display: flex;
+  min-height: 100vh;
+}
+
+.page-content {
+  flex: 1;
+  margin-left: 280px;
+  padding: 20px;
+  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+}
+
+@media (max-width: 768px) {
+  .page-content {
+    margin-left: 0;
+  }
+}
+
+/* Fix for overlapping content */
+.content-area {
+  padding-top: 80px; /* Account for fixed header */
+}
+
+/* Sidebar overlay for mobile */
+.sidebar-overlay {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0,0,0,0.5);
+  z-index: 999;
+}
+
+@media (max-width: 768px) {
+  .sidebar-overlay.show {
+    display: block;
+  }
+}

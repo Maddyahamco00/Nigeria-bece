@@ -1,32 +1,262 @@
 <!-- views/partials/sidebar.ejs -->
-<aside id="sidebar" class="d-none d-lg-flex flex-column vh-100 p-4 shadow-lg" 
-  style="width: 250px; transition: transform 0.3s ease;">
-  <!-- Logo + Title -->
-  <div class="mb-5 d-flex align-items-center">
-    <!--img src="/images/logo.svg" alt="Logo" class="me-3" style="height: 40px;"-->
-    <h2 class="h5 mb-0 fw-bold">Admin Panel</h2>
+<aside class="modern-sidebar">
+  <div class="sidebar-header">
+    <img src="/images/logos/bece-logo.svg" alt="BECE Logo" class="sidebar-logo">
+    <div class="sidebar-brand">
+      <h5 class="sidebar-title">BECE Portal</h5>
+      <span class="sidebar-subtitle">
+        <% if (typeof user !== 'undefined' && user) { %>
+          <% if (user.role === 'super_admin') { %>Super Admin<% } else { %>Admin Panel<% } %>
+        <% } else { %>
+          Dashboard
+        <% } %>
+      </span>
+    </div>
   </div>
 
-  <!-- Nav links -->
-  <nav class="sidebar">
-    <%- include('./sidebarLinks') %>
+  <nav class="sidebar-nav">
+    <% if (typeof user !== 'undefined' && user) { %>
+      <!-- Admin Sidebar -->
+      <%- include('./sidebarLinks') %>
+    <% } else if (typeof student !== 'undefined' && student) { %>
+      <!-- Student Sidebar -->
+      <ul class="nav flex-column">
+        <li class="nav-item">
+          <a href="/students/dashboard" class="nav-link <%= currentPath && currentPath.startsWith('/students/dashboard') ? 'active' : '' %>">
+            <i class="fas fa-tachometer-alt me-2"></i>
+            <span>Dashboard</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="/students/profile" class="nav-link <%= currentPath && currentPath.startsWith('/students/profile') ? 'active' : '' %>">
+            <i class="fas fa-user me-2"></i>
+            <span>My Profile</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="/students/results" class="nav-link <%= currentPath && currentPath.startsWith('/students/results') ? 'active' : '' %>">
+            <i class="fas fa-chart-bar me-2"></i>
+            <span>My Results</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="/payment" class="nav-link">
+            <i class="fas fa-credit-card me-2"></i>
+            <span>Payments</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="/auth/logout" class="nav-link text-danger">
+            <i class="fas fa-sign-out-alt me-2"></i>
+            <span>Logout</span>
+          </a>
+        </li>
+      </ul>
+    <% } %>
   </nav>
+
+  <div class="sidebar-footer">
+    <div class="user-info">
+      <% if (typeof user !== 'undefined' && user) { %>
+        <div class="user-avatar">
+          <i class="fas fa-user-shield"></i>
+        </div>
+        <div class="user-details">
+          <div class="user-name"><%= user.name %></div>
+          <div class="user-role"><%= user.role.replace('_', ' ').toUpperCase() %></div>
+        </div>
+      <% } else if (typeof student !== 'undefined' && student) { %>
+        <div class="user-avatar">
+          <i class="fas fa-user-graduate"></i>
+        </div>
+        <div class="user-details">
+          <div class="user-name"><%= student.name %></div>
+          <div class="user-role">STUDENT</div>
+        </div>
+      <% } %>
+    </div>
+  </div>
 </aside>
 
-<!-- Mobile: the header's collapse now contains the sidebar links, so remove the separate mobile toggle -->
+<style>
+.modern-sidebar {
+  width: 280px;
+  height: 100vh;
+  background: linear-gradient(180deg, #2c3e50 0%, #34495e 100%);
+  color: white;
+  position: fixed;
+  left: 0;
+  top: 0;
+  z-index: 1000;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 2px 0 20px rgba(0,0,0,0.1);
+  transition: all 0.3s ease;
+}
 
-<script>
-  // Close sidebar when clicking outside on small screens (no-op on lg+ where sidebar is visible)
-  document.addEventListener('click', (e) => {
-    const sidebar = document.getElementById('sidebar');
-    if (!sidebar) return;
-    if (window.innerWidth >= 992) return; // lg breakpoint
-    if (sidebar.contains(e.target)) return;
-    // collapse any open navbar collapse so mobile nav hides
-    const navCollapse = document.getElementById('mainNavbar');
-    if (navCollapse && navCollapse.classList.contains('show')) {
-      // Use Bootstrap collapse toggle if available
-      try { new bootstrap.Collapse(navCollapse).hide(); } catch (err) { /* ignore */ }
-    }
-  });
-</script>
+.sidebar-header {
+  padding: 30px 25px;
+  border-bottom: 1px solid rgba(255,255,255,0.1);
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.sidebar-logo {
+  width: 50px;
+  height: 50px;
+  filter: drop-shadow(0 2px 8px rgba(0,0,0,0.3));
+}
+
+.sidebar-brand {
+  flex: 1;
+}
+
+.sidebar-title {
+  font-size: 1.3rem;
+  font-weight: 700;
+  margin: 0;
+  color: white;
+}
+
+.sidebar-subtitle {
+  font-size: 0.85rem;
+  color: rgba(255,255,255,0.7);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.sidebar-nav {
+  flex: 1;
+  padding: 20px 0;
+  overflow-y: auto;
+}
+
+.sidebar-nav .nav {
+  padding: 0 15px;
+}
+
+.sidebar-nav .nav-item {
+  margin-bottom: 5px;
+}
+
+.sidebar-nav .nav-link {
+  display: flex;
+  align-items: center;
+  padding: 15px 20px;
+  color: rgba(255,255,255,0.8);
+  text-decoration: none;
+  border-radius: 12px;
+  margin: 0 5px;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.sidebar-nav .nav-link::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent);
+  transition: left 0.5s;
+}
+
+.sidebar-nav .nav-link:hover::before {
+  left: 100%;
+}
+
+.sidebar-nav .nav-link:hover,
+.sidebar-nav .nav-link.active {
+  background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+  color: white;
+  transform: translateX(5px);
+  box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+}
+
+.sidebar-nav .nav-link i {
+  width: 20px;
+  text-align: center;
+  font-size: 1.1rem;
+}
+
+.sidebar-nav .nav-link span {
+  font-weight: 500;
+  font-size: 0.95rem;
+}
+
+.sidebar-footer {
+  padding: 25px;
+  border-top: 1px solid rgba(255,255,255,0.1);
+  background: rgba(0,0,0,0.2);
+}
+
+.user-info {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.user-avatar {
+  width: 45px;
+  height: 45px;
+  background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.2rem;
+  color: white;
+}
+
+.user-details {
+  flex: 1;
+}
+
+.user-name {
+  font-weight: 600;
+  font-size: 0.95rem;
+  color: white;
+  margin-bottom: 2px;
+}
+
+.user-role {
+  font-size: 0.75rem;
+  color: rgba(255,255,255,0.6);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* Mobile Responsive */
+@media (max-width: 768px) {
+  .modern-sidebar {
+    transform: translateX(-100%);
+    width: 100%;
+    max-width: 280px;
+  }
+  
+  .modern-sidebar.open {
+    transform: translateX(0);
+  }
+}
+
+/* Custom Scrollbar */
+.sidebar-nav::-webkit-scrollbar {
+  width: 4px;
+}
+
+.sidebar-nav::-webkit-scrollbar-track {
+  background: rgba(255,255,255,0.1);
+}
+
+.sidebar-nav::-webkit-scrollbar-thumb {
+  background: rgba(255,255,255,0.3);
+  border-radius: 2px;
+}
+
+.sidebar-nav::-webkit-scrollbar-thumb:hover {
+  background: rgba(255,255,255,0.5);
+}
+</style>
