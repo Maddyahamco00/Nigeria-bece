@@ -1,20 +1,28 @@
-// utils/codeGenerator.js
-/**
- * Generates a student code in the format: STATEYYLLSSSS
- * Example: ABI24110216
- *
- * @param {string} stateCode - 3-letter state abbreviation (e.g., 'ABI')
- * @param {number} year - Full year (e.g., 2024)
- * @param {number} lgaSerial - LGA serial number (e.g., 11)
- * @param {number} schoolSerial - School serial number (e.g., 2)
- * @param {number} studentSerial - Student serial number (e.g., 16)
- * @returns {string} - Formatted student code
- */
-export function generateStudentCode(stateCode, year, lgaSerial, schoolSerial, studentSerial) {
-  const yy = year.toString().slice(-2);
-  const lga = lgaSerial.toString().padStart(2, '0');
-  const school = schoolSerial.toString().padStart(2, '0');
-  const student = studentSerial.toString().padStart(2, '0');
+// utils/generateStudentCode.js
+import { Student, State, LGA, School } from '../models/index.js';
 
-  return `${stateCode.toUpperCase()}${yy}${lga}${school}${student}`;
-}
+const generateStudentCode = async (stateId, lgaId, schoolId) => {
+  try {
+    const currentYear = new Date().getFullYear().toString().slice(-2);
+    
+    // Get the next sequence number for this school
+    const lastStudent = await Student.findOne({
+      where: { schoolId },
+      order: [['id', 'DESC']]
+    });
+    
+    const sequence = lastStudent ? (lastStudent.id + 1) : 1;
+    
+    // Format: BECE + Year + StateCode + LGACode + SchoolCode + Sequence
+    const studentCode = `BECE${currentYear}${stateId.toString().padStart(2, '0')}${lgaId.toString().padStart(2, '0')}${schoolId.toString().padStart(3, '0')}${sequence.toString().padStart(4, '0')}`;
+    
+    return studentCode;
+  } catch (error) {
+    console.error('Error generating student code:', error);
+    // Fallback to timestamp-based code
+    const timestamp = Date.now().toString().slice(-6);
+    return `BECE${new Date().getFullYear().toString().slice(-2)}${timestamp}`;
+  }
+};
+
+export default generateStudentCode;

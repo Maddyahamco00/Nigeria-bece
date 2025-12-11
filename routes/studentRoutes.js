@@ -188,12 +188,18 @@ router.post('/payment/simulate', requireStudent, async (req, res) => {
 // Student results page
 router.get('/results', requireStudent, async (req, res) => {
   try {
+    const student = await Student.findByPk(req.session.student.id, {
+      include: [School, State, LGA]
+    });
+    
     const results = await Result.findAll({ 
       where: { studentId: req.session.student.id },
       order: [['createdAt', 'DESC']] 
     });
+    
     res.render('students/results', {
       title: 'My Results',
+      student,
       results,
       messages: req.flash()
     });

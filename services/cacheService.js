@@ -4,7 +4,8 @@ import redisClient from '../config/redis.js';
 class CacheService {
   async set(key, value, expiration = 3600) {
     try {
-      await redisClient.setex(key, expiration, JSON.stringify(value));
+      if (!redisClient.isOpen) return false;
+      await redisClient.setEx(key, expiration, JSON.stringify(value));
       return true;
     } catch (error) {
       console.error('Cache set error:', error);
@@ -14,6 +15,7 @@ class CacheService {
 
   async get(key) {
     try {
+      if (!redisClient.isOpen) return null;
       const value = await redisClient.get(key);
       return value ? JSON.parse(value) : null;
     } catch (error) {
@@ -24,6 +26,7 @@ class CacheService {
 
   async del(key) {
     try {
+      if (!redisClient.isOpen) return false;
       await redisClient.del(key);
       return true;
     } catch (error) {

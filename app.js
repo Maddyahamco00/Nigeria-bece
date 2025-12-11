@@ -9,6 +9,7 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import expressLayouts from 'express-ejs-layouts';
 import { sequelize } from './config/index.js';
+import cacheService from './services/cacheService.js';
 
 // ------------------------------
 // Route Imports
@@ -22,7 +23,7 @@ import paymentRoutes from './routes/payment.js';
 import webhookRoutes from './routes/webhook.js';
 
 // Admin route group (single consolidated router)
-import adminRoutes from './routes/admin.js';
+import adminRoutes, { initializeSuperAdmins } from './routes/admin.js';
 
 process.removeAllListeners('warning');
 
@@ -49,6 +50,11 @@ app.use(
     secret: process.env.SESSION_SECRET || 'secret_key', // ⚠️ Change this in production
     resave: false,
     saveUninitialized: false,
+    cookie: {
+      secure: process.env.NODE_ENV === 'production',
+      httpOnly: true,
+      maxAge: 24 * 60 * 60 * 1000 // 24 hours
+    }
   })
 );
 
@@ -135,7 +141,12 @@ const PORT = process.env.PORT || 3000;
 
 sequelize
   .sync({ alter: false })
-  .then(() => {
+  .then(async () => {
+    // Initialize super admins
+    await initializeSuperAdmins();
+    
+    console.log('⚠️ Running without Redis cache (using mock client)');
+    
     app.listen(PORT, () => {
       console.log(`🚀 Server running on http://localhost:${PORT}`);
     });

@@ -1,24 +1,124 @@
 <!-- views/students/confirmation.ejs -->
-<main class="d-flex align-items-center justify-content-center py-5" 
-      style="background: linear-gradient(135deg, #f8f9fa, #e3f2fd); min-height: 100vh;">
+<div class="container mt-4">
+  <div class="row justify-content-center">
+    <div class="col-md-8">
+      <div class="card border-success">
+        <div class="card-header bg-success text-white text-center">
+          <h3><i class="fas fa-check-circle"></i> Registration Successful!</h3>
+        </div>
+        <div class="card-body">
+          <div class="alert alert-success text-center">
+            <h4>Welcome to Nigeria BECE Portal</h4>
+            <p class="mb-0">Your registration has been completed successfully.</p>
+          </div>
 
-  <div class="card shadow-lg border-0 rounded-4 p-4 w-100 text-center" style="max-width: 500px;">
-    <div class="card-body">
-      <img src="/images/logo.svg" alt="BECE Logo" class="mb-3" style="width: 70px;">
-      <h2 class="fw-bold text-primary">Registration Complete!</h2>
-      <p class="text-muted">Thank you, <%= student.name %>. Your registration and payment were successful.</p>
+          <div class="row">
+            <div class="col-md-6">
+              <h5 class="text-primary">Personal Information</h5>
+              <table class="table table-borderless">
+                <tr>
+                  <td><strong>Full Name:</strong></td>
+                  <td><%= student.name %></td>
+                </tr>
+                <tr>
+                  <td><strong>Student Code:</strong></td>
+                  <td><span class="badge badge-primary badge-lg"><%= student.studentCode || student.regNumber %></span></td>
+                </tr>
+                <tr>
+                  <td><strong>Email:</strong></td>
+                  <td><%= student.email || 'N/A' %></td>
+                </tr>
+                <tr>
+                  <td><strong>Gender:</strong></td>
+                  <td><%= student.gender || 'N/A' %></td>
+                </tr>
+                <tr>
+                  <td><strong>Date of Birth:</strong></td>
+                  <td><%= student.dateOfBirth ? new Date(student.dateOfBirth).toLocaleDateString() : 'N/A' %></td>
+                </tr>
+                <tr>
+                  <td><strong>Guardian Phone:</strong></td>
+                  <td><%= student.guardianPhone || 'N/A' %></td>
+                </tr>
+              </table>
+            </div>
+            
+            <div class="col-md-6">
+              <h5 class="text-primary">School Information</h5>
+              <table class="table table-borderless">
+                <tr>
+                  <td><strong>School:</strong></td>
+                  <td><%= student.School?.name || 'N/A' %></td>
+                </tr>
+                <tr>
+                  <td><strong>State:</strong></td>
+                  <td><%= student.State?.name || 'N/A' %></td>
+                </tr>
+                <tr>
+                  <td><strong>LGA:</strong></td>
+                  <td><%= student.LGA?.name || 'N/A' %></td>
+                </tr>
+                <tr>
+                  <td><strong>Payment Status:</strong></td>
+                  <td><span class="badge badge-success">Paid</span></td>
+                </tr>
+                <tr>
+                  <td><strong>Registration Date:</strong></td>
+                  <td><%= new Date(student.createdAt).toLocaleDateString() %></td>
+                </tr>
+              </table>
+            </div>
+          </div>
 
-      <div class="alert alert-success mt-4">
-        Your payment reference is: <strong><%= paymentRef %></strong>
+          <% if (paymentRef) { %>
+          <div class="row mt-3">
+            <div class="col-md-12">
+              <h5 class="text-primary">Payment Information</h5>
+              <table class="table table-borderless">
+                <tr>
+                  <td><strong>Payment Reference:</strong></td>
+                  <td><%= paymentRef %></td>
+                </tr>
+                <tr>
+                  <td><strong>Amount Paid:</strong></td>
+                  <td>₦5,000.00</td>
+                </tr>
+                <tr>
+                  <td><strong>Payment Date:</strong></td>
+                  <td><%= new Date().toLocaleDateString() %></td>
+                </tr>
+              </table>
+            </div>
+          </div>
+          <% } %>
+
+          <div class="alert alert-info mt-4">
+            <h6><i class="fas fa-info-circle"></i> Important Information:</h6>
+            <ul class="mb-0">
+              <li>Keep your <strong>Student Code</strong> safe - you'll need it to login</li>
+              <li>Check your email for confirmation and further instructions</li>
+              <li>SMS notification has been sent to your guardian's phone</li>
+              <li>You can now login to access your dashboard</li>
+            </ul>
+          </div>
+
+          <div class="text-center mt-4">
+            <a href="/students/login" class="btn btn-primary btn-lg">
+              <i class="fas fa-sign-in-alt"></i> Login to Dashboard
+            </a>
+            <button class="btn btn-secondary btn-lg ml-2" onclick="window.print()">
+              <i class="fas fa-print"></i> Print Confirmation
+            </button>
+          </div>
+        </div>
       </div>
-
-      <p class="mt-4">
-        You can now log in to your student dashboard to view your details and results when they are released.
-      </p>
-
-      <a href="/auth/login" class="btn btn-primary btn-lg fw-bold shadow-sm rounded-pill mt-3">
-        Go to Login
-      </a>
     </div>
   </div>
-</main>
+</div>
+
+<style>
+.badge-lg {
+  font-size: 1.1em;
+  padding: 0.5rem 1rem;
+}
+</style>

@@ -1,0 +1,77 @@
+<!-- views/admin/view-result.ejs -->
+<div class="container mt-4">
+  <div class="row">
+    <div class="col-md-8 offset-md-2">
+      <div class="card">
+        <div class="card-header bg-success text-white">
+          <h4><i class="fas fa-graduation-cap"></i> Result Details</h4>
+        </div>
+        <div class="card-body">
+          <div class="row">
+            <div class="col-md-6">
+              <h5>Student Information</h5>
+              <table class="table table-borderless">
+                <tr>
+                  <td><strong>Name:</strong></td>
+                  <td><%= result.Student?.name || 'N/A' %></td>
+                </tr>
+                <tr>
+                  <td><strong>Student Code:</strong></td>
+                  <td><%= result.Student?.studentCode || result.Student?.regNumber || 'N/A' %></td>
+                </tr>
+                <tr>
+                  <td><strong>School:</strong></td>
+                  <td><%= result.School?.name || 'N/A' %></td>
+                </tr>
+              </table>
+            </div>
+            <div class="col-md-6">
+              <h5>Result Information</h5>
+              <table class="table table-borderless">
+                <tr>
+                  <td><strong>Subject:</strong></td>
+                  <td><%= result.subject %></td>
+                </tr>
+                <tr>
+                  <td><strong>Score:</strong></td>
+                  <td><%= result.score %></td>
+                </tr>
+                <tr>
+                  <td><strong>Grade:</strong></td>
+                  <td>
+                    <span class="badge badge-<%= getGradeBadge(result.grade) %>">
+                      <%= result.grade %>
+                    </span>
+                  </td>
+                </tr>
+                <tr>
+                  <td><strong>Date Added:</strong></td>
+                  <td><%= new Date(result.createdAt).toLocaleDateString() %></td>
+                </tr>
+              </table>
+            </div>
+          </div>
+
+          <div class="text-center mt-4">
+            <a href="/admin/results" class="btn btn-secondary">
+              <i class="fas fa-arrow-left"></i> Back to Results
+            </a>
+            <button class="btn btn-primary ml-2" onclick="window.print()">
+              <i class="fas fa-print"></i> Print Result
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+function getGradeBadge(grade) {
+  const badges = {
+    'A': 'success', 'B': 'info', 'C': 'warning', 
+    'D': 'secondary', 'E': 'danger', 'F': 'danger'
+  };
+  return badges[grade] || 'secondary';
+}
+</script>

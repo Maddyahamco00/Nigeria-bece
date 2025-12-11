@@ -1,21 +1,35 @@
 <!-- views/students/results.ejs -->
-<div class="container-fluid py-4">
+<div class="container mt-4">
   <div class="row">
-    <div class="col-12">
-      <div class="card shadow-sm">
+    <div class="col-md-12">
+      <div class="card">
         <div class="card-header bg-primary text-white">
-          <h4 class="mb-0"><i class="bi bi-trophy me-2"></i>My Results</h4>
+          <h4><i class="fas fa-graduation-cap"></i> BECE Results - <%= student.name %></h4>
         </div>
         <div class="card-body">
           <% if (results && results.length > 0) { %>
+            <div class="row mb-4">
+              <div class="col-md-6">
+                <p><strong>Student Code:</strong> <%= student.studentCode || student.regNumber %></p>
+                <p><strong>School:</strong> <%= student.School?.name || 'N/A' %></p>
+                <p><strong>State:</strong> <%= student.State?.name || 'N/A' %></p>
+              </div>
+              <div class="col-md-6">
+                <p><strong>Exam Year:</strong> <%= new Date().getFullYear() %></p>
+                <p><strong>Result Status:</strong> 
+                  <span class="badge badge-success">Published</span>
+                </p>
+              </div>
+            </div>
+
             <div class="table-responsive">
-              <table class="table table-striped">
-                <thead>
+              <table class="table table-bordered table-striped">
+                <thead class="thead-dark">
                   <tr>
                     <th>Subject</th>
                     <th>Score</th>
                     <th>Grade</th>
-                    <th>Date</th>
+                    <th>Remark</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -23,18 +37,35 @@
                     <tr>
                       <td><%= result.subject %></td>
                       <td><%= result.score %></td>
-                      <td><%= result.grade %></td>
-                      <td><%= new Date(result.createdAt).toLocaleDateString() %></td>
+                      <td>
+                        <span class="badge badge-<%= getGradeBadge(getGrade(result.score)) %>">
+                          <%= getGrade(result.score) %>
+                        </span>
+                      </td>
+                      <td><%= getGradeRemark(getGrade(result.score)) %></td>
                     </tr>
-                  <% }) %>
+                  <% }); %>
                 </tbody>
               </table>
             </div>
+
+            <div class="row mt-4">
+              <div class="col-md-12 text-center">
+                <button class="btn btn-primary" onclick="window.print()">
+                  <i class="fas fa-print"></i> Print Results
+                </button>
+                <a href="/students/dashboard" class="btn btn-secondary ml-2">
+                  <i class="fas fa-arrow-left"></i> Back to Dashboard
+                </a>
+              </div>
+            </div>
           <% } else { %>
-            <div class="text-center py-5">
-              <i class="bi bi-clipboard-x display-1 text-muted"></i>
-              <h5 class="mt-3 text-muted">No results available yet</h5>
-              <p class="text-muted">Your exam results will appear here once published.</p>
+            <div class="alert alert-info text-center">
+              <h5><i class="fas fa-info-circle"></i> Results Not Available</h5>
+              <p>Your BECE results have not been published yet. Please check back later.</p>
+              <a href="/students/dashboard" class="btn btn-primary">
+                <i class="fas fa-arrow-left"></i> Back to Dashboard
+              </a>
             </div>
           <% } %>
         </div>
@@ -42,3 +73,30 @@
     </div>
   </div>
 </div>
+
+<script>
+function getGrade(score) {
+  if(score >= 70) return 'A';
+  if(score >= 60) return 'B';
+  if(score >= 50) return 'C';
+  if(score >= 40) return 'D';
+  if(score >= 35) return 'E';
+  return 'F';
+}
+
+function getGradeBadge(grade) {
+  const badges = {
+    'A': 'success', 'B': 'info', 'C': 'warning', 
+    'D': 'secondary', 'E': 'danger', 'F': 'danger'
+  };
+  return badges[grade] || 'secondary';
+}
+
+function getGradeRemark(grade) {
+  const remarks = {
+    'A': 'Excellent', 'B': 'Very Good', 'C': 'Good',
+    'D': 'Pass', 'E': 'Pass', 'F': 'Fail'
+  };
+  return remarks[grade] || 'N/A';
+}
+</script>

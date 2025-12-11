@@ -1,40 +1,343 @@
- <!-- views/public/landing.ejs--> 
-
-<div class="d-flex align-items-center justify-content-center min-vh-100 bg-light">
-  <div class="container text-center py-5">
-    
-    <!-- Logo -->
-    <img src="/images/logo.svg" alt="BECE Logo" class="mb-4" style="width: 90px; height: 90px;" />
-
-    <!-- Title -->
-    <h1 class="fw-bold mb-3 text-primary">Welcome to the BECE Portal</h1>
-    <p class="text-muted mb-4">Register for exams, check your results, or continue with your student account.</p>
-
-    <!-- Action buttons -->
-    <div class="d-flex justify-content-center gap-3 mb-5 flex-wrap">
-      <a href="/students/register/biodata" class="btn btn-primary px-4 py-2 rounded-pill shadow">
-        Register for BECE
-      </a>
-      <a href="/auth/login" class="btn btn-outline-primary px-4 py-2 rounded-pill shadow">
-        Continue to Login
-      </a>
+<!-- views/public/landing.ejs -->
+<div class="hero-section">
+  <div class="hero-overlay"></div>
+  <div class="container">
+    <div class="row align-items-center min-vh-100">
+      <div class="col-lg-6">
+        <div class="hero-content text-white">
+          <div class="logo-container mb-4">
+            <img src="/images/logos/bece-logo.svg" alt="BECE Logo" class="hero-logo" />
+            <div class="logo-glow"></div>
+          </div>
+          <h1 class="hero-title mb-4">Nigeria BECE Portal</h1>
+          <p class="hero-subtitle mb-5">Your gateway to Basic Education Certificate Examination registration, results, and academic excellence.</p>
+          
+          <div class="hero-buttons mb-5">
+            <a href="/students/register/biodata" class="btn btn-hero btn-primary me-3">
+              <i class="fas fa-user-plus"></i> Register Now
+            </a>
+            <a href="/auth/login" class="btn btn-hero btn-outline-light">
+              <i class="fas fa-sign-in-alt"></i> Login
+            </a>
+          </div>
+        </div>
+      </div>
+      
+      <div class="col-lg-6">
+        <div class="hero-cards">
+          <div class="feature-card">
+            <div class="card-icon">
+              <i class="fas fa-graduation-cap"></i>
+            </div>
+            <h5>Easy Registration</h5>
+            <p>Quick and secure online registration for BECE examinations</p>
+          </div>
+          
+          <div class="feature-card">
+            <div class="card-icon">
+              <i class="fas fa-chart-line"></i>
+            </div>
+            <h5>Instant Results</h5>
+            <p>Access your examination results immediately after publication</p>
+          </div>
+          
+          <div class="feature-card">
+            <div class="card-icon">
+              <i class="fas fa-shield-alt"></i>
+            </div>
+            <h5>Secure Platform</h5>
+            <p>Your data is protected with advanced security measures</p>
+          </div>
+        </div>
+      </div>
     </div>
-
-    <!-- Announcements -->
-    <section class="bg-white rounded-4 shadow-sm p-4 mx-auto" style="max-width: 600px;">
-      <h2 class="h5 fw-semibold mb-3 text-dark">📢 Latest News</h2>
-      <p class="text-muted small">
-    The Basic Education Certificate Examination (BECE) is an essential assessment for students 
-    completing Junior Secondary School. It tests knowledge in core subjects, supports transition 
-    into Senior Secondary School, and ensures students meet national educational standards.
-    This portal provides tools for registration, result checking, and accessing important updates.
-  </p>
-      <ul class="list-unstyled text-start small text-muted">
-        <li class="mb-2">✅ Registration for the upcoming BECE session is now open.</li>
-        <li class="mb-2">📌 Remember: You need your email and password to check results.</li>
-        <li class="mb-2">☎️ Contact support for payment or login issues.</li>
-      </ul>
-    </section>
   </div>
 </div>
 
+<section class="gallery-section py-5">
+  <div class="container">
+    <div class="row">
+      <div class="col-12 text-center mb-5">
+        <h2 class="section-title">BECE Journey</h2>
+        <p class="section-subtitle">From registration to graduation - your path to success</p>
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-md-4 mb-4">
+        <div class="gallery-card">
+          <div class="gallery-image">
+            <img src="/images/gallery/students-studying.svg" alt="Students Studying" class="img-fluid">
+          </div>
+          <div class="gallery-content">
+            <h5>Study & Prepare</h5>
+            <p>Dedicated preparation and study sessions for BECE success</p>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-4 mb-4">
+        <div class="gallery-card">
+          <div class="gallery-image">
+            <img src="/images/gallery/exam-hall.svg" alt="Examination Hall" class="img-fluid">
+          </div>
+          <div class="gallery-content">
+            <h5>Take the Exam</h5>
+            <p>Professional examination environment ensuring fair assessment</p>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-4 mb-4">
+        <div class="gallery-card">
+          <div class="gallery-image">
+            <img src="/images/gallery/graduation.svg" alt="Graduation Success" class="img-fluid">
+          </div>
+          <div class="gallery-content">
+            <h5>Achieve Success</h5>
+            <p>Celebrate your achievements and move to the next level</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="info-section py-5">
+  <div class="container">
+    <div class="row">
+      <div class="col-lg-8 mx-auto text-center">
+        <h2 class="section-title mb-4">About BECE</h2>
+        <p class="section-text mb-4">
+          The Basic Education Certificate Examination (BECE) is a crucial assessment for students completing Junior Secondary School. 
+          It evaluates knowledge in core subjects and facilitates transition to Senior Secondary School.
+        </p>
+        
+        <div class="row mt-5">
+          <div class="col-md-4 mb-4">
+            <div class="stat-card">
+              <div class="stat-number">50,000+</div>
+              <div class="stat-label">Students Registered</div>
+            </div>
+          </div>
+          <div class="col-md-4 mb-4">
+            <div class="stat-card">
+              <div class="stat-number">36</div>
+              <div class="stat-label">States Covered</div>
+            </div>
+          </div>
+          <div class="col-md-4 mb-4">
+            <div class="stat-card">
+              <div class="stat-number">98%</div>
+              <div class="stat-label">Success Rate</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<style>
+.hero-section {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  position: relative;
+  overflow: hidden;
+}
+
+.hero-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0,0,0,0.3);
+}
+
+.hero-content {
+  position: relative;
+  z-index: 2;
+}
+
+.logo-container {
+  position: relative;
+  display: inline-block;
+}
+
+.hero-logo {
+  width: 80px;
+  height: 80px;
+  filter: drop-shadow(0 0 20px rgba(255,255,255,0.3));
+}
+
+.logo-glow {
+  position: absolute;
+  top: -10px;
+  left: -10px;
+  right: -10px;
+  bottom: -10px;
+  background: radial-gradient(circle, rgba(255,255,255,0.2) 0%, transparent 70%);
+  border-radius: 50%;
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { transform: scale(1); opacity: 0.7; }
+  50% { transform: scale(1.1); opacity: 1; }
+}
+
+.hero-title {
+  font-size: 3.5rem;
+  font-weight: 700;
+  text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+}
+
+.hero-subtitle {
+  font-size: 1.2rem;
+  opacity: 0.9;
+}
+
+.btn-hero {
+  padding: 12px 30px;
+  font-weight: 600;
+  border-radius: 50px;
+  transition: all 0.3s ease;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.btn-hero:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(0,0,0,0.2);
+}
+
+.hero-cards {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  padding-left: 40px;
+}
+
+.feature-card {
+  background: rgba(255,255,255,0.1);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255,255,255,0.2);
+  border-radius: 15px;
+  padding: 25px;
+  color: white;
+  transition: all 0.3s ease;
+}
+
+.feature-card:hover {
+  transform: translateX(10px);
+  background: rgba(255,255,255,0.15);
+}
+
+.card-icon {
+  font-size: 2rem;
+  margin-bottom: 15px;
+  color: #ffd700;
+}
+
+.feature-card h5 {
+  font-weight: 600;
+  margin-bottom: 10px;
+}
+
+.info-section {
+  background: #f8f9fa;
+}
+
+.section-title {
+  font-size: 2.5rem;
+  font-weight: 700;
+  color: #333;
+}
+
+.section-text {
+  font-size: 1.1rem;
+  color: #666;
+  line-height: 1.8;
+}
+
+.stat-card {
+  text-align: center;
+  padding: 20px;
+}
+
+.stat-number {
+  font-size: 2.5rem;
+  font-weight: 700;
+  color: #667eea;
+  margin-bottom: 5px;
+}
+
+.stat-label {
+  font-size: 0.9rem;
+  color: #666;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.gallery-section {
+  background: #fff;
+}
+
+.section-subtitle {
+  color: #666;
+  font-size: 1.1rem;
+  margin-bottom: 0;
+}
+
+.gallery-card {
+  background: #fff;
+  border-radius: 15px;
+  box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+  overflow: hidden;
+  transition: all 0.3s ease;
+  height: 100%;
+}
+
+.gallery-card:hover {
+  transform: translateY(-10px);
+  box-shadow: 0 15px 40px rgba(0,0,0,0.15);
+}
+
+.gallery-image {
+  height: 200px;
+  overflow: hidden;
+  background: linear-gradient(45deg, #f8f9fa, #e9ecef);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+
+.gallery-image img {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+}
+
+.gallery-content {
+  padding: 25px;
+  text-align: center;
+}
+
+.gallery-content h5 {
+  color: #333;
+  font-weight: 600;
+  margin-bottom: 15px;
+  font-size: 1.2rem;
+}
+
+.gallery-content p {
+  color: #666;
+  margin-bottom: 0;
+  line-height: 1.6;
+}
+
+@media (max-width: 768px) {
+  .hero-title { font-size: 2.5rem; }
+  .hero-cards { padding-left: 0; margin-top: 40px; }
+  .feature-card:hover { transform: none; }
+  .gallery-card:hover { transform: none; }
+}
+</style>

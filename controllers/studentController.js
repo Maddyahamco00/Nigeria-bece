@@ -4,6 +4,8 @@ import { Student, State, LGA, School, Result, Subject } from '../models/index.js
 import db from '../config/database.js';
 import sendEmail, { sendTemplateEmail } from '../utils/sendEmail.js';
 import cacheService from '../services/cacheService.js';
+import smsService from '../services/smsService.js';
+import generateStudentCode from '../utils/generateStudentCode.js';
 
 // Step 1: Render Biodata Form
 export const renderBiodataForm = async (req, res) => {
@@ -128,14 +130,24 @@ export const renderConfirmationPage = async (req, res) => {
   const { studentId, ref } = req.query;
 
   try {
-    const student = await Student.findByPk(studentId);
-    await student.update({ paymentStatus: 'Paid', regNumber: ref });
-
-    // Generate registration number
-    const currentYear = new Date().getFullYear().toString().slice(-2);
-    const regNumber = `BECE${currentYear}${student.stateId.toString().padStart(2, '0')}${student.lgaId.toString().padStart(2, '0')}${student.schoolId.toString().padStart(3, '0')}${student.id.toString().padStart(4, '0')}`;
+    const student = await Student.findByPk(studentId, {
+      include: [School, State, LGA]
+    });
     
-    await student.update({ regNumber });
+    if (!student) {
+      req.flash('error', 'Student not found');
+      return res.redirect('/students/register');
+    }
+
+    await student.update({ paymentStatus: 'Paid' });
+
+    // Generate student code if not exists
+    if (!student.studentCode && !student.regNumber) {
+      const studentCode = await generateStudentCode(student.stateId, student.lgaId, student.schoolId);
+      await student.update({ studentCode, regNumber: studentCode });
+      student.studentCode = studentCode;
+      student.regNumber = studentCode;
+    }
 
     res.render('students/confirmation', {
       title: 'Registration Complete',

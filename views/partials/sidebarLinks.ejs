@@ -20,4 +20,26 @@
       <i class="bi bi-journal-check me-2"></i> Results
     </a>
   </li>
+  <li class="nav-item mb-2">
+    <a href="/admin/payments" class="nav-link d-flex align-items-center rounded px-3 py-2 <%= currentPath && currentPath.startsWith('/admin/payments') ? 'active' : '' %>" aria-current="<%= currentPath && currentPath.startsWith('/admin/payments') ? 'page' : '' %>">
+      <i class="bi bi-credit-card me-2"></i> Payments
+    </a>
+  </li>
+  <% if (user && user.role === 'super_admin') { %>
+  <li class="nav-item mb-2">
+    <a href="/admin/users" class="nav-link d-flex align-items-center rounded px-3 py-2 <%= currentPath && currentPath.startsWith('/admin/users') ? 'active' : '' %>" aria-current="<%= currentPath && currentPath.startsWith('/admin/users') ? 'page' : '' %>">
+      <i class="bi bi-person-gear me-2"></i> Admin Management
+    </a>
+  </li>
+  <li class="nav-item mb-2">
+    <a href="/admin/gazette" class="nav-link d-flex align-items-center rounded px-3 py-2">
+      <i class="bi bi-download me-2"></i> Gazette
+    </a>
+  </li>
+  <% } %>
+  <li class="nav-item mb-2">
+    <a href="/admin/settings" class="nav-link d-flex align-items-center rounded px-3 py-2 <%= currentPath && currentPath.startsWith('/admin/settings') ? 'active' : '' %>" aria-current="<%= currentPath && currentPath.startsWith('/admin/settings') ? 'page' : '' %>">
+      <i class="bi bi-gear me-2"></i> Settings
+    </a>
+  </li>
 </ul>

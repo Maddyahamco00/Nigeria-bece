@@ -1,0 +1,131 @@
+<!-- views/admin/gazette.ejs -->
+<div class="container mt-4">
+  <div class="row">
+    <div class="col-md-12">
+      <div class="card">
+        <div class="card-header bg-success text-white">
+          <h4><i class="fas fa-newspaper"></i> BECE Official Gazette</h4>
+          <small>Download examination results in official gazette format</small>
+        </div>
+        <div class="card-body">
+          <div class="row mb-4">
+            <div class="col-md-6">
+              <div class="alert alert-info">
+                <h6><i class="fas fa-info-circle"></i> About BECE Gazette</h6>
+                <p class="mb-0">The official gazette contains all published BECE results for the selected period. Use the filters below to generate specific reports.</p>
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="card bg-light">
+                <div class="card-body text-center">
+                  <h5 class="text-primary">Quick Stats</h5>
+                  <p class="mb-1"><strong>Current Year:</strong> <%= new Date().getFullYear() %></p>
+                  <p class="mb-0"><strong>Available States:</strong> <%= states.length %></p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <form action="/admin/export/gazette" method="GET" class="mb-4">
+            <div class="row">
+              <div class="col-md-4">
+                <div class="form-group">
+                  <label for="year"><i class="fas fa-calendar"></i> Examination Year</label>
+                  <select class="form-control" id="year" name="year">
+                    <option value="">All Years</option>
+                    <% years.forEach(year => { %>
+                      <option value="<%= year %>" <%= year === new Date().getFullYear() ? 'selected' : '' %>>
+                        <%= year %>
+                      </option>
+                    <% }); %>
+                  </select>
+                </div>
+              </div>
+              <div class="col-md-4">
+                <div class="form-group">
+                  <label for="state"><i class="fas fa-map-marker-alt"></i> State</label>
+                  <select class="form-control" id="state" name="state">
+                    <option value="">All States</option>
+                    <% states.forEach(state => { %>
+                      <option value="<%= state.id %>"><%= state.name %></option>
+                    <% }); %>
+                  </select>
+                </div>
+              </div>
+              <div class="col-md-4">
+                <div class="form-group">
+                  <label>&nbsp;</label>
+                  <div class="d-flex gap-2">
+                    <button type="submit" class="btn btn-success flex-fill">
+                      <i class="fas fa-download"></i> Download CSV
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </form>
+
+          <div class="row">
+            <div class="col-md-12">
+              <h5 class="text-primary">Available Export Options</h5>
+              <div class="table-responsive">
+                <table class="table table-bordered">
+                  <thead class="thead-light">
+                    <tr>
+                      <th>Export Type</th>
+                      <th>Description</th>
+                      <th>Fields Included</th>
+                      <th>Action</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td><strong>Full Gazette</strong></td>
+                      <td>Complete results for all students</td>
+                      <td>Name, Code, School, State, Subject, Score, Grade, Year</td>
+                      <td>
+                        <a href="/admin/export/gazette" class="btn btn-sm btn-success">
+                          <i class="fas fa-download"></i> Download
+                        </a>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td><strong>Current Year</strong></td>
+                      <td>Results for <%= new Date().getFullYear() %> only</td>
+                      <td>Name, Code, School, State, Subject, Score, Grade</td>
+                      <td>
+                        <a href="/admin/export/gazette?year=<%= new Date().getFullYear() %>" class="btn btn-sm btn-primary">
+                          <i class="fas fa-download"></i> Download
+                        </a>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td><strong>State-wise</strong></td>
+                      <td>Results filtered by state</td>
+                      <td>Name, Code, School, Subject, Score, Grade, Year</td>
+                      <td>
+                        <button class="btn btn-sm btn-info" onclick="$('#state').focus()">
+                          <i class="fas fa-filter"></i> Use Filter Above
+                        </button>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+
+          <div class="alert alert-warning mt-4">
+            <h6><i class="fas fa-exclamation-triangle"></i> Important Notes</h6>
+            <ul class="mb-0">
+              <li>Gazette files are generated in CSV format for easy processing</li>
+              <li>Large datasets may take a few moments to generate</li>
+              <li>Files include only published results</li>
+              <li>Contact system administrator for custom export requirements</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

@@ -6,12 +6,12 @@ import ejs from 'ejs';
 // Create transporter
 const createTransporter = () => {
   return nodemailer.createTransport({
-    host: process.env.MAIL_HOST || 'smtp.gmail.com',
-    port: process.env.MAIL_PORT || 587,
+    host: process.env.EMAIL_HOST || 'smtp.gmail.com',
+    port: process.env.EMAIL_PORT || 587,
     secure: false,
     auth: {
-      user: process.env.MAIL_USER,
-      pass: process.env.MAIL_PASS
+      user: process.env.EMAIL_USER,
+      pass: process.env.EMAIL_PASS
     }
   });
 };
@@ -21,7 +21,7 @@ const templatesDir = path.join(process.cwd(), 'views', 'emails');
 // Main email sending function
 export default async function sendEmail(to, subject, html, options = {}) {
   // If no email configured, log to console
-  if (!process.env.MAIL_USER || !process.env.MAIL_PASS) {
+  if (!process.env.EMAIL_USER || !process.env.EMAIL_PASS) {
     console.log('📧 Email would be sent to:', to);
     console.log('📧 Subject:', subject);
     console.log('📧 HTML:', (html || '').substring(0, 200) + '...');
@@ -32,7 +32,7 @@ export default async function sendEmail(to, subject, html, options = {}) {
     const transporter = createTransporter();
     
     const mailOptions = {
-      from: process.env.MAIL_FROM || `"Nigeria BECE Portal" <${process.env.MAIL_USER}>`,
+      from: process.env.EMAIL_FROM || `"Nigeria BECE Portal" <${process.env.EMAIL_USER}>`,
       to,
       subject,
       html,

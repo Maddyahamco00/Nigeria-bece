@@ -11,7 +11,7 @@ export const setupPassport = (app) => {
 
 // Middleware to check if user is authenticated
 export const isAuthenticated = (req, res, next) => {
-  if (req.isAuthenticated && req.isAuthenticated()) {
+  if (req.session.admin || req.session.student || (req.isAuthenticated && req.isAuthenticated())) {
     return next();
   }
   req.flash('error', 'Please log in first');
@@ -20,12 +20,11 @@ export const isAuthenticated = (req, res, next) => {
 
 // Middleware to check if user is an admin
 export const isAdmin = (req, res, next) => {
-  // Allow both 'admin' and 'superadmin' roles to access admin sections
-  if (req.user && (req.user.role === 'admin' || req.user.role === 'superadmin')) {
+  if (req.session.admin || (req.user && (req.user.role === 'admin' || req.user.role === 'superadmin' || req.user.role === 'super_admin'))) {
     return next();
   }
   req.flash('error', 'Admins only');
-  res.redirect('/');
+  res.redirect('/auth/login');
 };
 
 // Middleware to ensure student session

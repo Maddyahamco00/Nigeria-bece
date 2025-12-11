@@ -1,0 +1,146 @@
+<!-- views/admin/view-student.ejs -->
+<div class="container mt-4">
+  <div class="row">
+    <div class="col-md-12">
+      <div class="card">
+        <div class="card-header bg-info text-white d-flex justify-content-between">
+          <h4><i class="fas fa-user"></i> Student Details</h4>
+          <div>
+            <a href="/admin/students/<%= student.id %>/edit" class="btn btn-warning btn-sm">
+              <i class="fas fa-edit"></i> Edit
+            </a>
+            <a href="/admin/students/<%= student.id %>/subjects" class="btn btn-primary btn-sm">
+              <i class="fas fa-book"></i> Manage Subjects
+            </a>
+          </div>
+        </div>
+        <div class="card-body">
+          <div class="row">
+            <div class="col-md-6">
+              <h5>Personal Information</h5>
+              <table class="table table-borderless">
+                <tr>
+                  <td><strong>Name:</strong></td>
+                  <td><%= student.name %></td>
+                </tr>
+                <tr>
+                  <td><strong>Student Code:</strong></td>
+                  <td><%= student.studentCode || student.regNumber %></td>
+                </tr>
+                <tr>
+                  <td><strong>Email:</strong></td>
+                  <td><%= student.email || 'N/A' %></td>
+                </tr>
+                <tr>
+                  <td><strong>Gender:</strong></td>
+                  <td><%= student.gender || 'N/A' %></td>
+                </tr>
+                <tr>
+                  <td><strong>Date of Birth:</strong></td>
+                  <td><%= student.dateOfBirth ? new Date(student.dateOfBirth).toLocaleDateString() : 'N/A' %></td>
+                </tr>
+                <tr>
+                  <td><strong>Guardian Phone:</strong></td>
+                  <td><%= student.guardianPhone || 'N/A' %></td>
+                </tr>
+              </table>
+            </div>
+            <div class="col-md-6">
+              <h5>School Information</h5>
+              <table class="table table-borderless">
+                <tr>
+                  <td><strong>School:</strong></td>
+                  <td><%= student.School?.name || 'N/A' %></td>
+                </tr>
+                <tr>
+                  <td><strong>State:</strong></td>
+                  <td><%= student.State?.name || 'N/A' %></td>
+                </tr>
+                <tr>
+                  <td><strong>LGA:</strong></td>
+                  <td><%= student.LGA?.name || 'N/A' %></td>
+                </tr>
+                <tr>
+                  <td><strong>Payment Status:</strong></td>
+                  <td>
+                    <span class="badge badge-<%= student.paymentStatus === 'paid' ? 'success' : 'warning' %>">
+                      <%= student.paymentStatus || 'pending' %>
+                    </span>
+                  </td>
+                </tr>
+                <tr>
+                  <td><strong>Registration Date:</strong></td>
+                  <td><%= new Date(student.createdAt).toLocaleDateString() %></td>
+                </tr>
+              </table>
+            </div>
+          </div>
+
+          <% if (student.Results && student.Results.length > 0) { %>
+            <hr>
+            <h5>Results</h5>
+            <div class="table-responsive">
+              <table class="table table-striped">
+                <thead>
+                  <tr>
+                    <th>Subject</th>
+                    <th>Score</th>
+                    <th>Grade</th>
+                    <th>Date</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <% student.Results.forEach(result => { %>
+                    <tr>
+                      <td><%= result.subject %></td>
+                      <td><%= result.score %></td>
+                      <td><%= getGrade(result.score) %></td>
+                      <td><%= new Date(result.createdAt).toLocaleDateString() %></td>
+                    </tr>
+                  <% }); %>
+                </tbody>
+              </table>
+            </div>
+          <% } %>
+
+          <% if (student.Payments && student.Payments.length > 0) { %>
+            <hr>
+            <h5>Payment History</h5>
+            <div class="table-responsive">
+              <table class="table table-striped">
+                <thead>
+                  <tr>
+                    <th>Reference</th>
+                    <th>Amount</th>
+                    <th>Status</th>
+                    <th>Date</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <% student.Payments.forEach(payment => { %>
+                    <tr>
+                      <td><%= payment.reference %></td>
+                      <td>₦<%= payment.amount %></td>
+                      <td>
+                        <span class="badge badge-<%= payment.status === 'success' ? 'success' : 'danger' %>">
+                          <%= payment.status %>
+                        </span>
+                      </td>
+                      <td><%= new Date(payment.createdAt).toLocaleDateString() %></td>
+                    </tr>
+                  <% }); %>
+                </tbody>
+              </table>
+            </div>
+          <% } %>
+
+          <div class="text-center mt-4">
+            <a href="/admin/students" class="btn btn-secondary">
+              <i class="fas fa-arrow-left"></i> Back to Students
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

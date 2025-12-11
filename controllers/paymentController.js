@@ -2,7 +2,9 @@
 import axios from 'axios';
 import { Payment, Student, School } from '../models/index.js';
 import sendEmail, { sendTemplateEmail } from '../utils/sendEmail.js';
-import { generateStudentCode } from '../utils/codeGenerator.js';
+import generateStudentCode from '../utils/generateStudentCode.js';
+import smsService from '../services/smsService.js';
+import cacheService from '../services/cacheService.js';
 
 const PAYSTACK_SECRET_KEY = process.env.PAYSTACK_SECRET_KEY;
 
@@ -128,26 +130,50 @@ export const verifyPayment = async (req, res) => {
     
     if (status === 'success' && payment) {
       payment.status = 'success';
-      const beceCode = generateStudentCode();
+      const beceCode = await generateStudentCode(metadata?.stateId || 1, metadata?.lgaId || 1, metadata?.schoolId || 1);
       payment.code = beceCode;
       await payment.save();
       
+      // Get cached payment data for SMS notification
+      const cachedPaymentData = await cacheService.getPaymentData(reference);
+      
       // Create student record if payment successful
       if (customer.email) {
-        await Student.findOrCreate({
+        const [student, created] = await Student.findOrCreate({
           where: { email: customer.email },
           defaults: {
             name: customer.first_name || 'Student',
             email: customer.email,
             paymentStatus: 'Paid',
-            schoolId: metadata?.schoolId || null
+            schoolId: metadata?.schoolId || null,
+            studentCode: beceCode
           }
         });
+        
+        if (!created) {
+          student.paymentStatus = 'Paid';
+          student.studentCode = beceCode;
+          await student.save();
+        }
+        
         // Send payment confirmation email
         try {
-          await sendTemplateEmail(customer.email, 'paymentSuccess', { payment: { amount: amount/100, reference, code: beceCode, createdAt: new Date() }, student: { name: customer.first_name } });
+          await sendTemplateEmail(customer.email, 'paymentSuccess', { 
+            payment: { amount: amount/100, reference, code: beceCode, createdAt: new Date() }, 
+            student: { name: customer.first_name } 
+          });
         } catch (err) {
           console.error('Failed to send payment success email:', err);
+        }
+        
+        // Send SMS notification if phone number available
+        if (cachedPaymentData?.guardianPhone || student.guardianPhone) {
+          try {
+            const phone = cachedPaymentData?.guardianPhone || student.guardianPhone;
+            await smsService.sendPaymentConfirmationSMS(phone, amount/100, reference);
+          } catch (smsErr) {
+            console.error('Failed to send payment SMS:', smsErr);
+          }
         }
       }
       

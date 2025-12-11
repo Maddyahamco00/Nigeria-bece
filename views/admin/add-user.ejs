@@ -1,0 +1,112 @@
+<!-- views/admin/add-user.ejs -->
+<div class="container mt-4">
+  <div class="row">
+    <div class="col-md-8 offset-md-2">
+      <div class="card">
+        <div class="card-header bg-primary text-white">
+          <h4><i class="fas fa-user-plus"></i> Add New Admin User</h4>
+        </div>
+        <div class="card-body">
+          <form action="/admin/users" method="POST">
+            <div class="row">
+              <div class="col-md-6">
+                <div class="form-group">
+                  <label for="name">Full Name *</label>
+                  <input type="text" class="form-control" id="name" name="name" required>
+                </div>
+              </div>
+              <div class="col-md-6">
+                <div class="form-group">
+                  <label for="email">Email Address *</label>
+                  <input type="email" class="form-control" id="email" name="email" required>
+                </div>
+              </div>
+            </div>
+
+            <div class="row">
+              <div class="col-md-6">
+                <div class="form-group">
+                  <label for="password">Password *</label>
+                  <input type="password" class="form-control" id="password" name="password" required minlength="6">
+                </div>
+              </div>
+              <div class="col-md-6">
+                <div class="form-group">
+                  <label for="role">Role *</label>
+                  <select class="form-control" id="role" name="role" required onchange="toggleRoleFields()">
+                    <option value="">Select Role</option>
+                    <option value="admin">Admin</option>
+                    <option value="state_admin">State Admin</option>
+                    <option value="school_admin">School Admin</option>
+                    <option value="exam_admin">Exam Admin</option>
+                    <option value="feedback_admin">Feedback Admin</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+
+            <div class="row" id="stateField" style="display: none;">
+              <div class="col-md-6">
+                <div class="form-group">
+                  <label for="stateId">State</label>
+                  <select class="form-control" id="stateId" name="stateId">
+                    <option value="">Select State</option>
+                    <% states.forEach(state => { %>
+                      <option value="<%= state.id %>"><%= state.name %></option>
+                    <% }); %>
+                  </select>
+                </div>
+              </div>
+            </div>
+
+            <div class="row" id="schoolField" style="display: none;">
+              <div class="col-md-6">
+                <div class="form-group">
+                  <label for="schoolId">School</label>
+                  <select class="form-control" id="schoolId" name="schoolId">
+                    <option value="">Select School</option>
+                    <% schools.forEach(school => { %>
+                      <option value="<%= school.id %>"><%= school.name %> - <%= school.State?.name %></option>
+                    <% }); %>
+                  </select>
+                </div>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label for="permissions">Permissions (JSON)</label>
+              <textarea class="form-control" id="permissions" name="permissions" rows="3" placeholder='{"can_export": true, "can_delete": false}'></textarea>
+              <small class="form-text text-muted">Optional: JSON object with specific permissions</small>
+            </div>
+
+            <div class="form-group text-center">
+              <button type="submit" class="btn btn-primary">
+                <i class="fas fa-save"></i> Create Admin User
+              </button>
+              <a href="/admin/users" class="btn btn-secondary ml-2">
+                <i class="fas fa-arrow-left"></i> Cancel
+              </a>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+function toggleRoleFields() {
+  const role = document.getElementById('role').value;
+  const stateField = document.getElementById('stateField');
+  const schoolField = document.getElementById('schoolField');
+  
+  stateField.style.display = 'none';
+  schoolField.style.display = 'none';
+  
+  if (role === 'state_admin') {
+    stateField.style.display = 'block';
+  } else if (role === 'school_admin') {
+    schoolField.style.display = 'block';
+  }
+}
+</script>

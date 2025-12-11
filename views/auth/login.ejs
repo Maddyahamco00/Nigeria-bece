@@ -1,49 +1,247 @@
-<!-- views/auth/admin-login.ejs -->
-
-<main class="d-flex align-items-center justify-content-center min-vh-100 bg-light">
+<!-- views/auth/login.ejs -->
+<div class="auth-container">
+  <div class="auth-background"></div>
   <div class="container">
-    <div class="row justify-content-center">
-      <div class="col-md-8 text-center">
-        <h1 class="fw-bold text-primary mb-4">BECE Portal Login</h1>
-        <p class="lead mb-5">Select your login portal</p>
-        <% if (logged_out) { %>
-          <div class="alert alert-success">You have been logged out successfully.</div>
-        <% } %>
-        
-        <div class="row g-4">
-          <!-- Admin Login Card -->
-          <div class="col-md-6">
-            <div class="card shadow-lg border-0 rounded-4 h-100">
-              <div class="card-body p-5">
-                <div class="text-primary mb-4">
-                  <i class="bi bi-person-gear display-1"></i>
-                </div>
-                <h3 class="card-title fw-bold">Admin Portal</h3>
-                <p class="card-text text-muted">School administrators and staff</p>
-                <a href="/auth/admin" class="btn btn-primary btn-lg w-100">Admin Login</a>
-              </div>
+    <div class="row justify-content-center align-items-center min-vh-100">
+      <div class="col-md-6 col-lg-5">
+        <div class="auth-card">
+          <div class="auth-header">
+            <div class="auth-logo">
+              <img src="/images/logos/bece-logo.svg" alt="BECE Logo" class="logo-img">
             </div>
+            <h2 class="auth-title">Welcome Back</h2>
+            <p class="auth-subtitle">Sign in to your BECE admin account</p>
           </div>
           
-          <!-- Student Login Card -->
-          <div class="col-md-6">
-            <div class="card shadow-lg border-0 rounded-4 h-100">
-              <div class="card-body p-5">
-                <div class="text-success mb-4">
-                  <i class="bi bi-person-check display-1"></i>
-                </div>
-                <h3 class="card-title fw-bold">Student Portal</h3>
-                <p class="card-text text-muted">Students and guardians</p>
-                <a href="/auth/student/login" class="btn btn-success btn-lg w-100">Student Login</a>
+          <div class="auth-body">
+            <% if (messages.error) { %>
+              <div class="alert alert-danger">
+                <i class="fas fa-exclamation-circle me-2"></i>
+                <%= messages.error %>
               </div>
-            </div>
+            <% } %>
+            
+            <% if (messages.success) { %>
+              <div class="alert alert-success">
+                <i class="fas fa-check-circle me-2"></i>
+                <%= messages.success %>
+              </div>
+            <% } %>
+
+            <form action="/auth/login" method="POST" class="auth-form">
+              <div class="form-floating mb-3">
+                <input type="email" class="form-control" id="email" name="email" placeholder="Enter your email" required>
+                <label for="email"><i class="fas fa-envelope me-2"></i>Email Address</label>
+              </div>
+              
+              <div class="form-floating mb-4">
+                <input type="password" class="form-control" id="password" name="password" placeholder="Enter your password" required>
+                <label for="password"><i class="fas fa-lock me-2"></i>Password</label>
+              </div>
+              
+              <div class="d-flex justify-content-between align-items-center mb-4">
+                <div class="form-check">
+                  <input class="form-check-input" type="checkbox" id="remember" name="remember">
+                  <label class="form-check-label" for="remember">
+                    Remember me
+                  </label>
+                </div>
+                <a href="/auth/forgot-password" class="auth-link">Forgot Password?</a>
+              </div>
+              
+              <button type="submit" class="btn btn-primary w-100 auth-btn">
+                <i class="fas fa-sign-in-alt me-2"></i>
+                Sign In
+              </button>
+            </form>
           </div>
-        </div>
-        
-        <div class="mt-5">
-          <a href="/payment/pay" class="btn btn-outline-secondary">Register New Student</a>
+          
+          <div class="auth-footer">
+            <p class="text-center mb-0">
+              Don't have an account? 
+              <a href="/students/register" class="auth-link">Register as Student</a>
+            </p>
+          </div>
         </div>
       </div>
     </div>
   </div>
-</main>
+</div>
+
+<style>
+.auth-container {
+  position: relative;
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.auth-background {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  z-index: -1;
+}
+
+.auth-background::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grain" width="100" height="100" patternUnits="userSpaceOnUse"><circle cx="25" cy="25" r="1" fill="rgba(255,255,255,0.1)"/><circle cx="75" cy="75" r="1" fill="rgba(255,255,255,0.1)"/><circle cx="50" cy="10" r="0.5" fill="rgba(255,255,255,0.05)"/></pattern></defs><rect width="100" height="100" fill="url(%23grain)"/></svg>');
+  opacity: 0.3;
+}
+
+.auth-card {
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(20px);
+  border-radius: 20px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  overflow: hidden;
+  animation: slideUp 0.6s ease-out;
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.auth-header {
+  text-align: center;
+  padding: 40px 40px 20px;
+  background: linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%);
+}
+
+.auth-logo {
+  margin-bottom: 20px;
+}
+
+.logo-img {
+  width: 80px;
+  height: 80px;
+  filter: drop-shadow(0 5px 15px rgba(0, 0, 0, 0.2));
+}
+
+.auth-title {
+  font-size: 2rem;
+  font-weight: 700;
+  color: #333;
+  margin-bottom: 10px;
+}
+
+.auth-subtitle {
+  color: #666;
+  margin-bottom: 0;
+  font-size: 1.1rem;
+}
+
+.auth-body {
+  padding: 30px 40px;
+}
+
+.form-floating {
+  position: relative;
+}
+
+.form-floating .form-control {
+  border: 2px solid #e0e0e0;
+  border-radius: 12px;
+  padding: 20px 15px 10px;
+  font-size: 1rem;
+  transition: all 0.3s ease;
+  background: rgba(255, 255, 255, 0.9);
+}
+
+.form-floating .form-control:focus {
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+  background: white;
+}
+
+.form-floating label {
+  padding: 15px;
+  color: #666;
+  font-weight: 500;
+}
+
+.auth-btn {
+  padding: 15px;
+  font-size: 1.1rem;
+  font-weight: 600;
+  border-radius: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.auth-btn::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+  transition: left 0.5s;
+}
+
+.auth-btn:hover::before {
+  left: 100%;
+}
+
+.auth-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 30px rgba(102, 126, 234, 0.4);
+}
+
+.auth-link {
+  color: var(--primary-color);
+  text-decoration: none;
+  font-weight: 600;
+  transition: all 0.3s ease;
+}
+
+.auth-link:hover {
+  color: var(--secondary-color);
+  text-decoration: underline;
+}
+
+.auth-footer {
+  padding: 20px 40px 40px;
+  background: rgba(248, 249, 250, 0.5);
+  border-top: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.form-check-input:checked {
+  background-color: var(--primary-color);
+  border-color: var(--primary-color);
+}
+
+@media (max-width: 768px) {
+  .auth-header,
+  .auth-body,
+  .auth-footer {
+    padding-left: 25px;
+    padding-right: 25px;
+  }
+  
+  .auth-title {
+    font-size: 1.7rem;
+  }
+}
+</style>

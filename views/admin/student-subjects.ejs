@@ -1,0 +1,120 @@
+<!-- views/admin/student-subjects.ejs -->
+<div class="container mt-4">
+  <div class="row">
+    <div class="col-md-12">
+      <div class="card">
+        <div class="card-header bg-primary text-white">
+          <h4><i class="fas fa-book"></i> Manage Subjects - <%= student.name %></h4>
+          <small>Student Code: <%= student.studentCode || student.regNumber %></small>
+        </div>
+        <div class="card-body">
+          <div class="row mb-4">
+            <div class="col-md-6">
+              <p><strong>School:</strong> <%= student.School?.name || 'N/A' %></p>
+              <p><strong>Registration Date:</strong> <%= new Date(student.createdAt).toLocaleDateString() %></p>
+            </div>
+            <div class="col-md-6">
+              <p><strong>Payment Status:</strong> 
+                <span class="badge badge-<%= student.paymentStatus === 'paid' ? 'success' : 'warning' %>">
+                  <%= student.paymentStatus || 'pending' %>
+                </span>
+              </p>
+            </div>
+          </div>
+
+          <form action="/admin/students/<%= student.id %>/results" method="POST">
+            <h5>Upload Results for Registered Subjects</h5>
+            <div class="table-responsive">
+              <table class="table table-bordered">
+                <thead class="thead-dark">
+                  <tr>
+                    <th>Subject</th>
+                    <th>Current Score</th>
+                    <th>Current Grade</th>
+                    <th>New Score</th>
+                    <th>Action</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <% allSubjects.forEach(subject => { %>
+                    <% 
+                      const existingResult = registeredSubjects.find(rs => rs.id === subject.id);
+                      const hasResult = student.Results?.find(r => r.subject === subject.name);
+                    %>
+                    <tr>
+                      <td><%= subject.name %></td>
+                      <td>
+                        <% if (hasResult) { %>
+                          <%= hasResult.score %>
+                        <% } else { %>
+                          <span class="text-muted">Not uploaded</span>
+                        <% } %>
+                      </td>
+                      <td>
+                        <% if (hasResult) { %>
+                          <span class="badge badge-<%= getGradeBadge(getGrade(hasResult.score)) %>">
+                            <%= getGrade(hasResult.score) %>
+                          </span>
+                        <% } else { %>
+                          <span class="text-muted">-</span>
+                        <% } %>
+                      </td>
+                      <td>
+                        <input type="hidden" name="subjects[<%= subject.id %>][subjectId]" value="<%= subject.id %>">
+                        <input type="number" 
+                               class="form-control" 
+                               name="subjects[<%= subject.id %>][score]" 
+                               min="0" 
+                               max="100" 
+                               placeholder="Enter score"
+                               <% if (hasResult) { %>value="<%= hasResult.score %>"<% } %>>
+                      </td>
+                      <td>
+                        <% if (hasResult) { %>
+                          <span class="badge badge-success">Uploaded</span>
+                        <% } else { %>
+                          <span class="badge badge-warning">Pending</span>
+                        <% } %>
+                      </td>
+                    </tr>
+                  <% }); %>
+                </tbody>
+              </table>
+            </div>
+
+            <div class="text-center mt-4">
+              <button type="submit" class="btn btn-success">
+                <i class="fas fa-upload"></i> Upload/Update Results
+              </button>
+              <a href="/admin/students/<%= student.id %>" class="btn btn-info ml-2">
+                <i class="fas fa-eye"></i> View Student
+              </a>
+              <a href="/admin/students" class="btn btn-secondary ml-2">
+                <i class="fas fa-arrow-left"></i> Back to Students
+              </a>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+function getGrade(score) {
+  if(score >= 70) return 'A';
+  if(score >= 60) return 'B';
+  if(score >= 50) return 'C';
+  if(score >= 40) return 'D';
+  if(score >= 35) return 'E';
+  return 'F';
+}
+
+function getGradeBadge(grade) {
+  const badges = {
+    'A': 'success', 'B': 'info', 'C': 'warning', 
+    'D': 'secondary', 'E': 'danger', 'F': 'danger'
+  };
+  return badges[grade] || 'secondary';
+}
+</script>

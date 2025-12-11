@@ -4,8 +4,12 @@
   <%- include('../partials/sidebar') %>
 
   <div id="mainContent" class="main-content">
-    <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap">
-      <h2 class="fw-bold text-primary mb-2 mb-md-0">Dashboard Overview</h2>
+    <div class="welcome-header mb-4">
+      <h2 class="dashboard-title">
+        <i class="fas fa-tachometer-alt me-3"></i>
+        Welcome back, <%= user.name %>!
+      </h2>
+      <p class="dashboard-subtitle">Here's what's happening with your BECE portal today</p>
       <div>
         <% if (user.role === 'superadmin') { %>
           <a href="/admin/users" class="btn btn-outline-primary btn-sm me-2 mb-2 mb-md-0">
@@ -19,14 +23,14 @@
     <div class="row g-4 mb-4">
       <!-- TOTAL STUDENTS -->
       <div class="col-xl-3 col-md-6">
-        <div class="card border-0 shadow-sm rounded-4 bg-gradient-primary text-white">
-          <div class="card-body">
-            <div class="d-flex justify-content-between align-items-center">
-              <div>
-                <h6 class="card-title">Total Students</h6>
-                <h2 class="fw-bold" id="totalStudents"><%= analytics.totalStudents %></h2>
-              </div>
-              <i class="bi bi-people-fill display-6 opacity-75"></i>
+        <div class="stats-card">
+          <div class="d-flex justify-content-between align-items-center">
+            <div>
+              <div class="stats-number" id="totalStudents"><%= analytics.totalStudents %></div>
+              <div class="stats-label">Total Students</div>
+            </div>
+            <div class="stats-icon">
+              <i class="fas fa-user-graduate fa-3x" style="color: var(--primary-color); opacity: 0.7;"></i>
             </div>
           </div>
         </div>
@@ -34,14 +38,14 @@
 
       <!-- TOTAL SCHOOLS -->
       <div class="col-xl-3 col-md-6">
-        <div class="card border-0 shadow-sm rounded-4 bg-gradient-success text-white">
-          <div class="card-body">
-            <div class="d-flex justify-content-between align-items-center">
-              <div>
-                <h6 class="card-title">Total Schools</h6>
-                <h2 class="fw-bold" id="totalSchools"><%= analytics.totalSchools %></h2>
-              </div>
-              <i class="bi bi-building display-6 opacity-75"></i>
+        <div class="stats-card">
+          <div class="d-flex justify-content-between align-items-center">
+            <div>
+              <div class="stats-number" id="totalSchools"><%= analytics.totalSchools %></div>
+              <div class="stats-label">Registered Schools</div>
+            </div>
+            <div class="stats-icon">
+              <i class="fas fa-school fa-3x" style="color: var(--success-color); opacity: 0.7;"></i>
             </div>
           </div>
         </div>
@@ -49,29 +53,29 @@
 
       <!-- TOTAL PAYMENTS -->
       <div class="col-xl-3 col-md-6">
-        <div class="card border-0 shadow-sm rounded-4 bg-gradient-warning text-white">
-          <div class="card-body">
-            <div class="d-flex justify-content-between align-items-center">
-              <div>
-                <h6 class="card-title">Total Payments</h6>
-                <h2 class="fw-bold" id="totalPaid"><%= analytics.totalPayments %></h2>
-              </div>
-              <i class="bi bi-credit-card display-6 opacity-75"></i>
+        <div class="stats-card">
+          <div class="d-flex justify-content-between align-items-center">
+            <div>
+              <div class="stats-number" id="totalPaid"><%= analytics.totalPayments %></div>
+              <div class="stats-label">Successful Payments</div>
+            </div>
+            <div class="stats-icon">
+              <i class="fas fa-credit-card fa-3x" style="color: var(--warning-color); opacity: 0.7;"></i>
             </div>
           </div>
         </div>
       </div>
 
-      <!-- MONTHLY REVENUE (NO REAL TIME NEEDED) -->
+      <!-- MONTHLY REVENUE -->
       <div class="col-xl-3 col-md-6">
-        <div class="card border-0 shadow-sm rounded-4 bg-gradient-info text-white">
-          <div class="card-body">
-            <div class="d-flex justify-content-between align-items-center">
-              <div>
-                <h6 class="card-title">Monthly Revenue</h6>
-                <h2 class="fw-bold">₦<%= (analytics.monthlyRevenue || 0).toLocaleString() %></h2>
-              </div>
-              <i class="bi bi-graph-up display-6 opacity-75"></i>
+        <div class="stats-card">
+          <div class="d-flex justify-content-between align-items-center">
+            <div>
+              <div class="stats-number">₦<%= (analytics.monthlyRevenue || 0).toLocaleString() %></div>
+              <div class="stats-label">Monthly Revenue</div>
+            </div>
+            <div class="stats-icon">
+              <i class="fas fa-chart-line fa-3x" style="color: var(--info-color); opacity: 0.7;"></i>
             </div>
           </div>
         </div>

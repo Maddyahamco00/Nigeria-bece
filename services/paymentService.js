@@ -1,7 +1,7 @@
 // services/paymentService.js
 import sendEmail from '../utils/sendEmail.js';
 import { Payment, Student, School } from '../models/index.js';
-import { generateStudentCode } from '../utils/generateStudentCode.js';
+import generateStudentCode from '../utils/generateStudentCode.js';
 
 export async function handleSuccessfulPayment({ reference, amount, email, firstName, schoolId }) {
   // Ensure we have school object early (used later for emails)
@@ -25,7 +25,7 @@ export async function handleSuccessfulPayment({ reference, amount, email, firstN
     const schoolSerial = school.schoolSerial || 0;
     const studentSerial = (await Student.count({ where: { schoolId } })) + 1;
 
-    const code = generateStudentCode(stateCode, year, lgaSerial, schoolSerial, studentSerial);
+    const code = await generateStudentCode(school.stateId || 1, school.lgaId || 1, schoolId);
 
     student = await Student.create({
       name: firstName || 'Unknown',
