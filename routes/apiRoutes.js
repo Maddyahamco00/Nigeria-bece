@@ -1,6 +1,6 @@
 // routes/apiRoutes.js
 import express from 'express';
-import { LGA } from '../models/index.js';
+import { LGA, School } from '../models/index.js';
 
 const router = express.Router();
 
@@ -13,6 +13,18 @@ router.get('/lgas/:stateId', async (req, res) => {
   } catch (err) {
     console.error('❌ Error fetching LGAs:', err);
     res.status(500).json({ error: 'Failed to load LGAs' });
+  }
+});
+
+// Get all schools for a given LGA
+router.get('/schools/:lgaId', async (req, res) => {
+  try {
+    const { lgaId } = req.params;
+    const schools = await School.findAll({ where: { lgaId } });
+    res.json(schools);
+  } catch (err) {
+    console.error('❌ Error fetching schools:', err);
+    res.status(500).json({ error: 'Failed to load schools' });
   }
 });
 

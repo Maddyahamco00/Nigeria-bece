@@ -143,3 +143,10 @@ sequelize
   .catch((err) => {
     console.error('❌ Database connection failed:', err);
   });
+
+
+
+
+
+  //check reg flow (redirection and cache [use redis] prefilling payment page), generate/add student result page and payment page,make it the that admin should see and be able to upload registered subjects by the student, add gazette for admin download, make update message workable and then and sms message not only email,add mult-role (super admin [which is automaically created from the code] able to add other admins under him, state admin, school admin, exam upload and management admin and feedback admin)
+  

@@ -23,7 +23,8 @@ export default function initialize(passport) {
 
         return done(null, user);
       } catch (err) {
-        return done(err);
+        console.error('Admin authentication error:', err.message);
+        return done(null, false, { message: 'Database connection error. Please try again.' });
       }
     }
   ));
@@ -52,7 +53,8 @@ export default function initialize(passport) {
 
         return done(null, student);
       } catch (err) {
-        return done(err);
+        console.error('Student authentication error:', err.message);
+        return done(null, false, { message: 'Database connection error. Please try again.' });
       }
     }
   ));

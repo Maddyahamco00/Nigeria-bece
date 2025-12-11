@@ -3,11 +3,13 @@ import bcrypt from 'bcryptjs';
 import { Student, State, LGA, School, Result, Subject } from '../models/index.js';
 import db from '../config/database.js';
 import sendEmail, { sendTemplateEmail } from '../utils/sendEmail.js';
+import cacheService from '../services/cacheService.js';
 
 // Step 1: Render Biodata Form
 export const renderBiodataForm = async (req, res) => {
   try {
     const states = await State.findAll({ order: [['name', 'ASC']] });
+    
     res.render('students/biodata', {
       title: 'Student Registration - Biodata',
       states,
@@ -81,11 +83,17 @@ export const handleSubjects = async (req, res) => {
   const { studentId, subjects } = req.body;
 
   try {
-    const student = await Student.findByPk(studentId);
-    await student.setSubjects(subjects);
+    if (!subjects || subjects.length < 7) {
+      req.flash('error', 'Please select at least 7 subjects.');
+      return res.redirect('/students/register/subjects');
+    }
+
+    // Store selected subjects in session for now
+    req.session.selectedSubjects = Array.isArray(subjects) ? subjects : [subjects];
     res.redirect('/students/register/payment');
   } catch (err) {
     console.error('Error handling subjects:', err);
+    req.flash('error', 'An error occurred. Please try again.');
     res.redirect('/students/register/subjects');
   }
 };
@@ -93,7 +101,17 @@ export const handleSubjects = async (req, res) => {
 // Step 3: Render Payment Page
 export const renderPaymentPage = async (req, res) => {
   try {
-    const student = await Student.findByPk(req.session.studentId);
+    const studentId = req.session.studentId;
+    
+    const student = await Student.findByPk(studentId, {
+      include: [School, State, LGA]
+    });
+
+    if (!student) {
+      req.flash('error', 'Student not found. Please start registration again.');
+      return res.redirect('/students/register/biodata');
+    }
+
     res.render('students/payment', {
       title: 'Student Registration - Payment',
       student,

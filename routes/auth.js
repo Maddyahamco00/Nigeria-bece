@@ -1,7 +1,7 @@
 // routes/auth.js
 import express from 'express';
 import passport from 'passport';
-import { User, Student, State, LGA, School } from '../models/index.js';
+import { User, Student, State, LGA, School, Subject } from '../models/index.js';
 import sendEmail, { sendTemplateEmail } from '../utils/sendEmail.js';
 import bcrypt from 'bcryptjs';
 import crypto from 'crypto';
@@ -21,19 +21,14 @@ router.get('/login', (req, res) => {
   });
 });
 
-// Registration page (student registration)
-router.get('/register', async (req, res) => {
-  try {
-    const states = await State.findAll();
-    res.render('auth/register', {
-      title: 'Registration Portal',
-      messages: req.flash(),
-      states
-    });
-  } catch (err) {
-    console.error('Registration page error:', err);
-    res.status(500).render('error', { message: 'Server error' });
-  }
+// Registration page (redirect to biodata)
+router.get('/register', (req, res) => {
+  res.redirect('/students/register/biodata');
+});
+
+// Handle registration form submission (redirect to biodata)
+router.post('/register', (req, res) => {
+  res.redirect('/students/register/biodata');
 });
 
 // Root of /auth → redirect to login

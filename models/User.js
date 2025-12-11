@@ -20,8 +20,40 @@ const User = sequelize.define(
     },
     password: { type: DataTypes.STRING, allowNull: false },
     role: {
-      type: DataTypes.ENUM('superadmin', 'admin', 'user'),
-      defaultValue: 'user',
+      type: DataTypes.ENUM('super_admin', 'admin', 'state_admin', 'school_admin', 'exam_admin', 'feedback_admin'),
+      defaultValue: 'admin',
+    },
+    stateId: {
+      type: DataTypes.INTEGER,
+      allowNull: true,
+      references: {
+        model: 'States',
+        key: 'id'
+      }
+    },
+    schoolId: {
+      type: DataTypes.INTEGER,
+      allowNull: true,
+      references: {
+        model: 'Schools',
+        key: 'id'
+      }
+    },
+    createdBy: {
+      type: DataTypes.INTEGER,
+      allowNull: true,
+      references: {
+        model: 'Users',
+        key: 'id'
+      }
+    },
+    isActive: {
+      type: DataTypes.BOOLEAN,
+      defaultValue: true,
+    },
+    permissions: {
+      type: DataTypes.JSON,
+      defaultValue: {},
     },
     resetToken: { type: DataTypes.STRING, allowNull: true },
     resetTokenExpiration: { type: DataTypes.DATE, allowNull: true },

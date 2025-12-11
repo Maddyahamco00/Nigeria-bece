@@ -1,4 +1,4 @@
-<!-- views/students/biodata.ejs -->
+<!-- views/students/subjects.ejs -->
 <main class="d-flex align-items-center justify-content-center py-5" 
       style="background: linear-gradient(135deg, #f8f9fa, #e3f2fd); min-height: 100vh;">
 
@@ -6,27 +6,36 @@
     <div class="text-center mb-4">
       <img src="/images/logo.svg" alt="BECE Logo" class="mb-3" style="width: 70px;">
       <h2 class="fw-bold text-primary">Step 2: Subject Selection</h2>
-      <p class="text-muted">Choose your subjects for the examination.</p>
+      <p class="text-muted">Select at least 7 subjects including Mathematics and English (required).</p>
     </div>
 
-    <form action="/students/register/subjects" method="POST" class="row g-3">
+    <form action="/students/register/subjects" method="POST" class="row g-3" id="subjectForm">
       <input type="hidden" name="studentId" value="<%= student.id %>">
+      <% subjects.forEach(subject => { %>
+        <% if (subject.name === 'Mathematics' || subject.name === 'English') { %>
+          <input type="hidden" name="subjects" value="<%= subject.id %>">
+        <% } %>
+      <% }) %>
 
       <!-- Subject Selection -->
-      <div class="form-group col-md-12">
-        <label for="subjects" class="form-label fw-bold">Select Subjects</label>
-        <div class="d-flex flex-wrap gap-3">
+      <div class="col-12">
+        <label class="form-label fw-bold">Select Subjects (Minimum 7 required)</label>
+        <div class="row g-2">
           <% subjects.forEach(subject => { %>
-            <div class="form-check">
-              <input class="form-check-input" type="checkbox" name="subjects" value="<%= subject.id %>" 
-                     id="subject-<%= subject.id %>"
-                     <%= (subject.subject_name === 'Mathematics' || subject.subject_name === 'English') ? 'checked disabled' : '' %>>
-              <label class="form-check-label" for="subject-<%= subject.id %>">
-                <%= subject.subject_name %>
-              </label>
+            <div class="col-md-6">
+              <div class="form-check p-3 border rounded">
+                <input class="form-check-input subject-checkbox" type="checkbox" name="subjects" value="<%= subject.id %>" 
+                       id="subject-<%= subject.id %>"
+                       <%= (subject.name === 'Mathematics' || subject.name === 'English') ? 'checked disabled' : '' %>>
+                <label class="form-check-label fw-semibold" for="subject-<%= subject.id %>">
+                  <%= subject.name %>
+                  <%= (subject.name === 'Mathematics' || subject.name === 'English') ? '(Required)' : '' %>
+                </label>
+              </div>
             </div>
           <% }) %>
         </div>
+        <div id="subjectError" class="text-danger mt-2 d-none">Please select at least 7 subjects.</div>
       </div>
 
       <!-- Submit -->
@@ -38,3 +47,18 @@
     </form>
   </div>
 </main>
+
+<script>
+document.getElementById('subjectForm').addEventListener('submit', function(e) {
+  const checkboxes = document.querySelectorAll('.subject-checkbox:checked');
+  const errorDiv = document.getElementById('subjectError');
+  
+  if (checkboxes.length < 7) {
+    e.preventDefault();
+    errorDiv.classList.remove('d-none');
+    errorDiv.scrollIntoView({ behavior: 'smooth' });
+  } else {
+    errorDiv.classList.add('d-none');
+  }
+});
+</script>

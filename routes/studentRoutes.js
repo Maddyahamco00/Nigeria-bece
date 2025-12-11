@@ -8,7 +8,12 @@ import {
   renderPaymentPage,
   renderConfirmationPage,
   renderLogin,
-  renderDashboard
+  renderDashboard,
+  registerStudent,
+  loginStudent,
+  renderProfile,
+  updateProfile,
+  changePassword
 } from '../controllers/studentController.js';
 import { Student, School, State, LGA, Result, Payment, Subject } from '../models/index.js';
 import db from '../config/database.js';
@@ -58,6 +63,26 @@ router.post('/register/subjects', handleSubjects);
 router.get('/register/payment', renderPaymentPage);
 router.get('/register/confirmation', renderConfirmationPage);
 
+// Single-step registration (main route)
+router.get('/register', async (req, res) => {
+  try {
+    const states = await State.findAll();
+    const subjects = await Subject.findAll();
+    res.render('auth/register', {
+      title: 'Student Registration',
+      messages: req.flash(),
+      states,
+      subjects,
+      preData: {}
+    });
+  } catch (err) {
+    console.error('Registration page error:', err);
+    res.status(500).render('error', { message: 'Server error' });
+  }
+});
+
+router.post('/register', registerStudent);
+
 
 // Fetch LGAs by state ID (AJAX)
 router.get('/api/lgas/:stateId', async (req, res) => {
@@ -72,7 +97,13 @@ router.get('/api/lgas/:stateId', async (req, res) => {
 });
 
 router.get('/login', renderLogin);
+router.post('/login', loginStudent);
 router.get('/dashboard', requireStudent, renderDashboard);
+
+// Profile routes
+router.get('/profile', requireStudent, renderProfile);
+router.post('/profile', requireStudent, updateProfile);
+router.post('/change-password', requireStudent, changePassword);
 
 // Inline route: Student dashboard with full data
 router.get('/dashboard/full', requireStudent, async (req, res) => {
@@ -150,6 +181,47 @@ router.post('/payment/simulate', requireStudent, async (req, res) => {
   } catch (err) {
     console.error('Payment error:', err);
     req.flash('error', 'Payment simulation failed');
+    res.redirect('/students/dashboard');
+  }
+});
+
+// Student results page
+router.get('/results', requireStudent, async (req, res) => {
+  try {
+    const results = await Result.findAll({ 
+      where: { studentId: req.session.student.id },
+      order: [['createdAt', 'DESC']] 
+    });
+    res.render('students/results', {
+      title: 'My Results',
+      results,
+      messages: req.flash()
+    });
+  } catch (err) {
+    console.error('Results error:', err);
+    req.flash('error', 'Error loading results');
+    res.redirect('/students/dashboard');
+  }
+});
+
+// Student payments page
+router.get('/payments', requireStudent, async (req, res) => {
+  try {
+    const student = await Student.findByPk(req.session.student.id);
+    const payments = await Payment.findAll({ 
+      where: { studentId: req.session.student.id },
+      order: [['createdAt', 'DESC']] 
+    });
+    res.render('students/payment', {
+      title: 'Payment History',
+      student,
+      payments,
+      paystackPublicKey: process.env.PAYSTACK_PUBLIC_KEY,
+      messages: req.flash()
+    });
+  } catch (err) {
+    console.error('Payments error:', err);
+    req.flash('error', 'Error loading payments');
     res.redirect('/students/dashboard');
   }
 });
