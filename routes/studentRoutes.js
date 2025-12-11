@@ -188,6 +188,8 @@ router.post('/payment/simulate', requireStudent, async (req, res) => {
 // Student results page
 router.get('/results', requireStudent, async (req, res) => {
   try {
+    const { getGrade, getGradeBadge, getGradeRemark } = await import('../utils/grade.js');
+    
     const student = await Student.findByPk(req.session.student.id, {
       include: [School, State, LGA]
     });
@@ -201,6 +203,9 @@ router.get('/results', requireStudent, async (req, res) => {
       title: 'My Results',
       student,
       results,
+      getGrade,
+      getGradeBadge,
+      getGradeRemark,
       messages: req.flash()
     });
   } catch (err) {

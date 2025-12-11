@@ -8,4 +8,20 @@ function getGrade(score) {
     return 'F';
 }
 
-export default getGrade;
+function getGradeBadge(grade) {
+    const badges = {
+        'A': 'success', 'B': 'info', 'C': 'warning',
+        'D': 'secondary', 'E': 'danger', 'F': 'danger'
+    };
+    return badges[grade] || 'secondary';
+}
+
+function getGradeRemark(grade) {
+    const remarks = {
+        'A': 'Excellent', 'B': 'Very Good', 'C': 'Good',
+        'D': 'Pass', 'E': 'Pass', 'F': 'Fail'
+    };
+    return remarks[grade] || 'N/A';
+}
+
+export { getGrade, getGradeBadge, getGradeRemark };

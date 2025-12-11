@@ -1,7 +1,104 @@
-<%- include('../partials/header') %>
-<div class="container py-4">
-  <h1 class="h3">Manage Users</h1>
-  <p class="text-muted">This page is a lightweight placeholder. Use the Users list below.</p>
-  <%- include('users/list') %>
+<!-- views/admin/users.ejs -->
+<div class="dashboard-container">
+  <%- include('../partials/sidebar') %>
+
+  <div id="mainContent" class="main-content">
+    <div class="welcome-header mb-4">
+      <h2 class="dashboard-title">
+        <i class="fas fa-users-cog me-3"></i>
+        Manage Users
+      </h2>
+      <p class="dashboard-subtitle">View and manage admin users and permissions</p>
+    </div>
+
+    <!-- Add User Button -->
+    <div class="mb-3 text-end">
+      <a href="/admin/users/new" class="btn btn-success">
+        <i class="fas fa-user-plus me-2"></i> Add Admin User
+      </a>
+    </div>
+
+    <!-- Users Table -->
+    <div class="card shadow-sm border-0 rounded-4">
+      <div class="card-body">
+        <div class="table-responsive">
+          <table class="table table-hover align-middle">
+            <thead class="table-dark">
+              <tr>
+                <th>#</th>
+                <th>Name</th>
+                <th>Email</th>
+                <th>Role</th>
+                <th>State/School</th>
+                <th>Status</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% if (users && users.length > 0) { %>
+                <% users.forEach((user, index) => { %>
+                  <tr>
+                    <td><%= index + 1 %></td>
+                    <td class="fw-semibold text-primary"><%= user.name %></td>
+                    <td><%= user.email %></td>
+                    <td>
+                      <span class="badge bg-<%= user.role === 'super_admin' ? 'danger' : 'primary' %>">
+                        <%= user.role.replace('_', ' ').toUpperCase() %>
+                      </span>
+                    </td>
+                    <td>
+                      <% if (user.State) { %>
+                        <%= user.State.name %>
+                      <% } else if (user.School) { %>
+                        <%= user.School.name %>
+                      <% } else { %>
+                        All
+                      <% } %>
+                    </td>
+                    <td>
+                      <% if (user.isActive) { %>
+                        <span class="badge bg-success">Active</span>
+                      <% } else { %>
+                        <span class="badge bg-secondary">Inactive</span>
+                      <% } %>
+                    </td>
+                    <td>
+                      <% if (user.role !== 'super_admin') { %>
+                        <button class="btn btn-sm btn-warning" onclick="toggleUserStatus(<%= user.id %>, <%= user.isActive %>)">
+                          <i class="fas fa-<%= user.isActive ? 'ban' : 'check' %>"></i>
+                        </button>
+                      <% } %>
+                    </td>
+                  </tr>
+                <% }) %>
+              <% } else { %>
+                <tr>
+                  <td colspan="7" class="text-center text-muted">No users found</td>
+                </tr>
+              <% } %>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
 </div>
-<%- include('../partials/footer') %>
+
+<script>
+async function toggleUserStatus(userId, currentStatus) {
+  try {
+    const response = await fetch(`/admin/users/${userId}/toggle`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' }
+    });
+    const result = await response.json();
+    if (result.success) {
+      location.reload();
+    } else {
+      alert('Failed to update user status');
+    }
+  } catch (error) {
+    alert('Error updating user status');
+  }
+}
+</script>

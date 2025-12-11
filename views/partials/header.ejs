@@ -4,7 +4,7 @@
     <div class="header-content">
       <!-- Logo + Title -->
       <div class="header-brand">
-        <img src="/images/logos/bece-logo.svg" alt="BECE Logo" class="header-logo">
+        <img src="/images/logo.svg" alt="BECE Logo" class="header-logo">
         <div class="brand-text">
           <h1 class="brand-title">Nigeria BECE</h1>
           <span class="brand-subtitle">
@@ -82,6 +82,12 @@
   top: 0;
   z-index: 1000;
   backdrop-filter: blur(10px);
+  display: none; /* Hide header by default */
+}
+
+/* Show header only on public pages */
+body:not(:has(.modern-sidebar)) .modern-header {
+  display: block;
 }
 
 .header-content {

@@ -1,44 +1,124 @@
-<!-- views/admin/newSchool.ejs-->
+<!-- views/admin/newSchool.ejs -->
+<div class="dashboard-container">
+  <%- include('../partials/sidebar') %>
 
-<div class="container py-5">
-  <h1 class="mb-4 text-primary">Add New School</h1>
-
-  <% if (messages.error) { %>
-    <div class="alert alert-danger"><%= messages.error %></div>
-  <% } %>
-  <% if (messages.success) { %>
-    <div class="alert alert-success"><%= messages.success %></div>
-  <% } %>
-
-  <form action="/admin/schools" method="POST" class="card p-4 shadow-sm">
-    <div class="mb-3">
-      <label for="name" class="form-label">School Name</label>
-      <input type="text" class="form-control" id="name" name="name" required>
+  <div id="mainContent" class="main-content">
+    <div class="welcome-header mb-4">
+      <h2 class="dashboard-title">
+        <i class="fas fa-school me-3"></i>
+        Add New School
+      </h2>
+      <p class="dashboard-subtitle">Register a new school in the system</p>
     </div>
 
-    <div class="mb-3">
-  <label for="address" class="form-label">Address</label>
-  <input type="text" class="form-control" id="address" name="address" required>
+    <div class="row justify-content-center">
+      <div class="col-lg-8">
+        <div class="card shadow-sm border-0 rounded-4">
+          <div class="card-body p-4">
+            <% if (messages && messages.error) { %>
+              <div class="alert alert-danger">
+                <i class="fas fa-exclamation-triangle me-2"></i>
+                <%= messages.error %>
+              </div>
+            <% } %>
+            <% if (messages && messages.success) { %>
+              <div class="alert alert-success">
+                <i class="fas fa-check-circle me-2"></i>
+                <%= messages.success %>
+              </div>
+            <% } %>
+
+            <form action="/admin/schools" method="POST">
+              <div class="row">
+                <div class="col-md-12 mb-3">
+                  <label for="name" class="form-label fw-bold">
+                    <i class="fas fa-school me-2"></i>School Name *
+                  </label>
+                  <input type="text" class="form-control" id="name" name="name" placeholder="Enter school name" required>
+                </div>
+              </div>
+
+              <div class="row">
+                <div class="col-md-6 mb-3">
+                  <label for="stateCode" class="form-label fw-bold">
+                    <i class="fas fa-map-marker-alt me-2"></i>State Code *
+                  </label>
+                  <select class="form-control" id="stateCode" name="stateCode" required>
+                    <option value="">Select State</option>
+                    <option value="AB">Abia</option>
+                    <option value="AD">Adamawa</option>
+                    <option value="AK">Akwa Ibom</option>
+                    <option value="AN">Anambra</option>
+                    <option value="BA">Bauchi</option>
+                    <option value="BY">Bayelsa</option>
+                    <option value="BE">Benue</option>
+                    <option value="BO">Borno</option>
+                    <option value="CR">Cross River</option>
+                    <option value="DE">Delta</option>
+                    <option value="EB">Ebonyi</option>
+                    <option value="ED">Edo</option>
+                    <option value="EK">Ekiti</option>
+                    <option value="EN">Enugu</option>
+                    <option value="FC">FCT</option>
+                    <option value="GO">Gombe</option>
+                    <option value="IM">Imo</option>
+                    <option value="JI">Jigawa</option>
+                    <option value="KD">Kaduna</option>
+                    <option value="KN">Kano</option>
+                    <option value="KT">Katsina</option>
+                    <option value="KE">Kebbi</option>
+                    <option value="KO">Kogi</option>
+                    <option value="KW">Kwara</option>
+                    <option value="LA">Lagos</option>
+                    <option value="NA">Nasarawa</option>
+                    <option value="NI">Niger</option>
+                    <option value="OG">Ogun</option>
+                    <option value="ON">Ondo</option>
+                    <option value="OS">Osun</option>
+                    <option value="OY">Oyo</option>
+                    <option value="PL">Plateau</option>
+                    <option value="RI">Rivers</option>
+                    <option value="SO">Sokoto</option>
+                    <option value="TA">Taraba</option>
+                    <option value="YO">Yobe</option>
+                    <option value="ZA">Zamfara</option>
+                  </select>
+                </div>
+                <div class="col-md-6 mb-3">
+                  <label for="lgaId" class="form-label fw-bold">
+                    <i class="fas fa-map me-2"></i>LGA ID *
+                  </label>
+                  <input type="number" class="form-control" id="lgaId" name="lgaId" placeholder="Enter LGA ID" required>
+                </div>
+              </div>
+
+              <div class="row">
+                <div class="col-md-6 mb-3">
+                  <label for="schoolSerial" class="form-label fw-bold">
+                    <i class="fas fa-hashtag me-2"></i>School Serial *
+                  </label>
+                  <input type="text" class="form-control" id="schoolSerial" name="schoolSerial" placeholder="e.g., SCH001" required>
+                </div>
+                <div class="col-md-6 mb-3">
+                  <label for="address" class="form-label fw-bold">
+                    <i class="fas fa-location-dot me-2"></i>Address *
+                  </label>
+                  <input type="text" class="form-control" id="address" name="address" placeholder="Enter school address" required>
+                </div>
+              </div>
+
+              <div class="d-flex gap-2 mt-4">
+                <button type="submit" class="btn btn-primary">
+                  <i class="fas fa-save me-2"></i>Save School
+                </button>
+                <a href="/admin/schools" class="btn btn-secondary">
+                  <i class="fas fa-times me-2"></i>Cancel
+                </a>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
 </div>
-
-
-    <div class="mb-3">
-      <label for="stateCode" class="form-label">State Code</label>
-      <input type="text" class="form-control" id="stateCode" name="stateCode" required>
-    </div>
-
-    <div class="mb-3">
-      <label for="lgaId" class="form-label">LGA ID</label>
-      <input type="number" class="form-control" id="lgaId" name="lgaId" required>
-    </div>
-
-    <div class="mb-3">
-      <label for="schoolSerial" class="form-label">School Serial</label>
-      <input type="text" class="form-control" id="schoolSerial" name="schoolSerial" required>
-    </div>
-
-    <button type="submit" class="btn btn-primary">Save School</button>
-    <a href="/admin/schools" class="btn btn-secondary">Cancel</a>
-  </form>
-</div>
-

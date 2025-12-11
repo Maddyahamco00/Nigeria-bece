@@ -6,7 +6,7 @@
         <!-- Brand Section -->
         <div class="col-lg-4 col-md-6 mb-4">
           <div class="footer-brand">
-            <img src="/images/logos/bece-logo.svg" alt="BECE Logo" class="footer-logo">
+            <img src="/images/logo.svg" alt="BECE Logo" class="footer-logo">
             <h5 class="footer-title">Nigeria BECE Portal</h5>
             <p class="footer-description">
               Empowering students through quality education and seamless examination processes across Nigeria.
@@ -15,40 +15,22 @@
         </div>
 
         <!-- Quick Links -->
-        <div class="col-lg-2 col-md-6 mb-4">
+        <div class="col-lg-4 col-md-6 mb-4">
           <h6 class="footer-heading">Quick Links</h6>
           <ul class="footer-links">
             <li><a href="/">Home</a></li>
-            <li><a href="/students/register">Register</a></li>
-            <li><a href="/auth/login">Login</a></li>
-            <li><a href="/payment">Payment</a></li>
-          </ul>
-        </div>
-
-        <!-- Student Services -->
-        <div class="col-lg-2 col-md-6 mb-4">
-          <h6 class="footer-heading">Student Services</h6>
-          <ul class="footer-links">
-            <li><a href="/students/dashboard">Dashboard</a></li>
-            <li><a href="/students/results">Results</a></li>
-            <li><a href="/students/profile">Profile</a></li>
+            <li><a href="/students/register/biodata">Student Registration</a></li>
+            <li><a href="/auth/login">Login Portal</a></li>
             <li><a href="/auth/forgot-password">Reset Password</a></li>
           </ul>
         </div>
 
-        <!-- Admin Services -->
-        <div class="col-lg-2 col-md-6 mb-4">
-          <h6 class="footer-heading">Admin Services</h6>
-          <ul class="footer-links">
-            <li><a href="/admin/dashboard">Admin Dashboard</a></li>
-            <li><a href="/admin/students">Manage Students</a></li>
-            <li><a href="/admin/schools">Manage Schools</a></li>
-            <li><a href="/admin/gazette">Gazette</a></li>
-          </ul>
-        </div>
+
+
+
 
         <!-- Contact Info -->
-        <div class="col-lg-2 col-md-6 mb-4">
+        <div class="col-lg-4 col-md-6 mb-4">
           <h6 class="footer-heading">Contact</h6>
           <div class="footer-contact">
             <div class="contact-item">
@@ -104,6 +86,12 @@
   margin-top: auto;
   position: relative;
   overflow: hidden;
+  display: none; /* Hide footer by default */
+}
+
+/* Show footer only on public pages */
+body:not(:has(.modern-sidebar)) .modern-footer {
+  display: block;
 }
 
 .modern-footer::before {

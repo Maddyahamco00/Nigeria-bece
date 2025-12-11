@@ -1,7 +1,7 @@
 // routes/admin.js
 import express from 'express';
 import { Student, School, Payment, Result, User, State, LGA } from '../models/index.js';
-import getGrade from '../utils/grade.js';
+import { getGrade } from '../utils/grade.js';
 import sendEmail from '../utils/sendEmail.js';
 import db from '../config/database.js';
 import { requireAdmin, requireSuperAdmin } from '../middleware/roleMiddleware.js';

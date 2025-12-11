@@ -21,45 +21,7 @@ router.get('/login', (req, res) => {
   });
 });
 
-// Handle login form submission
-router.post('/login', async (req, res) => {
-  try {
-    const { email, password } = req.body;
-    
-    // Try to find admin user first
-    const admin = await User.findOne({ where: { email } });
-    if (admin && await bcrypt.compare(password, admin.password)) {
-      req.session.admin = {
-        id: admin.id,
-        name: admin.name,
-        email: admin.email,
-        role: admin.role
-      };
-      return res.redirect('/admin/dashboard');
-    }
-    
-    // Try to find student user
-    const student = await Student.findOne({ where: { email } });
-    if (student && await bcrypt.compare(password, student.password)) {
-      req.session.student = {
-        id: student.id,
-        name: student.name,
-        email: student.email,
-        regNumber: student.regNumber,
-        studentCode: student.studentCode,
-        paymentStatus: student.paymentStatus
-      };
-      return res.redirect('/students/dashboard');
-    }
-    
-    req.flash('error', 'Invalid email or password');
-    res.redirect('/auth/login');
-  } catch (err) {
-    console.error('Login error:', err);
-    req.flash('error', 'Login failed. Please try again.');
-    res.redirect('/auth/login');
-  }
-});
+
 
 // Registration page (redirect to biodata)
 router.get('/register', (req, res) => {

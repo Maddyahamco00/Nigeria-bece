@@ -88,7 +88,10 @@
       <div class="col-md-4 mb-4">
         <div class="gallery-card">
           <div class="gallery-image">
-            <img src="/images/gallery/graduation.svg" alt="Graduation Success" class="img-fluid">
+            <img src="/images/gallery/graduation.svg" alt="Graduation Success" class="img-fluid" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex'">
+            <div class="fallback-icon" style="display:none; align-items:center; justify-content:center; height:160px; font-size:4rem; color:#2E7D32;">
+              <i class="fas fa-graduation-cap"></i>
+            </div>
           </div>
           <div class="gallery-content">
             <h5>Achieve Success</h5>

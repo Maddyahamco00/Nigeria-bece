@@ -1,66 +1,81 @@
 <!-- views/auth/login.ejs -->
-<div class="auth-container">
-  <div class="auth-background"></div>
+<div class="login-selection-container">
+  <div class="login-background"></div>
   <div class="container">
     <div class="row justify-content-center align-items-center min-vh-100">
-      <div class="col-md-6 col-lg-5">
-        <div class="auth-card">
-          <div class="auth-header">
-            <div class="auth-logo">
-              <img src="/images/logos/bece-logo.svg" alt="BECE Logo" class="logo-img">
+      <div class="col-lg-8">
+        <div class="login-selection-card">
+          <div class="login-header">
+            <div class="logo-section">
+              <img src="/images/logo.svg" alt="BECE Logo" class="login-logo">
+              <div class="logo-glow"></div>
             </div>
-            <h2 class="auth-title">Welcome Back</h2>
-            <p class="auth-subtitle">Sign in to your BECE admin account</p>
+            <h1 class="login-title">Nigeria BECE Portal</h1>
+            <p class="login-subtitle">Choose your login type to continue</p>
           </div>
           
-          <div class="auth-body">
-            <% if (messages.error) { %>
-              <div class="alert alert-danger">
-                <i class="fas fa-exclamation-circle me-2"></i>
-                <%= messages.error %>
-              </div>
-            <% } %>
-            
-            <% if (messages.success) { %>
-              <div class="alert alert-success">
-                <i class="fas fa-check-circle me-2"></i>
-                <%= messages.success %>
-              </div>
-            <% } %>
-
-            <form action="/auth/login" method="POST" class="auth-form">
-              <div class="form-floating mb-3">
-                <input type="email" class="form-control" id="email" name="email" placeholder="Enter your email" required>
-                <label for="email"><i class="fas fa-envelope me-2"></i>Email Address</label>
-              </div>
-              
-              <div class="form-floating mb-4">
-                <input type="password" class="form-control" id="password" name="password" placeholder="Enter your password" required>
-                <label for="password"><i class="fas fa-lock me-2"></i>Password</label>
-              </div>
-              
-              <div class="d-flex justify-content-between align-items-center mb-4">
-                <div class="form-check">
-                  <input class="form-check-input" type="checkbox" id="remember" name="remember">
-                  <label class="form-check-label" for="remember">
-                    Remember me
-                  </label>
-                </div>
-                <a href="/auth/forgot-password" class="auth-link">Forgot Password?</a>
+          <% if (messages.error) { %>
+            <div class="alert alert-danger">
+              <i class="fas fa-exclamation-triangle"></i>
+              <%= messages.error %>
+            </div>
+          <% } %>
+          <% if (messages.success) { %>
+            <div class="alert alert-success">
+              <i class="fas fa-check-circle"></i>
+              <%= messages.success %>
+            </div>
+          <% } %>
+          <% if (logged_out) { %>
+            <div class="alert alert-info">
+              <i class="fas fa-info-circle"></i>
+              You have been logged out successfully.
+            </div>
+          <% } %>
+          
+          <div class="login-options">
+            <div class="row g-4">
+              <div class="col-md-6">
+                <a href="/auth/admin" class="login-option-card admin-card">
+                  <div class="option-icon">
+                    <i class="fas fa-user-shield"></i>
+                  </div>
+                  <h3>Admin Login</h3>
+                  <p>Access administrative dashboard and management tools</p>
+                  <div class="option-arrow">
+                    <i class="fas fa-arrow-right"></i>
+                  </div>
+                </a>
               </div>
               
-              <button type="submit" class="btn btn-primary w-100 auth-btn">
-                <i class="fas fa-sign-in-alt me-2"></i>
-                Sign In
-              </button>
-            </form>
+              <div class="col-md-6">
+                <a href="/auth/student/login" class="login-option-card student-card">
+                  <div class="option-icon">
+                    <i class="fas fa-graduation-cap"></i>
+                  </div>
+                  <h3>Student Login</h3>
+                  <p>View your results, profile, and examination details</p>
+                  <div class="option-arrow">
+                    <i class="fas fa-arrow-right"></i>
+                  </div>
+                </a>
+              </div>
+            </div>
           </div>
           
-          <div class="auth-footer">
-            <p class="text-center mb-0">
-              Don't have an account? 
-              <a href="/students/register" class="auth-link">Register as Student</a>
-            </p>
+          <div class="login-footer">
+            <div class="row text-center">
+              <div class="col-md-6">
+                <p class="footer-text">
+                  New student? <a href="/students/register/biodata" class="footer-link">Register Here</a>
+                </p>
+              </div>
+              <div class="col-md-6">
+                <p class="footer-text">
+                  <a href="/auth/forgot-password" class="footer-link">Forgot Password?</a>
+                </p>
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -69,179 +84,245 @@
 </div>
 
 <style>
-.auth-container {
-  position: relative;
+.login-selection-container {
   min-height: 100vh;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   display: flex;
   align-items: center;
   justify-content: center;
+  padding: 20px;
+  position: relative;
+  overflow: hidden;
 }
 
-.auth-background {
+.login-background {
   position: absolute;
   top: 0;
   left: 0;
   right: 0;
   bottom: 0;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  z-index: -1;
-}
-
-.auth-background::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grain" width="100" height="100" patternUnits="userSpaceOnUse"><circle cx="25" cy="25" r="1" fill="rgba(255,255,255,0.1)"/><circle cx="75" cy="75" r="1" fill="rgba(255,255,255,0.1)"/><circle cx="50" cy="10" r="0.5" fill="rgba(255,255,255,0.05)"/></pattern></defs><rect width="100" height="100" fill="url(%23grain)"/></svg>');
+  background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="dots" width="20" height="20" patternUnits="userSpaceOnUse"><circle cx="10" cy="10" r="1" fill="rgba(255,255,255,0.1)"/></pattern></defs><rect width="100" height="100" fill="url(%23dots)"/></svg>');
   opacity: 0.3;
 }
 
-.auth-card {
+.login-selection-card {
   background: rgba(255, 255, 255, 0.95);
   backdrop-filter: blur(20px);
   border-radius: 20px;
   box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
   border: 1px solid rgba(255, 255, 255, 0.2);
   overflow: hidden;
-  animation: slideUp 0.6s ease-out;
+  position: relative;
+  z-index: 2;
 }
 
-@keyframes slideUp {
-  from {
-    opacity: 0;
-    transform: translateY(30px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-.auth-header {
+.login-header {
   text-align: center;
-  padding: 40px 40px 20px;
-  background: linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%);
+  padding: 50px 40px 30px;
+  background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.1);
 }
 
-.auth-logo {
-  margin-bottom: 20px;
+.logo-section {
+  position: relative;
+  display: inline-block;
+  margin-bottom: 25px;
 }
 
-.logo-img {
-  width: 80px;
-  height: 80px;
-  filter: drop-shadow(0 5px 15px rgba(0, 0, 0, 0.2));
+.login-logo {
+  width: 90px;
+  height: 90px;
+  filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.15));
 }
 
-.auth-title {
-  font-size: 2rem;
+.logo-glow {
+  position: absolute;
+  top: -15px;
+  left: -15px;
+  right: -15px;
+  bottom: -15px;
+  background: radial-gradient(circle, rgba(102, 126, 234, 0.3) 0%, transparent 70%);
+  border-radius: 50%;
+  animation: pulse 3s infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { transform: scale(1); opacity: 0.7; }
+  50% { transform: scale(1.1); opacity: 1; }
+}
+
+.login-title {
+  font-size: 2.8rem;
   font-weight: 700;
   color: #333;
-  margin-bottom: 10px;
+  margin-bottom: 15px;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
-.auth-subtitle {
+.login-subtitle {
   color: #666;
-  margin-bottom: 0;
-  font-size: 1.1rem;
+  font-size: 1.2rem;
+  margin: 0;
 }
 
-.auth-body {
-  padding: 30px 40px;
-}
-
-.form-floating {
-  position: relative;
-}
-
-.form-floating .form-control {
-  border: 2px solid #e0e0e0;
+.alert {
+  margin: 20px 40px;
   border-radius: 12px;
-  padding: 20px 15px 10px;
-  font-size: 1rem;
-  transition: all 0.3s ease;
-  background: rgba(255, 255, 255, 0.9);
-}
-
-.form-floating .form-control:focus {
-  border-color: var(--primary-color);
-  box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
-  background: white;
-}
-
-.form-floating label {
-  padding: 15px;
-  color: #666;
+  border: none;
+  padding: 15px 20px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
   font-weight: 500;
 }
 
-.auth-btn {
-  padding: 15px;
-  font-size: 1.1rem;
-  font-weight: 600;
-  border-radius: 12px;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
+.alert-danger {
+  background: linear-gradient(135deg, #ff6b6b, #ee5a52);
+  color: white;
+}
+
+.alert-success {
+  background: linear-gradient(135deg, #51cf66, #40c057);
+  color: white;
+}
+
+.alert-info {
+  background: linear-gradient(135deg, #339af0, #228be6);
+  color: white;
+}
+
+.login-options {
+  padding: 40px;
+}
+
+.login-option-card {
+  display: block;
+  background: white;
+  border-radius: 15px;
+  padding: 40px 30px;
+  text-decoration: none;
+  color: inherit;
+  box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
   transition: all 0.3s ease;
   position: relative;
   overflow: hidden;
-}
-
-.auth-btn::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: -100%;
-  width: 100%;
   height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
-  transition: left 0.5s;
+  text-align: center;
 }
 
-.auth-btn:hover::before {
-  left: 100%;
+.login-option-card:hover {
+  transform: translateY(-10px);
+  box-shadow: 0 15px 40px rgba(0, 0, 0, 0.2);
+  text-decoration: none;
+  color: inherit;
 }
 
-.auth-btn:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 10px 30px rgba(102, 126, 234, 0.4);
+.admin-card:hover {
+  background: linear-gradient(135deg, #667eea, #764ba2);
+  color: white;
 }
 
-.auth-link {
-  color: var(--primary-color);
+.student-card:hover {
+  background: linear-gradient(135deg, #4facfe, #00f2fe);
+  color: white;
+}
+
+.option-icon {
+  font-size: 3.5rem;
+  margin-bottom: 20px;
+  color: #667eea;
+  transition: all 0.3s ease;
+}
+
+.admin-card:hover .option-icon {
+  color: white;
+  transform: scale(1.1);
+}
+
+.student-card:hover .option-icon {
+  color: white;
+  transform: scale(1.1);
+}
+
+.login-option-card h3 {
+  font-size: 1.5rem;
+  font-weight: 600;
+  margin-bottom: 15px;
+  transition: all 0.3s ease;
+}
+
+.login-option-card p {
+  font-size: 1rem;
+  color: #666;
+  margin-bottom: 20px;
+  line-height: 1.5;
+  transition: all 0.3s ease;
+}
+
+.login-option-card:hover p {
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.option-arrow {
+  font-size: 1.2rem;
+  opacity: 0;
+  transform: translateX(-10px);
+  transition: all 0.3s ease;
+}
+
+.login-option-card:hover .option-arrow {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+.login-footer {
+  padding: 30px 40px 40px;
+  background: rgba(248, 249, 250, 0.5);
+  border-top: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.footer-text {
+  margin: 0;
+  color: #666;
+  font-size: 0.95rem;
+}
+
+.footer-link {
+  color: #667eea;
   text-decoration: none;
   font-weight: 600;
   transition: all 0.3s ease;
 }
 
-.auth-link:hover {
-  color: var(--secondary-color);
+.footer-link:hover {
+  color: #764ba2;
   text-decoration: underline;
 }
 
-.auth-footer {
-  padding: 20px 40px 40px;
-  background: rgba(248, 249, 250, 0.5);
-  border-top: 1px solid rgba(0, 0, 0, 0.05);
-}
-
-.form-check-input:checked {
-  background-color: var(--primary-color);
-  border-color: var(--primary-color);
-}
-
 @media (max-width: 768px) {
-  .auth-header,
-  .auth-body,
-  .auth-footer {
-    padding-left: 25px;
-    padding-right: 25px;
+  .login-title {
+    font-size: 2.2rem;
   }
   
-  .auth-title {
-    font-size: 1.7rem;
+  .login-header {
+    padding: 40px 20px 25px;
+  }
+  
+  .login-options {
+    padding: 30px 20px;
+  }
+  
+  .login-footer {
+    padding: 25px 20px 30px;
+  }
+  
+  .login-option-card {
+    padding: 30px 20px;
+    margin-bottom: 20px;
+  }
+  
+  .option-icon {
+    font-size: 3rem;
   }
 }
 </style>

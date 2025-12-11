@@ -5,8 +5,17 @@
   margin-left: 280px;
   min-height: 100vh;
   padding: 20px;
-  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
   transition: margin-left 0.3s ease;
+}
+
+/* Admin pages with sidebar */
+body:has(.modern-sidebar) .main-content {
+  margin-left: 280px;
+}
+
+/* Pages without sidebar */
+body:not(:has(.modern-sidebar)) .main-content {
+  margin-left: 0;
 }
 
 /* Dashboard container adjustment */
