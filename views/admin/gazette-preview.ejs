@@ -1,0 +1,252 @@
+<!-- views/admin/gazette-preview.ejs -->
+<!DOCTYPE html>
+<html>
+<head>
+    <title>BECE Gazette Preview</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; font-size: 12px; }
+        .header { text-align: center; margin-bottom: 20px; }
+        .header h1 { font-size: 16px; font-weight: bold; margin: 5px 0; }
+        .header h2 { font-size: 14px; font-weight: bold; margin: 5px 0; }
+        .header h3 { font-size: 12px; margin: 5px 0; }
+        .school-info { margin: 15px 0; }
+        .results-table { width: 100%; border-collapse: collapse; margin: 15px 0; }
+        .results-table th, .results-table td { border: 1px solid #000; padding: 4px; text-align: center; }
+        .results-table th { background-color: #f0f0f0; font-weight: bold; }
+        .summary { margin: 15px 0; }
+        .analysis-table { width: 100%; border-collapse: collapse; margin: 15px 0; }
+        .analysis-table th, .analysis-table td { border: 1px solid #000; padding: 4px; text-align: center; }
+        .analysis-table th { background-color: #f0f0f0; }
+        .keys { margin: 15px 0; font-size: 10px; }
+        .criteria { margin: 15px 0; font-size: 11px; font-weight: bold; }
+        @media print { body { margin: 0; } }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1><%= stateName || 'SAMPLE STATE' %></h1>
+        <h2><%= stateName || 'SAMPLE STATE' %> MINISTRY OF BASIC & SECONDARY EDUCATION</h2>
+        <h2>BASIC EDUCATION CERTIFICATE EXAMINATION</h2>
+        <h3><%= examYear || new Date().getFullYear() %> DETAIL RESULT OF CANDIDATES</h3>
+    </div>
+
+    <div class="school-info">
+        <strong>SCHOOL:</strong> <%= schoolName || 'SAMPLE SECONDARY SCHOOL' %><br>
+        <strong>CENTRE:</strong> <%= centerCode || '0000001' %>
+    </div>
+
+    <table class="results-table">
+        <thead>
+            <tr>
+                <th>S/N</th>
+                <th>NAME<br><small>Last Name, First Name, Middle Name</small></th>
+                <th>SEX</th>
+                <th>Eng</th>
+                <th>Mat</th>
+                <th>Bas</th>
+                <th>Bus</th>
+                <th>Nat</th>
+                <th>Pre</th>
+                <th>IRS</th>
+                <th>Hau</th>
+                <th>Ara</th>
+            </tr>
+        </thead>
+        <tbody>
+            <% if (students && students.length > 0) { %>
+                <% students.forEach((student, index) => { %>
+                    <tr>
+                        <td><%= index + 1 %></td>
+                        <td style="text-align: left;"><%= student.name.toUpperCase() %></td>
+                        <td><%= student.gender ? student.gender.charAt(0).toUpperCase() : 'M' %></td>
+                        <td>
+                            <% const engCA = student.results?.['English CA'] || 'C.A'; %>
+                            <% const engEX = student.results?.['English Exam'] || 'EX'; %>
+                            <%= engCA %><br><%= engEX %>
+                        </td>
+                        <td>
+                            <% const mathCA = student.results?.['Mathematics CA'] || 'C.A'; %>
+                            <% const mathEX = student.results?.['Mathematics Exam'] || 'EX'; %>
+                            <%= mathCA %><br><%= mathEX %>
+                        </td>
+                        <td>
+                            <% const basCA = student.results?.['Basic Science CA'] || 'C.A'; %>
+                            <% const basEX = student.results?.['Basic Science Exam'] || 'EX'; %>
+                            <%= basCA %><br><%= basEX %>
+                        </td>
+                        <td>
+                            <% const busCA = student.results?.['Business Studies CA'] || 'C.A'; %>
+                            <% const busEX = student.results?.['Business Studies Exam'] || 'EX'; %>
+                            <%= busCA %><br><%= busEX %>
+                        </td>
+                        <td>
+                            <% const natCA = student.results?.['Social Studies CA'] || 'C.A'; %>
+                            <% const natEX = student.results?.['Social Studies Exam'] || 'EX'; %>
+                            <%= natCA %><br><%= natEX %>
+                        </td>
+                        <td>
+                            <% const preCA = student.results?.['Civic Education CA'] || 'C.A'; %>
+                            <% const preEX = student.results?.['Civic Education Exam'] || 'EX'; %>
+                            <%= preCA %><br><%= preEX %>
+                        </td>
+                        <td>
+                            <% const irsCA = student.results?.['Arabic CA'] || 'C.A'; %>
+                            <% const irsEX = student.results?.['Arabic Exam'] || 'EX'; %>
+                            <%= irsCA %><br><%= irsEX %>
+                        </td>
+                        <td>
+                            <% const hauCA = student.results?.['Hausa CA'] || 'C.A'; %>
+                            <% const hauEX = student.results?.['Hausa Exam'] || 'EX'; %>
+                            <%= hauCA %><br><%= hauEX %>
+                        </td>
+                        <td>
+                            <% const araCA = student.results?.['Arabic CA'] || 'C.A'; %>
+                            <% const araEX = student.results?.['Arabic Exam'] || 'EX'; %>
+                            <%= araCA %><br><%= araEX %>
+                        </td>
+                    </tr>
+                <% }) %>
+            <% } else { %>
+                <tr><td colspan="11">No student data available for selected filters</td></tr>
+            <% } %>
+        </tbody>
+    </table>
+
+    <div class="summary">
+        <strong>MALE:</strong> <%= maleCount || 0 %><br>
+        <strong>FEMALE:</strong> <%= femaleCount || 0 %><br>
+        <strong>TOTAL:</strong> <%= totalCount || 0 %>
+    </div>
+
+    <table class="analysis-table">
+        <thead>
+            <tr>
+                <th>SUBJECT ANALYSIS</th>
+                <th>Eng</th>
+                <th>Mat</th>
+                <th>Bas</th>
+                <th>Soc</th>
+                <th>Civ</th>
+                <th>Com</th>
+                <th>Fre</th>
+                <th>Ara</th>
+                <th>Bus</th>
+                <th>Hom</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td style="text-align: left;"><strong>EXCELLENT</strong></td>
+                <td><%= analysis?.English?.A || 0 %></td>
+                <td><%= analysis?.Mathematics?.A || 0 %></td>
+                <td><%= analysis?.['Basic Science']?.A || 0 %></td>
+                <td><%= analysis?.['Social Studies']?.A || 0 %></td>
+                <td><%= analysis?.['Civic Education']?.A || 0 %></td>
+                <td><%= analysis?.['Computer Studies']?.A || 0 %></td>
+                <td><%= analysis?.French?.A || 0 %></td>
+                <td><%= analysis?.Arabic?.A || 0 %></td>
+                <td><%= analysis?.['Business Studies']?.A || 0 %></td>
+                <td><%= analysis?.['Home Economics']?.A || 0 %></td>
+            </tr>
+            <tr>
+                <td style="text-align: left;"><strong>CREDIT</strong></td>
+                <td><%= (analysis?.English?.B || 0) + (analysis?.English?.C || 0) %></td>
+                <td><%= (analysis?.Mathematics?.B || 0) + (analysis?.Mathematics?.C || 0) %></td>
+                <td><%= (analysis?.['Basic Science']?.B || 0) + (analysis?.['Basic Science']?.C || 0) %></td>
+                <td><%= (analysis?.['Social Studies']?.B || 0) + (analysis?.['Social Studies']?.C || 0) %></td>
+                <td><%= (analysis?.['Civic Education']?.B || 0) + (analysis?.['Civic Education']?.C || 0) %></td>
+                <td><%= (analysis?.['Computer Studies']?.B || 0) + (analysis?.['Computer Studies']?.C || 0) %></td>
+                <td><%= (analysis?.French?.B || 0) + (analysis?.French?.C || 0) %></td>
+                <td><%= (analysis?.Arabic?.B || 0) + (analysis?.Arabic?.C || 0) %></td>
+                <td><%= (analysis?.['Business Studies']?.B || 0) + (analysis?.['Business Studies']?.C || 0) %></td>
+                <td><%= (analysis?.['Home Economics']?.B || 0) + (analysis?.['Home Economics']?.C || 0) %></td>
+            </tr>
+            <tr>
+                <td style="text-align: left;"><strong>PASS</strong></td>
+                <td><%= (analysis?.English?.D || 0) + (analysis?.English?.E || 0) %></td>
+                <td><%= (analysis?.Mathematics?.D || 0) + (analysis?.Mathematics?.E || 0) %></td>
+                <td><%= (analysis?.['Basic Science']?.D || 0) + (analysis?.['Basic Science']?.E || 0) %></td>
+                <td><%= (analysis?.['Social Studies']?.D || 0) + (analysis?.['Social Studies']?.E || 0) %></td>
+                <td><%= (analysis?.['Civic Education']?.D || 0) + (analysis?.['Civic Education']?.E || 0) %></td>
+                <td><%= (analysis?.['Computer Studies']?.D || 0) + (analysis?.['Computer Studies']?.E || 0) %></td>
+                <td><%= (analysis?.French?.D || 0) + (analysis?.French?.E || 0) %></td>
+                <td><%= (analysis?.Arabic?.D || 0) + (analysis?.Arabic?.E || 0) %></td>
+                <td><%= (analysis?.['Business Studies']?.D || 0) + (analysis?.['Business Studies']?.E || 0) %></td>
+                <td><%= (analysis?.['Home Economics']?.D || 0) + (analysis?.['Home Economics']?.E || 0) %></td>
+            </tr>
+            <tr>
+                <td style="text-align: left;"><strong>FAIL</strong></td>
+                <td><%= analysis?.English?.F || 0 %></td>
+                <td><%= analysis?.Mathematics?.F || 0 %></td>
+                <td><%= analysis?.['Basic Science']?.F || 0 %></td>
+                <td><%= analysis?.['Social Studies']?.F || 0 %></td>
+                <td><%= analysis?.['Civic Education']?.F || 0 %></td>
+                <td><%= analysis?.['Computer Studies']?.F || 0 %></td>
+                <td><%= analysis?.French?.F || 0 %></td>
+                <td><%= analysis?.Arabic?.F || 0 %></td>
+                <td><%= analysis?.['Business Studies']?.F || 0 %></td>
+                <td><%= analysis?.['Home Economics']?.F || 0 %></td>
+            </tr>
+            <tr>
+                <td style="text-align: left;"><strong>ABSENT</strong></td>
+                <td><%= analysis?.English?.X || 0 %></td>
+                <td><%= analysis?.Mathematics?.X || 0 %></td>
+                <td><%= analysis?.['Basic Science']?.X || 0 %></td>
+                <td><%= analysis?.['Social Studies']?.X || 0 %></td>
+                <td><%= analysis?.['Civic Education']?.X || 0 %></td>
+                <td><%= analysis?.['Computer Studies']?.X || 0 %></td>
+                <td><%= analysis?.French?.X || 0 %></td>
+                <td><%= analysis?.Arabic?.X || 0 %></td>
+                <td><%= analysis?.['Business Studies']?.X || 0 %></td>
+                <td><%= analysis?.['Home Economics']?.X || 0 %></td>
+            </tr>
+        </tbody>
+    </table>
+
+    <div class="keys">
+        <strong>KEYS TO SUBJECT CODES:</strong><br>
+        Eng = English Language, Mat = Mathematics, Bas = Basic Science, Bus = Business Studies<br>
+        Nat = Social Studies, Pre = Civic Education, IRS = Islamic Religious Studies, Hau = Hausa, Ara = Arabic<br><br>
+        <strong>GRADING SYSTEM:</strong><br>
+        A = 70-100 (Excellent), B = 60-69 (Very Good), C = 50-59 (Good), D = 40-49 (Pass), E = 35-39 (Pass), F = 0-34 (Fail)<br>
+        C.A = Continuous Assessment, EX = Examination, X = Absent
+    </div>
+    
+    <div class="criteria">
+        <strong>CRITERIA FOR BECE CERTIFICATE:</strong><br>
+        Candidates must obtain at least Grade E (35%) in English Language and Mathematics plus three other subjects.
+    </div>
+
+    <div style="margin-top: 30px; text-align: center; font-size: 10px;">
+        <strong>This is a computer-generated result slip and does not require signature</strong><br>
+        Generated on: <%= new Date().toLocaleDateString() %> | Time: <%= new Date().toLocaleTimeString() %>
+    </div>
+
+    <script>
+        window.onload = function() {
+            if (window.location.search.includes('print=true')) {
+                window.print();
+            }
+        }
+    </script>
+</body>
+</html>ODES AND ABBREVIATIONS</strong><br>
+        001 ENG: ENGLISH LANGUAGE &nbsp;&nbsp;&nbsp; 006 COM: COMPUTER STUDIES<br>
+        002 MAT: MATHEMATICS &nbsp;&nbsp;&nbsp; 007 FRE: FRENCH LANGUAGE<br>
+        003 BAS: BASIC SCIENCE &nbsp;&nbsp;&nbsp; 008 ARA: ARABIC LANGUAGE<br>
+        004 SOC: SOCIAL STUDIES &nbsp;&nbsp;&nbsp; 009 BUS: BUSINESS STUDIES<br>
+        005 CIV: CIVIC EDUCATION &nbsp;&nbsp;&nbsp; 010 HOM: HOME ECONOMICS<br><br>
+        
+        <strong>IF CA IS NOT GIVEN, IT IS TAKEN AS ZERO. IF EXAMINATION MARKS ARE NOT GIVEN THE SUBJECT IS NOT TREATED</strong>
+    </div>
+
+    <div class="criteria">
+        <strong>CRITERIA FOR PROMOTION: PASS IN SIX OR MORE SUBJECTS INCLUDING BOTH MATHEMATICS AND ENGLISH LANGUAGE</strong>
+    </div>
+
+    <div style="text-align: center; margin-top: 30px;">
+        <button onclick="window.print()" style="padding: 10px 20px; font-size: 14px;">Print Gazette</button>
+        <button onclick="window.close()" style="padding: 10px 20px; font-size: 14px; margin-left: 10px;">Close</button>
+    </div>
+</body>
+</html>

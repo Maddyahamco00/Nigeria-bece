@@ -333,6 +333,40 @@ body {
   to { transform: rotate(360deg); }
 }
 
+/* Mobile Navigation Fixes */
+.navbar-toggler {
+  border: none;
+  padding: 4px 8px;
+}
+
+.navbar-collapse {
+  background: var(--white);
+  border-radius: var(--border-radius);
+  box-shadow: var(--shadow);
+  margin-top: 10px;
+  padding: 15px;
+}
+
+.dropdown-menu {
+  border: none;
+  border-radius: var(--border-radius);
+  box-shadow: var(--shadow);
+  padding: 10px;
+}
+
+.dropdown-item {
+  border-radius: 8px;
+  padding: 10px 15px;
+  margin: 2px 0;
+  transition: var(--transition);
+}
+
+.dropdown-item:hover {
+  background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+  color: var(--white);
+  transform: translateX(5px);
+}
+
 /* Responsive Enhancements */
 @media (max-width: 768px) {
   .card-body {
@@ -347,11 +381,271 @@ body {
   .stats-number {
     font-size: 2rem;
   }
+  
+  .navbar-nav {
+    text-align: center;
+  }
+  
+  .dropdown-menu {
+    position: static !important;
+    transform: none !important;
+    width: 100%;
+    margin: 0;
+    border: none;
+    box-shadow: none;
+    background: transparent;
+  }
+  
+  .dropdown-item {
+    text-align: center;
+    background: rgba(255,255,255,0.9);
+    margin: 5px 0;
+    border-radius: var(--border-radius);
+  }
 }
 
 /* Smooth Scrolling */
 html {
   scroll-behavior: smooth;
+}
+
+/* Student Dashboard Enhancements */
+.student-dashboard {
+  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+  min-height: 100vh;
+}
+
+.dashboard-hero {
+  background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+  color: var(--white);
+  padding: 60px 0;
+  margin-bottom: 30px;
+}
+
+.hero-title {
+  font-size: 2.5rem;
+  font-weight: 700;
+  margin-bottom: 15px;
+}
+
+.hero-subtitle {
+  font-size: 1.2rem;
+  opacity: 0.9;
+}
+
+.student-avatar {
+  text-align: center;
+}
+
+.student-sidebar {
+  background: var(--white);
+  border-radius: var(--border-radius);
+  padding: 25px;
+  box-shadow: var(--shadow);
+  margin-bottom: 20px;
+}
+
+.sidebar-title {
+  color: var(--dark-color);
+  font-weight: 700;
+  margin-bottom: 20px;
+  padding-bottom: 10px;
+  border-bottom: 2px solid var(--primary-color);
+}
+
+.info-card, .payment-card, .results-card {
+  background: var(--white);
+  border-radius: var(--border-radius);
+  padding: 25px;
+  box-shadow: var(--shadow);
+  transition: var(--transition);
+  margin-bottom: 20px;
+  position: relative;
+  overflow: hidden;
+}
+
+.info-card::before, .payment-card::before, .results-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 4px;
+  background: linear-gradient(90deg, var(--primary-color), var(--secondary-color));
+}
+
+.card-icon {
+  font-size: 2rem;
+  color: var(--primary-color);
+  margin-bottom: 15px;
+}
+
+.info-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 15px;
+  margin-top: 15px;
+}
+
+.info-item {
+  display: flex;
+  flex-direction: column;
+}
+
+.info-label {
+  font-size: 0.9rem;
+  color: #666;
+  font-weight: 600;
+  margin-bottom: 5px;
+}
+
+.info-value {
+  font-weight: 700;
+  color: var(--dark-color);
+}
+
+.student-code {
+  font-family: 'Courier New', monospace;
+  background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+  color: var(--white);
+  padding: 5px 10px;
+  border-radius: 5px;
+  display: inline-block;
+}
+
+.payment-status {
+  display: flex;
+  align-items: center;
+  font-weight: 700;
+  margin-bottom: 10px;
+}
+
+.payment-status.paid {
+  color: var(--success-color);
+}
+
+.payment-status.pending {
+  color: var(--warning-color);
+}
+
+.payment-note {
+  color: #666;
+  margin-bottom: 15px;
+}
+
+.action-btn {
+  display: inline-flex;
+  align-items: center;
+  padding: 10px 20px;
+  border-radius: 25px;
+  text-decoration: none;
+  font-weight: 600;
+  transition: var(--transition);
+  border: none;
+  cursor: pointer;
+}
+
+.action-btn.primary {
+  background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+  color: var(--white);
+}
+
+.action-btn.success {
+  background: linear-gradient(135deg, var(--success-color) 0%, #45a049 100%);
+  color: var(--white);
+}
+
+.action-btn.warning {
+  background: linear-gradient(135deg, var(--warning-color) 0%, #f57c00 100%);
+  color: var(--white);
+}
+
+.action-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(0,0,0,0.2);
+  color: var(--white);
+}
+
+.results-table {
+  margin-top: 20px;
+}
+
+.table-header {
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr 1fr;
+  gap: 10px;
+  background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+  color: var(--white);
+  padding: 15px;
+  border-radius: var(--border-radius) var(--border-radius) 0 0;
+  font-weight: 700;
+}
+
+.table-row {
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr 1fr;
+  gap: 10px;
+  padding: 15px;
+  border-bottom: 1px solid #f0f0f0;
+  transition: var(--transition);
+}
+
+.table-row:hover {
+  background: rgba(102, 126, 234, 0.05);
+}
+
+.grade-badge {
+  padding: 5px 10px;
+  border-radius: 15px;
+  font-weight: 700;
+  font-size: 0.9rem;
+  text-align: center;
+  display: inline-block;
+  min-width: 30px;
+}
+
+.grade-badge.excellent {
+  background: linear-gradient(135deg, var(--success-color) 0%, #45a049 100%);
+  color: var(--white);
+}
+
+.grade-badge.good {
+  background: linear-gradient(135deg, var(--info-color) 0%, #1976D2 100%);
+  color: var(--white);
+}
+
+.grade-badge.average {
+  background: linear-gradient(135deg, var(--warning-color) 0%, #f57c00 100%);
+  color: var(--white);
+}
+
+.grade-badge.pass {
+  background: linear-gradient(135deg, #9E9E9E 0%, #757575 100%);
+  color: var(--white);
+}
+
+.grade-badge.fail {
+  background: linear-gradient(135deg, var(--danger-color) 0%, #d32f2f 100%);
+  color: var(--white);
+}
+
+.results-actions {
+  margin-top: 20px;
+  text-align: center;
+}
+
+.results-actions .action-btn {
+  margin: 0 10px;
+}
+
+.no-results {
+  text-align: center;
+  padding: 40px 20px;
+  color: #666;
+}
+
+.no-results i {
+  color: #ccc;
 }
 
 /* Custom Scrollbar */

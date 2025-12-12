@@ -60,7 +60,9 @@
         </h5>
       </div>
       <div class="card-body">
-        <canvas id="gradeChart" width="400" height="200"></canvas>
+        <div style="max-width: 400px; margin: 0 auto;">
+          <canvas id="gradeChart" width="400" height="400"></canvas>
+        </div>
       </div>
     </div>
 
@@ -176,9 +178,15 @@ new Chart(ctx, {
   },
   options: {
     responsive: true,
+    maintainAspectRatio: true,
+    aspectRatio: 1,
     plugins: {
       legend: {
-        position: 'bottom'
+        position: 'bottom',
+        labels: {
+          padding: 20,
+          usePointStyle: true
+        }
       }
     }
   }

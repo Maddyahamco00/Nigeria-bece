@@ -1,23 +1,129 @@
 <!-- views/partials/sidebar.ejs -->
 <aside class="modern-sidebar">
   <div class="sidebar-header">
-    <img src="/images/logo.svg" alt="BECE Logo" class="sidebar-logo">
+    <img src="/images/logos/bece-logo.svg" alt="BECE Logo" class="sidebar-logo">
     <div class="sidebar-brand">
       <h5 class="sidebar-title">BECE Portal</h5>
       <span class="sidebar-subtitle">
         <% if (typeof user !== 'undefined' && user) { %>
           <% if (user.role === 'super_admin') { %>Super Admin<% } else { %>Admin Panel<% } %>
+        <% } else if (typeof student !== 'undefined' && student) { %>
+          Student Portal
         <% } else { %>
           Dashboard
         <% } %>
       </span>
     </div>
   </div>
+  
+  <% if (typeof user !== 'undefined' && user && user.role) { %>
+  <div class="role-badge">
+    <span class="badge bg-primary">
+      <i class="fas fa-user-shield me-1"></i>
+      <%= user.role.replace('_', ' ').toUpperCase() %>
+    </span>
+  </div>
+  <% } %>
 
   <nav class="sidebar-nav">
     <% if (typeof user !== 'undefined' && user) { %>
       <!-- Admin Sidebar -->
-      <%- include('./sidebarLinks') %>
+      <ul class="nav flex-column">
+        <li class="nav-item">
+          <a href="/admin/dashboard" class="nav-link <%= currentPath && currentPath.startsWith('/admin/dashboard') ? 'active' : '' %>">
+            <i class="fas fa-tachometer-alt me-2"></i>
+            <span>Dashboard</span>
+          </a>
+        </li>
+        <% if (user && user.role === 'super_admin') { %>
+        <li class="nav-item">
+          <a href="/admin/users/new" class="nav-link <%= currentPath && currentPath.startsWith('/admin/users/new') ? 'active' : '' %>">
+            <i class="fas fa-user-plus me-2"></i>
+            <span>Add Sub-Admin</span>
+          </a>
+        </li>
+        <% } %>
+        <li class="nav-item">
+          <a href="/admin/students" class="nav-link <%= currentPath && currentPath.startsWith('/admin/students') ? 'active' : '' %>">
+            <i class="fas fa-users me-2"></i>
+            <span>Students</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="/admin/schools" class="nav-link <%= currentPath && currentPath.startsWith('/admin/schools') ? 'active' : '' %>">
+            <i class="fas fa-school me-2"></i>
+            <span>Schools</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="/admin/results" class="nav-link <%= currentPath && currentPath.startsWith('/admin/results') ? 'active' : '' %>">
+            <i class="fas fa-chart-bar me-2"></i>
+            <span>Results</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="/admin/payments" class="nav-link <%= currentPath && currentPath.startsWith('/admin/payments') ? 'active' : '' %>">
+            <i class="fas fa-credit-card me-2"></i>
+            <span>Payments</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="/admin/timetable" class="nav-link <%= currentPath && currentPath.startsWith('/admin/timetable') ? 'active' : '' %>">
+            <i class="fas fa-calendar-alt me-2"></i>
+            <span>Timetable</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="/admin/centers" class="nav-link <%= currentPath && currentPath.startsWith('/admin/centers') ? 'active' : '' %>">
+            <i class="fas fa-map-marker-alt me-2"></i>
+            <span>Exam Centers</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="/admin/certificates" class="nav-link <%= currentPath && currentPath.startsWith('/admin/certificates') ? 'active' : '' %>">
+            <i class="fas fa-certificate me-2"></i>
+            <span>Certificates</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="/admin/gazette" class="nav-link <%= currentPath && currentPath.startsWith('/admin/gazette') ? 'active' : '' %>">
+            <i class="fas fa-newspaper me-2"></i>
+            <span>Gazette</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="/admin/analytics" class="nav-link <%= currentPath && currentPath.startsWith('/admin/analytics') ? 'active' : '' %>">
+            <i class="fas fa-chart-line me-2"></i>
+            <span>Analytics</span>
+          </a>
+        </li>
+        <% if (user && user.role === 'super_admin') { %>
+        <li class="nav-item">
+          <a href="/admin/users" class="nav-link <%= currentPath && currentPath.startsWith('/admin/users') ? 'active' : '' %>">
+            <i class="fas fa-users-cog me-2"></i>
+            <span>Admin Management</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="/admin/users/new" class="nav-link <%= currentPath && currentPath.startsWith('/admin/users/new') ? 'active' : '' %>">
+            <i class="fas fa-user-plus me-2"></i>
+            <span>Add Sub-Admin</span>
+          </a>
+        </li>
+        <% } %>
+        <li class="nav-item">
+          <a href="/admin/settings" class="nav-link <%= currentPath && currentPath.startsWith('/admin/settings') ? 'active' : '' %>">
+            <i class="fas fa-cog me-2"></i>
+            <span>Settings</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="/auth/logout" class="nav-link text-danger">
+            <i class="fas fa-sign-out-alt me-2"></i>
+            <span>Logout</span>
+          </a>
+        </li>
+      </ul>
     <% } else if (typeof student !== 'undefined' && student) { %>
       <!-- Student Sidebar -->
       <ul class="nav flex-column">
@@ -62,15 +168,15 @@
           <i class="fas fa-user-shield"></i>
         </div>
         <div class="user-details">
-          <div class="user-name"><%= user.name %></div>
-          <div class="user-role"><%= user.role.replace('_', ' ').toUpperCase() %></div>
+          <div class="user-name"><%= user && user.name ? user.name : 'Admin User' %></div>
+          <div class="user-role"><%= user && user.role ? user.role.replace('_', ' ').toUpperCase() : 'ADMIN' %></div>
         </div>
       <% } else if (typeof student !== 'undefined' && student) { %>
         <div class="user-avatar">
           <i class="fas fa-user-graduate"></i>
         </div>
         <div class="user-details">
-          <div class="user-name"><%= student.name %></div>
+          <div class="user-name"><%= student && student.name ? student.name : 'Student' %></div>
           <div class="user-role">STUDENT</div>
         </div>
       <% } %>
@@ -258,5 +364,18 @@
 
 .sidebar-nav::-webkit-scrollbar-thumb:hover {
   background: rgba(255,255,255,0.5);
+}
+
+.role-badge {
+  padding: 15px 25px 0;
+  text-align: center;
+}
+
+.role-badge .badge {
+  font-size: 0.75rem;
+  padding: 8px 12px;
+  border-radius: 20px;
+  font-weight: 600;
+  letter-spacing: 0.5px;
 }
 </style>

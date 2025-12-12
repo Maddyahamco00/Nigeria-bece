@@ -1,0 +1,156 @@
+<!-- views/admin/publish.ejs -->
+<div class="dashboard-container">
+  <%- include('../partials/sidebar') %>
+
+  <div id="mainContent" class="main-content">
+    <div class="welcome-header mb-4">
+      <h2 class="dashboard-title">
+        <i class="fas fa-bullhorn me-3"></i>
+        Publications Center
+      </h2>
+      <p class="dashboard-subtitle">Manage and publish official announcements</p>
+    </div>
+
+    <!-- Publication Cards -->
+    <div class="row g-4">
+      <div class="col-md-4">
+        <div class="card border-0 shadow-sm h-100">
+          <div class="card-body text-center">
+            <div class="text-primary mb-3">
+              <i class="fas fa-chart-bar fa-3x"></i>
+            </div>
+            <h5 class="card-title">Publish Results</h5>
+            <p class="card-text">Release examination results to students and public</p>
+            <button class="btn btn-primary" onclick="publishResults()">
+              <i class="fas fa-bullhorn me-2"></i>
+              Publish Results
+            </button>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="card border-0 shadow-sm h-100">
+          <div class="card-body text-center">
+            <div class="text-info mb-3">
+              <i class="fas fa-calendar-alt fa-3x"></i>
+            </div>
+            <h5 class="card-title">Publish Timetable</h5>
+            <p class="card-text">Release examination timetable and schedules</p>
+            <button class="btn btn-info" onclick="publishTimetable()">
+              <i class="fas fa-calendar-check me-2"></i>
+              Publish Timetable
+            </button>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="card border-0 shadow-sm h-100">
+          <div class="card-body text-center">
+            <div class="text-success mb-3">
+              <i class="fas fa-newspaper fa-3x"></i>
+            </div>
+            <h5 class="card-title">Publish Updates</h5>
+            <p class="card-text">Share important updates and announcements</p>
+            <button class="btn btn-success" onclick="publishUpdates()">
+              <i class="fas fa-newspaper me-2"></i>
+              Publish Updates
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Recent Publications -->
+    <div class="card shadow-sm border-0 rounded-4 mt-4">
+      <div class="card-header bg-transparent border-0">
+        <h5 class="fw-bold mb-0">
+          <i class="fas fa-history me-2"></i>
+          Recent Publications
+        </h5>
+      </div>
+      <div class="card-body">
+        <div class="table-responsive">
+          <table class="table table-hover">
+            <thead class="table-light">
+              <tr>
+                <th>Type</th>
+                <th>Title</th>
+                <th>Published Date</th>
+                <th>Status</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><span class="badge bg-primary">Results</span></td>
+                <td>2025 BECE Results</td>
+                <td><%= new Date().toLocaleDateString() %></td>
+                <td><span class="badge bg-success">Published</span></td>
+                <td>
+                  <button class="btn btn-sm btn-outline-info">
+                    <i class="fas fa-eye"></i>
+                  </button>
+                  <button class="btn btn-sm btn-outline-danger">
+                    <i class="fas fa-times"></i>
+                  </button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+function publishResults() {
+  if (confirm('Are you sure you want to publish examination results?')) {
+    fetch('/admin/publish/results', { method: 'POST' })
+      .then(response => response.json())
+      .then(data => {
+        if (data.success) {
+          alert('Results published successfully!');
+          location.reload();
+        } else {
+          alert('Failed to publish results');
+        }
+      });
+  }
+}
+
+function publishTimetable() {
+  if (confirm('Are you sure you want to publish examination timetable?')) {
+    fetch('/admin/publish/timetable', { method: 'POST' })
+      .then(response => response.json())
+      .then(data => {
+        if (data.success) {
+          alert('Timetable published successfully!');
+          location.reload();
+        } else {
+          alert('Failed to publish timetable');
+        }
+      });
+  }
+}
+
+function publishUpdates() {
+  const message = prompt('Enter update message:');
+  if (message) {
+    fetch('/admin/publish/updates', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ message })
+    })
+    .then(response => response.json())
+    .then(data => {
+      if (data.success) {
+        alert('Update published successfully!');
+        location.reload();
+      } else {
+        alert('Failed to publish update');
+      }
+    });
+  }
+}
+</script>

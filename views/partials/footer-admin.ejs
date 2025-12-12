@@ -1,0 +1,51 @@
+<!-- views/partials/footer-admin.ejs -->
+<footer class="admin-footer">
+  <div class="container">
+    <div class="row">
+      <div class="col-md-8">
+        <h6>Admin Portal - <%= user && user.role ? user.role.replace('_', ' ').toUpperCase() : 'ADMIN' %></h6>
+        <p>Logged in as <strong><%= user && user.name ? user.name : 'Admin User' %></strong> | Last login: <%= new Date().toLocaleString() %></p>
+      </div>
+      <div class="col-md-4 text-end">
+        <div class="admin-actions">
+          <% if (user && user.role === 'super_admin') { %>
+            <a href="/admin/users/new" class="btn btn-sm btn-outline-light">Add Admin</a>
+          <% } %>
+          <a href="/admin/publish" class="btn btn-sm btn-outline-light">Publish</a>
+          <a href="/admin/settings" class="btn btn-sm btn-outline-light">Settings</a>
+        </div>
+      </div>
+    </div>
+    <hr>
+    <div class="text-center">
+      <p>&copy; <%= new Date().getFullYear() %> Nigeria BECE Portal - Administrative System</p>
+    </div>
+  </div>
+</footer>
+
+<style>
+.admin-footer {
+  background: linear-gradient(135deg, #8e44ad, #9b59b6);
+  color: white;
+  padding: 25px 0 15px;
+  margin-top: auto;
+}
+
+.admin-footer h6 {
+  color: #ecf0f1;
+  margin-bottom: 10px;
+  font-weight: 600;
+}
+
+.admin-actions .btn {
+  margin-left: 5px;
+  border-color: rgba(255,255,255,0.3);
+  color: #ecf0f1;
+}
+
+.admin-actions .btn:hover {
+  background: rgba(255,255,255,0.2);
+  border-color: rgba(255,255,255,0.5);
+  color: white;
+}
+</style>

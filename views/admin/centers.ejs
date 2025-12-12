@@ -63,6 +63,17 @@
             <label class="form-label fw-bold">Contact Phone</label>
             <input type="tel" name="contactPhone" class="form-control" placeholder="08012345678">
           </div>
+          <div class="col-md-6">
+            <label class="form-label fw-bold">Use Existing School (Optional)</label>
+            <select name="useSchool" class="form-control" onchange="fillSchoolData(this)">
+              <option value="">Select from registered schools</option>
+              <% schools.forEach(school => { %>
+                <option value="<%= school.id %>" data-name="<%= school.name %>" data-address="<%= school.address %>" data-state="<%= school.stateId %>" data-lga="<%= school.lgaId %>">
+                  <%= school.name %> - <%= school.State?.name %>
+                </option>
+              <% }) %>
+            </select>
+          </div>
           <div class="col-12">
             <button type="submit" class="btn btn-primary">
               <i class="fas fa-plus me-2"></i>
@@ -149,3 +160,40 @@
     </div>
   </div>
 </div>
+
+<script>
+function fillSchoolData(select) {
+  if (select.value) {
+    const option = select.options[select.selectedIndex];
+    document.querySelector('input[name="name"]').value = option.dataset.name;
+    document.querySelector('textarea[name="address"]').value = option.dataset.address;
+    document.querySelector('select[name="stateId"]').value = option.dataset.state;
+    document.querySelector('select[name="lgaId"]').value = option.dataset.lga;
+    document.querySelector('input[name="code"]').value = option.dataset.name.substring(0, 3).toUpperCase() + '001';
+  }
+}
+
+function previewCertificate(id) {
+  window.open('/admin/certificates/' + id + '/preview', '_blank');
+}
+
+function downloadCertificate(id) {
+  window.location.href = '/admin/certificates/' + id + '/download';
+}
+
+function sendCertificate(id) {
+  if (confirm('Send certificate to student via email?')) {
+    fetch('/admin/certificates/' + id + '/send', { method: 'POST' })
+      .then(response => response.json())
+      .then(data => alert(data.message));
+  }
+}
+
+function publishCertificate(id) {
+  if (confirm('Publish this certificate?')) {
+    fetch('/admin/certificates/' + id + '/publish', { method: 'POST' })
+      .then(response => response.json())
+      .then(data => alert(data.message));
+  }
+}
+</script>

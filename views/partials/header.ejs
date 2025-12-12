@@ -4,7 +4,7 @@
     <div class="header-content">
       <!-- Logo + Title -->
       <div class="header-brand">
-        <img src="/images/logo.svg" alt="BECE Logo" class="header-logo">
+        <img src="/images/logos/bece-logo.svg" alt="BECE Logo" class="header-logo">
         <div class="brand-text">
           <h1 class="brand-title">Nigeria BECE</h1>
           <span class="brand-subtitle">
@@ -22,9 +22,15 @@
       <!-- Navigation -->
       <nav class="header-nav">
         <% if (typeof user !== 'undefined' && user) { %>
+          <!-- Admin Role Badge -->
+          <div class="role-indicator">
+            <span class="badge bg-light text-primary">
+              <%= user.role ? user.role.replace('_', ' ').toUpperCase() : 'ADMIN' %>
+            </span>
+          </div>
           <!-- Admin Navigation -->
           <div class="nav-items">
-            <% if (user.role === 'super_admin') { %>
+            <% if (user && user.role === 'super_admin') { %>
               <a href="/admin/users" class="nav-btn">
                 <i class="fas fa-users-cog"></i>
                 <span>Manage Admins</span>
@@ -33,7 +39,7 @@
             <div class="nav-item dropdown">
               <button class="nav-btn dropdown-toggle" data-bs-toggle="dropdown">
                 <i class="fas fa-user-shield"></i>
-                <span><%= user.name %></span>
+                <span><%= user && user.name ? user.name : 'Admin' %></span>
               </button>
               <ul class="dropdown-menu">
                 <li><a class="dropdown-item" href="/admin/profile"><i class="fas fa-user me-2"></i>Profile</a></li>
@@ -53,7 +59,7 @@
             <div class="nav-item dropdown">
               <button class="nav-btn dropdown-toggle" data-bs-toggle="dropdown">
                 <i class="fas fa-user-graduate"></i>
-                <span><%= student.name %></span>
+                <span><%= student && student.name ? student.name : 'Student' %></span>
               </button>
               <ul class="dropdown-menu">
                 <li><a class="dropdown-item" href="/students/profile"><i class="fas fa-user me-2"></i>Profile</a></li>
@@ -96,6 +102,11 @@
             <a href="/admin/dashboard" class="mobile-nav-link">
               <i class="fas fa-tachometer-alt me-2"></i>Dashboard
             </a>
+            <% if (user && user.role === 'super_admin') { %>
+            <a href="/admin/users/new" class="mobile-nav-link">
+              <i class="fas fa-user-plus me-2"></i>Add Sub-Admin
+            </a>
+            <% } %>
             <a href="/admin/students" class="mobile-nav-link">
               <i class="fas fa-users me-2"></i>Students
             </a>
@@ -123,7 +134,7 @@
             <a href="/admin/analytics" class="mobile-nav-link">
               <i class="fas fa-chart-line me-2"></i>Analytics
             </a>
-            <% if (user.role === 'super_admin') { %>
+            <% if (user && user.role === 'super_admin') { %>
               <a href="/admin/users" class="mobile-nav-link">
                 <i class="fas fa-users-cog me-2"></i>Admin Management
               </a>
@@ -133,10 +144,27 @@
             </a>
           </div>
           <div class="mobile-nav-section">
+            <h6 class="mobile-nav-title">Publications</h6>
+            <a href="/admin/publish/results" class="mobile-nav-link">
+              <i class="fas fa-bullhorn me-2"></i>Publish Results
+            </a>
+            <a href="/admin/publish/timetable" class="mobile-nav-link">
+              <i class="fas fa-calendar-check me-2"></i>Publish Timetable
+            </a>
+            <a href="/admin/publish/updates" class="mobile-nav-link">
+              <i class="fas fa-newspaper me-2"></i>Publish Updates
+            </a>
+          </div>
+          <div class="mobile-nav-section">
             <h6 class="mobile-nav-title">Account</h6>
             <a href="/admin/profile" class="mobile-nav-link">
               <i class="fas fa-user me-2"></i>Profile
             </a>
+            <% if (user && user.role === 'super_admin') { %>
+              <a href="/admin/users/new" class="mobile-nav-link">
+                <i class="fas fa-user-plus me-2"></i>Add Sub-Admin
+              </a>
+            <% } %>
             <a href="/auth/logout" class="mobile-nav-link text-danger">
               <i class="fas fa-sign-out-alt me-2"></i>Logout
             </a>
@@ -339,6 +367,18 @@
 .mobile-nav-link.text-danger:hover {
   background: #dc3545;
   color: white;
+}
+
+.role-indicator {
+  margin-right: 15px;
+}
+
+.role-indicator .badge {
+  font-size: 0.75rem;
+  padding: 6px 12px;
+  border-radius: 15px;
+  font-weight: 600;
+  letter-spacing: 0.5px;
 }
 
 @media (max-width: 768px) {

@@ -48,16 +48,28 @@
               <% } %>
             </select>
           </div>
-          <div class="col-md-3">
+          <div class="col-md-2">
             <label class="form-label fw-bold">State</label>
-            <select name="state" class="form-control">
+            <select name="state" class="form-control" onchange="loadLGAs(this.value)">
               <option value="">All States</option>
               <% states.forEach(state => { %>
                 <option value="<%= state.id %>"><%= state.name %></option>
               <% }) %>
             </select>
           </div>
-          <div class="col-md-3">
+          <div class="col-md-2">
+            <label class="form-label fw-bold">LGA</label>
+            <select name="lga" class="form-control" onchange="loadSchools()">
+              <option value="">All LGAs</option>
+            </select>
+          </div>
+          <div class="col-md-2">
+            <label class="form-label fw-bold">School</label>
+            <select name="school" class="form-control">
+              <option value="">All Schools</option>
+            </select>
+          </div>
+          <div class="col-md-2">
             <label class="form-label fw-bold">Grade Filter</label>
             <select name="grade" class="form-control">
               <option value="">All Grades</option>
@@ -69,7 +81,7 @@
               <option value="F">Grade F (Fail)</option>
             </select>
           </div>
-          <div class="col-md-3">
+          <div class="col-md-2">
             <label class="form-label fw-bold">Format</label>
             <select name="format" class="form-control">
               <option value="csv">CSV Download</option>
@@ -85,6 +97,10 @@
             <button type="button" class="btn btn-outline-secondary" onclick="previewGazette()">
               <i class="fas fa-eye me-2"></i>
               Preview
+            </button>
+            <button type="button" class="btn btn-outline-info" onclick="previewSchoolGazette()">
+              <i class="fas fa-school me-2"></i>
+              School Preview
             </button>
           </div>
         </form>
@@ -251,6 +267,28 @@ function previewGazette() {
   loadPreviewData();
 }
 
+function previewSchoolGazette() {
+  // Get current form values
+  const form = document.querySelector('form[action="/admin/export/gazette"]');
+  const formData = new FormData(form);
+  
+  // Validate that filters are selected
+  if (!formData.get('state')) {
+    alert('Please select a state to preview gazette');
+    return;
+  }
+  
+  const params = new URLSearchParams();
+  if (formData.get('year')) params.append('year', formData.get('year'));
+  if (formData.get('state')) params.append('state', formData.get('state'));
+  if (formData.get('lga')) params.append('lga', formData.get('lga'));
+  if (formData.get('school')) params.append('school', formData.get('school'));
+  if (formData.get('grade')) params.append('grade', formData.get('grade'));
+  
+  // Open Taraba-style gazette preview with filters
+  window.open('/admin/gazette/preview?' + params, '_blank', 'width=1200,height=800');
+}
+
 async function loadPreviewData() {
   try {
     document.getElementById('previewLoading').style.display = 'block';
@@ -352,6 +390,56 @@ async function loadGazetteStats() {
   }
 }
 
+// Load LGAs based on selected state
+async function loadLGAs(stateId) {
+  const lgaSelect = document.querySelector('select[name="lga"]');
+  const schoolSelect = document.querySelector('select[name="school"]');
+  
+  lgaSelect.innerHTML = '<option value="">All LGAs</option>';
+  schoolSelect.innerHTML = '<option value="">All Schools</option>';
+  
+  if (stateId) {
+    try {
+      const response = await fetch(`/admin/api/lgas/${stateId}`);
+      const lgas = await response.json();
+      
+      lgas.forEach(lga => {
+        lgaSelect.innerHTML += `<option value="${lga.id}">${lga.name}</option>`;
+      });
+    } catch (error) {
+      console.error('Failed to load LGAs:', error);
+    }
+  }
+  updateStats();
+}
+
+// Load schools based on selected state and LGA
+async function loadSchools() {
+  const stateId = document.querySelector('select[name="state"]').value;
+  const lgaId = document.querySelector('select[name="lga"]').value;
+  const schoolSelect = document.querySelector('select[name="school"]');
+  
+  schoolSelect.innerHTML = '<option value="">All Schools</option>';
+  
+  if (stateId || lgaId) {
+    try {
+      const params = new URLSearchParams();
+      if (stateId) params.append('stateId', stateId);
+      if (lgaId) params.append('lgaId', lgaId);
+      
+      const response = await fetch(`/admin/api/schools?${params}`);
+      const schools = await response.json();
+      
+      schools.forEach(school => {
+        schoolSelect.innerHTML += `<option value="${school.id}">${school.name}</option>`;
+      });
+    } catch (error) {
+      console.error('Failed to load schools:', error);
+    }
+  }
+  updateStats();
+}
+
 // Update stats when filters change
 function updateStats() {
   const form = document.querySelector('form[action="/admin/export/gazette"]');
@@ -360,6 +448,8 @@ function updateStats() {
   const params = new URLSearchParams();
   if (formData.get('year')) params.append('year', formData.get('year'));
   if (formData.get('state')) params.append('state', formData.get('state'));
+  if (formData.get('lga')) params.append('lga', formData.get('lga'));
+  if (formData.get('school')) params.append('school', formData.get('school'));
   if (formData.get('grade')) params.append('grade', formData.get('grade'));
   
   fetch(`/admin/gazette/stats?${params}`)
@@ -381,7 +471,7 @@ document.addEventListener('DOMContentLoaded', function() {
   loadGazetteStats();
   
   // Add change listeners to filter inputs
-  const filterInputs = document.querySelectorAll('select[name="year"], select[name="state"], select[name="grade"]');
+  const filterInputs = document.querySelectorAll('select[name="year"], select[name="state"], select[name="lga"], select[name="school"], select[name="grade"]');
   filterInputs.forEach(input => {
     input.addEventListener('change', updateStats);
   });

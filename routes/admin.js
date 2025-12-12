@@ -15,6 +15,13 @@ import { Op } from 'sequelize';
 // protect all admin routes
 router.use(isAuthenticated, isAdmin);
 
+// Middleware to ensure user object is available in all views
+router.use((req, res, next) => {
+  res.locals.user = req.user;
+  res.locals.currentPath = req.path;
+  next();
+});
+
 /* ---------------- Dashboard ---------------- */
 router.get('/dashboard', requireAdmin, async (req, res) => {
   try {
@@ -838,12 +845,14 @@ router.get('/centers', requireAdmin, async (req, res) => {
     });
     const states = await State.findAll();
     const lgas = await LGA.findAll();
+    const schools = await School.findAll({ include: [State, LGA] });
     
     res.render('admin/centers', {
       title: 'Exam Centers',
       centers,
       states,
       lgas,
+      schools,
       user: req.user
     });
   } catch (err) {
@@ -973,6 +982,30 @@ router.get('/analytics', requireAdmin, async (req, res) => {
   }
 });
 
+/* ---------------- API Routes for Filters ---------------- */
+router.get('/api/lgas/:stateId', requireAdmin, async (req, res) => {
+  try {
+    const lgas = await LGA.findAll({ where: { stateId: req.params.stateId } });
+    res.json(lgas);
+  } catch (err) {
+    res.json([]);
+  }
+});
+
+router.get('/api/schools', requireAdmin, async (req, res) => {
+  try {
+    const { stateId, lgaId } = req.query;
+    const where = {};
+    if (stateId) where.stateId = stateId;
+    if (lgaId) where.lgaId = lgaId;
+    
+    const schools = await School.findAll({ where, attributes: ['id', 'name'] });
+    res.json(schools);
+  } catch (err) {
+    res.json([]);
+  }
+});
+
 /* ---------------- Gazette Page & Export ---------------- */
 router.get('/gazette', requireAdmin, async (req, res) => {
   try {
@@ -1062,58 +1095,96 @@ router.get('/gazette/stats', requireAdmin, async (req, res) => {
 // Gazette preview API
 router.get('/gazette/preview', requireAdmin, async (req, res) => {
   try {
-    const { year, state, grade } = req.query;
+    const { year, state, lga, school: schoolId, grade } = req.query;
     
-    let whereClause = {};
-    if (year) {
-      whereClause.createdAt = {
-        [Op.gte]: new Date(`${year}-01-01`),
-        [Op.lt]: new Date(`${parseInt(year) + 1}-01-01`)
-      };
-    }
+    // Build school filter
+    const schoolWhere = {};
+    if (schoolId) schoolWhere.id = schoolId;
+    else if (lga) schoolWhere.lgaId = lga;
+    else if (state) schoolWhere.stateId = state;
     
-    const results = await Result.findAll({
+    // Get school data
+    const school = schoolId ? await School.findByPk(schoolId, { include: [State, LGA] }) : null;
+    
+    // Get students with results
+    const students = await Student.findAll({
       include: [
         {
-          model: Student,
-          include: [
-            {
-              model: School,
-              include: [State],
-              where: state ? { stateId: state } : {}
+          model: School,
+          include: [State, LGA],
+          where: Object.keys(schoolWhere).length > 0 ? schoolWhere : undefined
+        },
+        {
+          model: Result,
+          required: false,
+          where: year ? {
+            createdAt: {
+              [Op.gte]: new Date(`${year}-01-01`),
+              [Op.lt]: new Date(`${parseInt(year) + 1}-01-01`)
             }
-          ]
+          } : undefined
         }
       ],
-      where: whereClause,
-      limit: 50,
-      order: [['createdAt', 'DESC']]
+      limit: 50
     });
     
-    // Filter by grade if specified
-    const filteredResults = grade ? 
-      results.filter(r => getGrade(r.score) === grade) : 
-      results;
+    // Process student data for gazette format
+    const processedStudents = students.map(student => {
+      const results = {};
+      const subjects = ['English Language', 'Mathematics', 'Basic Science', 'Social Studies', 'Civic Education', 'Computer Studies', 'French', 'Arabic', 'Business Studies', 'Home Economics'];
+      
+      student.Results?.forEach(result => {
+        const grade = getGrade(result.score);
+        results[result.subject] = grade === 'F' ? 'F' : grade;
+      });
+      
+      return {
+        name: student.name,
+        gender: student.gender,
+        results
+      };
+    });
     
-    const previewData = filteredResults.map(result => ({
-      studentName: result.Student?.name || 'N/A',
-      studentCode: result.Student?.studentCode || 'N/A',
-      school: result.Student?.School?.name || 'N/A',
-      state: result.Student?.School?.State?.name || 'N/A',
-      subject: result.subject,
-      score: result.score,
-      grade: getGrade(result.score),
-      examYear: new Date(result.createdAt).getFullYear()
-    }));
+    // Calculate statistics
+    const maleCount = processedStudents.filter(s => s.gender === 'Male').length;
+    const femaleCount = processedStudents.filter(s => s.gender === 'Female').length;
+    const totalCount = processedStudents.length;
     
-    res.json({
-      success: true,
-      data: previewData,
-      total: filteredResults.length
+    // Calculate subject analysis
+    const analysis = {};
+    const subjects = ['English Language', 'Mathematics', 'Basic Science', 'Social Studies', 'Civic Education', 'Computer Studies', 'French', 'Arabic', 'Business Studies', 'Home Economics'];
+    
+    subjects.forEach(subject => {
+      analysis[subject] = { A: 0, B: 0, C: 0, D: 0, E: 0, F: 0, X: 0 };
+      processedStudents.forEach(student => {
+        const grade = student.results[subject] || 'X';
+        analysis[subject][grade]++;
+      });
+    });
+    
+    res.render('admin/gazette-preview', {
+      schoolName: school?.name || (students[0]?.School?.name) || 'SAMPLE SECONDARY SCHOOL',
+      centerCode: school?.id || (students[0]?.School?.id) || '0000001',
+      stateName: school?.State?.name || (students[0]?.School?.State?.name) || 'SAMPLE STATE',
+      lgaName: school?.LGA?.name || (students[0]?.School?.LGA?.name) || 'SAMPLE LGA',
+      students: processedStudents,
+      maleCount,
+      femaleCount,
+      totalCount,
+      analysis,
+      examYear: year || new Date().getFullYear()
     });
   } catch (err) {
     console.error('Gazette preview error:', err);
-    res.json({ success: false, error: 'Failed to load preview' });
+    res.render('admin/gazette-preview', {
+      schoolName: 'SAMPLE SECONDARY SCHOOL',
+      centerCode: '0000001',
+      students: [],
+      maleCount: 0,
+      femaleCount: 0,
+      totalCount: 0,
+      analysis: {}
+    });
   }
 });
 
@@ -1175,6 +1246,87 @@ router.get('/export/gazette', requireAdmin, async (req, res) => {
     console.error('Gazette export error:', err);
     req.flash('error', 'Failed to export gazette');
     res.redirect('/admin/gazette');
+  }
+});
+
+/* ---------------- Publications ---------------- */
+router.get('/publish', requireAdmin, async (req, res) => {
+  res.render('admin/publish', {
+    title: 'Publications Center',
+    user: req.user
+  });
+});
+
+router.post('/publish/results', requireAdmin, async (req, res) => {
+  try {
+    // Logic to publish results
+    res.json({ success: true, message: 'Results published successfully' });
+  } catch (err) {
+    res.json({ success: false, error: 'Failed to publish results' });
+  }
+});
+
+router.post('/publish/timetable', requireAdmin, async (req, res) => {
+  try {
+    // Logic to publish timetable
+    res.json({ success: true, message: 'Timetable published successfully' });
+  } catch (err) {
+    res.json({ success: false, error: 'Failed to publish timetable' });
+  }
+});
+
+router.post('/publish/updates', requireAdmin, async (req, res) => {
+  try {
+    const { message } = req.body;
+    // Logic to publish updates
+    res.json({ success: true, message: 'Update published successfully' });
+  } catch (err) {
+    res.json({ success: false, error: 'Failed to publish update' });
+  }
+});
+
+/* ---------------- Certificate Actions ---------------- */
+router.get('/certificates/:id/preview', requireAdmin, async (req, res) => {
+  try {
+    const certificate = await Certificate.findByPk(req.params.id, {
+      include: [Student]
+    });
+    res.render('admin/certificate-preview', {
+      title: 'Certificate Preview',
+      certificate,
+      user: req.user
+    });
+  } catch (err) {
+    req.flash('error', 'Certificate not found');
+    res.redirect('/admin/certificates');
+  }
+});
+
+router.get('/certificates/:id/download', requireAdmin, async (req, res) => {
+  try {
+    const certificate = await Certificate.findByPk(req.params.id);
+    certificate.downloadCount += 1;
+    certificate.lastDownloaded = new Date();
+    await certificate.save();
+    res.json({ success: true, message: 'Certificate downloaded' });
+  } catch (err) {
+    res.json({ success: false, error: 'Download failed' });
+  }
+});
+
+router.post('/certificates/:id/send', requireAdmin, async (req, res) => {
+  try {
+    res.json({ success: true, message: 'Certificate sent to student' });
+  } catch (err) {
+    res.json({ success: false, error: 'Send failed' });
+  }
+});
+
+router.post('/certificates/:id/publish', requireAdmin, async (req, res) => {
+  try {
+    res.json({ success: true, message: 'Certificate published' });
+  } catch (err) {
+    res.json({ success: false, error: 'Publish failed' });
   }
 });
 

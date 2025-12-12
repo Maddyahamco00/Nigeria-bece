@@ -92,14 +92,17 @@
                       <span class="badge bg-secondary"><%= cert.downloadCount %> times</span>
                     </td>
                     <td>
-                      <button class="btn btn-sm btn-outline-primary" title="Download">
+                      <button class="btn btn-sm btn-outline-primary" onclick="downloadCertificate('<%= cert.id %>')" title="Download">
                         <i class="fas fa-download"></i>
                       </button>
-                      <button class="btn btn-sm btn-outline-info" title="Preview">
+                      <button class="btn btn-sm btn-outline-info" onclick="previewCertificate('<%= cert.id %>')" title="Preview">
                         <i class="fas fa-eye"></i>
                       </button>
-                      <button class="btn btn-sm btn-outline-success" title="Send to Student">
+                      <button class="btn btn-sm btn-outline-success" onclick="sendCertificate('<%= cert.id %>')" title="Send to Student">
                         <i class="fas fa-paper-plane"></i>
+                      </button>
+                      <button class="btn btn-sm btn-outline-warning" onclick="publishCertificate('<%= cert.id %>')" title="Publish">
+                        <i class="fas fa-bullhorn"></i>
                       </button>
                     </td>
                   </tr>
@@ -118,3 +121,29 @@
     </div>
   </div>
 </div>
+
+<script>
+function previewCertificate(id) {
+  window.open('/admin/certificates/' + id + '/preview', '_blank');
+}
+
+function downloadCertificate(id) {
+  window.location.href = '/admin/certificates/' + id + '/download';
+}
+
+function sendCertificate(id) {
+  if (confirm('Send certificate to student via email?')) {
+    fetch('/admin/certificates/' + id + '/send', { method: 'POST' })
+      .then(response => response.json())
+      .then(data => alert(data.message));
+  }
+}
+
+function publishCertificate(id) {
+  if (confirm('Publish this certificate?')) {
+    fetch('/admin/certificates/' + id + '/publish', { method: 'POST' })
+      .then(response => response.json())
+      .then(data => alert(data.message));
+  }
+}
+</script>

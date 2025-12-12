@@ -47,6 +47,66 @@ router.get('/admin', (req, res) => {
   });
 });
 
+// Admin registration page
+router.get('/admin/register', async (req, res) => {
+  try {
+    const states = await State.findAll();
+    const schools = await School.findAll({ include: [State] });
+    
+    res.render('auth/admin-register', {
+      title: 'Admin Registration',
+      states,
+      schools,
+      messages: req.flash()
+    });
+  } catch (err) {
+    console.error('Admin register page error:', err);
+    req.flash('error', 'Failed to load registration page');
+    res.redirect('/auth/admin');
+  }
+});
+
+// Admin registration handler
+router.post('/admin/register', async (req, res) => {
+  try {
+    const { name, email, password, confirmPassword, role, stateId, schoolId } = req.body;
+    
+    if (password !== confirmPassword) {
+      req.flash('error', 'Passwords do not match');
+      return res.redirect('/auth/admin/register');
+    }
+    
+    const existingUser = await User.findOne({ where: { email } });
+    if (existingUser) {
+      req.flash('error', 'Email already exists');
+      return res.redirect('/auth/admin/register');
+    }
+    
+    const userData = {
+      name,
+      email,
+      password,
+      role: role || 'admin',
+      isActive: true
+    };
+    
+    if (role === 'state_admin' && stateId) {
+      userData.stateId = stateId;
+    }
+    if (role === 'school_admin' && schoolId) {
+      userData.schoolId = schoolId;
+    }
+    
+    await User.create(userData);
+    req.flash('success', 'Admin account created successfully! You can now login.');
+    res.redirect('/auth/admin');
+  } catch (err) {
+    console.error('Admin registration error:', err);
+    req.flash('error', 'Registration failed. Please try again.');
+    res.redirect('/auth/admin/register');
+  }
+});
+
 // Admin login handler
 router.post('/admin', (req, res, next) => {
   passport.authenticate('local-admin', (err, user, info) => {
@@ -59,12 +119,20 @@ router.post('/admin', (req, res, next) => {
       req.flash('error', info?.message || 'Invalid credentials');
       return res.redirect('/auth/admin');
     }
+    
+    // Check if user is active
+    if (!user.isActive) {
+      req.flash('error', 'Account is deactivated');
+      return res.redirect('/auth/admin');
+    }
+    
     req.logIn(user, (err) => {
       if (err) {
         console.error('Login error:', err);
         req.flash('error', 'Login failed');
         return res.redirect('/auth/admin');
       }
+      console.log('Admin logged in:', user.email, 'Role:', user.role);
       return res.redirect('/admin/dashboard');
     });
   })(req, res, next);

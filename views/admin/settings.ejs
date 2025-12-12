@@ -103,6 +103,12 @@
           </div>
           <div class="card-body">
             <div class="d-grid gap-2">
+              <% if (user && user.role === 'super_admin') { %>
+              <a href="/admin/users/new" class="btn btn-success btn-sm">
+                <i class="fas fa-user-plus me-2"></i>
+                Add Sub-Admin
+              </a>
+              <% } %>
               <button class="btn btn-outline-primary btn-sm" onclick="clearCache()">
                 <i class="fas fa-trash me-2"></i>
                 Clear Cache

@@ -1,0 +1,131 @@
+<!-- views/admin/certificate-preview.ejs -->
+<div class="dashboard-container">
+  <%- include('../partials/sidebar') %>
+
+  <div id="mainContent" class="main-content">
+    <div class="welcome-header mb-4">
+      <h2 class="dashboard-title">
+        <i class="fas fa-certificate me-3"></i>
+        Certificate Preview
+      </h2>
+      <p class="dashboard-subtitle">Preview digital certificate before download</p>
+    </div>
+
+    <!-- Certificate Preview -->
+    <div class="card shadow-lg border-0 rounded-4 mb-4" style="max-width: 800px; margin: 0 auto;">
+      <div class="card-body p-5" style="background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);">
+        <!-- Certificate Header -->
+        <div class="text-center mb-4">
+          <img src="/images/bece-logo.svg" alt="BECE Logo" style="width: 80px; height: 80px;" class="mb-3">
+          <h3 class="fw-bold text-primary">FEDERAL REPUBLIC OF NIGERIA</h3>
+          <h4 class="fw-bold">BASIC EDUCATION CERTIFICATE EXAMINATION</h4>
+          <h5 class="text-muted">OFFICIAL CERTIFICATE</h5>
+        </div>
+
+        <!-- Certificate Body -->
+        <div class="certificate-content text-center">
+          <div class="mb-4">
+            <h4 class="fw-bold">This is to certify that</h4>
+            <h2 class="text-primary fw-bold my-3" style="font-size: 2.5rem; text-decoration: underline;">
+              <%= certificate.Student?.name || 'Student Name' %>
+            </h2>
+            <h5>has successfully completed the Basic Education Certificate Examination</h5>
+          </div>
+
+          <div class="row mb-4">
+            <div class="col-md-6">
+              <strong>Certificate Number:</strong><br>
+              <span class="text-primary"><%= certificate.certificateNumber %></span>
+            </div>
+            <div class="col-md-6">
+              <strong>Examination Year:</strong><br>
+              <span class="text-primary"><%= certificate.examYear %></span>
+            </div>
+          </div>
+
+          <div class="row mb-4">
+            <div class="col-md-6">
+              <strong>Issue Date:</strong><br>
+              <span class="text-primary"><%= new Date(certificate.issueDate).toLocaleDateString() %></span>
+            </div>
+            <div class="col-md-6">
+              <strong>Status:</strong><br>
+              <span class="badge bg-<%= certificate.status === 'issued' ? 'success' : 'warning' %> fs-6">
+                <%= certificate.status.toUpperCase() %>
+              </span>
+            </div>
+          </div>
+
+          <!-- Signature Section -->
+          <div class="row mt-5">
+            <div class="col-md-6">
+              <div class="border-top border-dark pt-2">
+                <strong>Registrar</strong><br>
+                <small>Basic Education Certificate Examination</small>
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="border-top border-dark pt-2">
+                <strong>Director</strong><br>
+                <small>Federal Ministry of Education</small>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Watermark -->
+        <div class="position-absolute top-50 start-50 translate-middle opacity-25" style="z-index: -1;">
+          <i class="fas fa-certificate" style="font-size: 15rem; color: #dee2e6;"></i>
+        </div>
+      </div>
+    </div>
+
+    <!-- Action Buttons -->
+    <div class="text-center">
+      <button class="btn btn-primary btn-lg me-2" onclick="window.print()">
+        <i class="fas fa-print me-2"></i>
+        Print Certificate
+      </button>
+      <button class="btn btn-success btn-lg me-2" onclick="downloadPDF()">
+        <i class="fas fa-download me-2"></i>
+        Download PDF
+      </button>
+      <a href="/admin/certificates" class="btn btn-secondary btn-lg">
+        <i class="fas fa-arrow-left me-2"></i>
+        Back to Certificates
+      </a>
+    </div>
+  </div>
+</div>
+
+<style>
+@media print {
+  .dashboard-container .modern-sidebar,
+  .welcome-header,
+  .text-center:last-child {
+    display: none !important;
+  }
+  
+  .main-content {
+    margin-left: 0 !important;
+    padding: 0 !important;
+  }
+  
+  .card {
+    box-shadow: none !important;
+    border: 2px solid #000 !important;
+  }
+}
+
+.certificate-content {
+  position: relative;
+  z-index: 1;
+}
+</style>
+
+<script>
+function downloadPDF() {
+  // Implement PDF download functionality
+  alert('PDF download functionality will be implemented');
+}
+</script>

@@ -1,0 +1,53 @@
+<!-- views/partials/footer-public.ejs -->
+<footer class="public-footer">
+  <div class="container">
+    <div class="row">
+      <div class="col-md-4">
+        <h5>Nigeria BECE Portal</h5>
+        <p>Official portal for Basic Education Certificate Examination registration and results.</p>
+      </div>
+      <div class="col-md-4">
+        <h5>Quick Links</h5>
+        <ul class="list-unstyled">
+          <li><a href="/auth/login">Login</a></li>
+          <li><a href="/students/register/biodata">Register</a></li>
+          <li><a href="/payment">Make Payment</a></li>
+          <li><a href="/results">Check Results</a></li>
+        </ul>
+      </div>
+      <div class="col-md-4">
+        <h5>Contact</h5>
+        <p>Federal Ministry of Education<br>
+        Abuja, Nigeria<br>
+        Email: info@bece.gov.ng</p>
+      </div>
+    </div>
+    <hr>
+    <div class="text-center">
+      <p>&copy; <%= new Date().getFullYear() %> Nigeria BECE Portal. All rights reserved.</p>
+    </div>
+  </div>
+</footer>
+
+<style>
+.public-footer {
+  background: #2c3e50;
+  color: white;
+  padding: 40px 0 20px;
+  margin-top: auto;
+}
+
+.public-footer h5 {
+  color: #3498db;
+  margin-bottom: 20px;
+}
+
+.public-footer a {
+  color: #bdc3c7;
+  text-decoration: none;
+}
+
+.public-footer a:hover {
+  color: #3498db;
+}
+</style>
