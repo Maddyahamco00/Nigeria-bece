@@ -1,0 +1,151 @@
+<!-- views/admin/centers.ejs -->
+<div class="dashboard-container">
+  <%- include('../partials/sidebar') %>
+
+  <div id="mainContent" class="main-content">
+    <div class="welcome-header mb-4">
+      <h2 class="dashboard-title">
+        <i class="fas fa-map-marker-alt me-3"></i>
+        Exam Centers
+      </h2>
+      <p class="dashboard-subtitle">Manage examination centers and locations</p>
+    </div>
+
+    <!-- Add New Center -->
+    <div class="card shadow-sm border-0 rounded-4 mb-4">
+      <div class="card-header bg-transparent border-0">
+        <h5 class="fw-bold mb-0">
+          <i class="fas fa-plus me-2"></i>
+          Add New Exam Center
+        </h5>
+      </div>
+      <div class="card-body">
+        <form action="/admin/centers" method="POST" class="row g-3">
+          <div class="col-md-4">
+            <label class="form-label fw-bold">Center Name</label>
+            <input type="text" name="name" class="form-control" required placeholder="e.g., Government Secondary School">
+          </div>
+          <div class="col-md-2">
+            <label class="form-label fw-bold">Center Code</label>
+            <input type="text" name="code" class="form-control" required placeholder="e.g., GSS001">
+          </div>
+          <div class="col-md-3">
+            <label class="form-label fw-bold">State</label>
+            <select name="stateId" class="form-control" required>
+              <option value="">Select State</option>
+              <% states.forEach(state => { %>
+                <option value="<%= state.id %>"><%= state.name %></option>
+              <% }) %>
+            </select>
+          </div>
+          <div class="col-md-3">
+            <label class="form-label fw-bold">LGA</label>
+            <select name="lgaId" class="form-control" required>
+              <option value="">Select LGA</option>
+              <% lgas.forEach(lga => { %>
+                <option value="<%= lga.id %>"><%= lga.name %></option>
+              <% }) %>
+            </select>
+          </div>
+          <div class="col-md-6">
+            <label class="form-label fw-bold">Address</label>
+            <textarea name="address" class="form-control" rows="2" required placeholder="Full address of the exam center"></textarea>
+          </div>
+          <div class="col-md-2">
+            <label class="form-label fw-bold">Capacity</label>
+            <input type="number" name="capacity" class="form-control" value="100" required>
+          </div>
+          <div class="col-md-2">
+            <label class="form-label fw-bold">Contact Person</label>
+            <input type="text" name="contactPerson" class="form-control" placeholder="Center Coordinator">
+          </div>
+          <div class="col-md-2">
+            <label class="form-label fw-bold">Contact Phone</label>
+            <input type="tel" name="contactPhone" class="form-control" placeholder="08012345678">
+          </div>
+          <div class="col-12">
+            <button type="submit" class="btn btn-primary">
+              <i class="fas fa-plus me-2"></i>
+              Add Exam Center
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Centers List -->
+    <div class="card shadow-sm border-0 rounded-4">
+      <div class="card-header bg-transparent border-0">
+        <h5 class="fw-bold mb-0">
+          <i class="fas fa-list me-2"></i>
+          Registered Exam Centers
+        </h5>
+      </div>
+      <div class="card-body">
+        <div class="table-responsive">
+          <table class="table table-hover">
+            <thead class="table-light">
+              <tr>
+                <th>Code</th>
+                <th>Name</th>
+                <th>Location</th>
+                <th>Capacity</th>
+                <th>Contact</th>
+                <th>Status</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% if (centers && centers.length > 0) { %>
+                <% centers.forEach(center => { %>
+                  <tr>
+                    <td><strong><%= center.code %></strong></td>
+                    <td><%= center.name %></td>
+                    <td>
+                      <%= center.State?.name || 'N/A' %>, <%= center.LGA?.name || 'N/A' %>
+                      <br>
+                      <small class="text-muted"><%= center.address %></small>
+                    </td>
+                    <td>
+                      <span class="badge bg-info"><%= center.capacity %> seats</span>
+                    </td>
+                    <td>
+                      <% if (center.contactPerson) { %>
+                        <strong><%= center.contactPerson %></strong><br>
+                      <% } %>
+                      <% if (center.contactPhone) { %>
+                        <small><%= center.contactPhone %></small>
+                      <% } %>
+                    </td>
+                    <td>
+                      <span class="badge bg-<%= center.isActive ? 'success' : 'secondary' %>">
+                        <%= center.isActive ? 'Active' : 'Inactive' %>
+                      </span>
+                    </td>
+                    <td>
+                      <button class="btn btn-sm btn-outline-primary" title="Edit">
+                        <i class="fas fa-edit"></i>
+                      </button>
+                      <button class="btn btn-sm btn-outline-info" title="View Details">
+                        <i class="fas fa-eye"></i>
+                      </button>
+                      <button class="btn btn-sm btn-outline-danger" title="Delete">
+                        <i class="fas fa-trash"></i>
+                      </button>
+                    </td>
+                  </tr>
+                <% }) %>
+              <% } else { %>
+                <tr>
+                  <td colspan="7" class="text-center text-muted py-4">
+                    No exam centers registered yet. Add your first center above.
+                  </td>
+                </tr>
+              <% } %>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

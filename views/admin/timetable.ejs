@@ -1,0 +1,153 @@
+<!-- views/admin/timetable.ejs -->
+<div class="dashboard-container">
+  <%- include('../partials/sidebar') %>
+
+  <div id="mainContent" class="main-content">
+    <div class="welcome-header mb-4">
+      <h2 class="dashboard-title">
+        <i class="fas fa-calendar-alt me-3"></i>
+        Examination Timetable
+      </h2>
+      <p class="dashboard-subtitle">Manage examination schedules and timing</p>
+    </div>
+
+    <!-- Add New Timetable Entry -->
+    <div class="card shadow-sm border-0 rounded-4 mb-4">
+      <div class="card-header bg-transparent border-0">
+        <h5 class="fw-bold mb-0">
+          <i class="fas fa-plus me-2"></i>
+          Add Timetable Entry
+        </h5>
+      </div>
+      <div class="card-body">
+        <form action="/admin/timetable" method="POST" class="row g-3">
+          <div class="col-md-2">
+            <label class="form-label fw-bold">Exam Year</label>
+            <select name="examYear" class="form-control" required>
+              <% const currentYear = new Date().getFullYear(); %>
+              <% for (let i = 0; i < 3; i++) { %>
+                <option value="<%= currentYear + i %>" <%= i === 0 ? 'selected' : '' %>>
+                  <%= currentYear + i %>
+                </option>
+              <% } %>
+            </select>
+          </div>
+          <div class="col-md-3">
+            <label class="form-label fw-bold">Subject</label>
+            <select name="subject" class="form-control" required>
+              <option value="English Language">English Language</option>
+              <option value="Mathematics">Mathematics</option>
+              <option value="Basic Science">Basic Science</option>
+              <option value="Social Studies">Social Studies</option>
+              <option value="Civic Education">Civic Education</option>
+              <option value="Computer Studies">Computer Studies</option>
+              <option value="French">French</option>
+              <option value="Arabic">Arabic</option>
+              <option value="Business Studies">Business Studies</option>
+              <option value="Home Economics">Home Economics</option>
+            </select>
+          </div>
+          <div class="col-md-2">
+            <label class="form-label fw-bold">Exam Date</label>
+            <input type="date" name="examDate" class="form-control" required>
+          </div>
+          <div class="col-md-2">
+            <label class="form-label fw-bold">Start Time</label>
+            <input type="time" name="startTime" class="form-control" required>
+          </div>
+          <div class="col-md-2">
+            <label class="form-label fw-bold">End Time</label>
+            <input type="time" name="endTime" class="form-control" required>
+          </div>
+          <div class="col-md-1">
+            <label class="form-label fw-bold">Duration (min)</label>
+            <input type="number" name="duration" class="form-control" value="120" required>
+          </div>
+          <div class="col-md-2">
+            <label class="form-label fw-bold">Paper Type</label>
+            <select name="paperType" class="form-control" required>
+              <option value="objective">Objective</option>
+              <option value="theory">Theory</option>
+              <option value="practical">Practical</option>
+            </select>
+          </div>
+          <div class="col-md-10">
+            <label class="form-label fw-bold">Instructions</label>
+            <textarea name="instructions" class="form-control" rows="2" placeholder="Special instructions for this exam..."></textarea>
+          </div>
+          <div class="col-12">
+            <button type="submit" class="btn btn-primary">
+              <i class="fas fa-plus me-2"></i>
+              Add to Timetable
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Current Timetable -->
+    <div class="card shadow-sm border-0 rounded-4">
+      <div class="card-header bg-transparent border-0">
+        <h5 class="fw-bold mb-0">
+          <i class="fas fa-calendar me-2"></i>
+          Current Timetable
+        </h5>
+      </div>
+      <div class="card-body">
+        <div class="table-responsive">
+          <table class="table table-hover">
+            <thead class="table-light">
+              <tr>
+                <th>Year</th>
+                <th>Subject</th>
+                <th>Date</th>
+                <th>Time</th>
+                <th>Duration</th>
+                <th>Type</th>
+                <th>Status</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% if (timetables && timetables.length > 0) { %>
+                <% timetables.forEach(entry => { %>
+                  <tr>
+                    <td><%= entry.examYear %></td>
+                    <td><%= entry.subject %></td>
+                    <td><%= new Date(entry.examDate).toLocaleDateString() %></td>
+                    <td><%= entry.startTime %> - <%= entry.endTime %></td>
+                    <td><%= entry.duration %> min</td>
+                    <td>
+                      <span class="badge bg-<%= entry.paperType === 'objective' ? 'primary' : entry.paperType === 'theory' ? 'info' : 'warning' %>">
+                        <%= entry.paperType.toUpperCase() %>
+                      </span>
+                    </td>
+                    <td>
+                      <span class="badge bg-<%= entry.isActive ? 'success' : 'secondary' %>">
+                        <%= entry.isActive ? 'Active' : 'Inactive' %>
+                      </span>
+                    </td>
+                    <td>
+                      <button class="btn btn-sm btn-outline-primary" title="Edit">
+                        <i class="fas fa-edit"></i>
+                      </button>
+                      <button class="btn btn-sm btn-outline-danger" title="Delete">
+                        <i class="fas fa-trash"></i>
+                      </button>
+                    </td>
+                  </tr>
+                <% }) %>
+              <% } else { %>
+                <tr>
+                  <td colspan="8" class="text-center text-muted py-4">
+                    No timetable entries found. Add your first entry above.
+                  </td>
+                </tr>
+              <% } %>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

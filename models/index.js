@@ -10,6 +10,9 @@ import LGA from './LGA.js';
 import Subject from './Subject.js';
 import Payment from './Payment.js';
 import Result from './Result.js';
+import ExamTimetable from './ExamTimetable.js';
+import ExamCenter from './ExamCenter.js';
+import Certificate from './Certificate.js';
 
 // Ensure models are initialized (the model files should call sequelize.define and export default)
 const models = {
@@ -21,6 +24,9 @@ const models = {
   Subject,
   Payment,
   Result,
+  ExamTimetable,
+  ExamCenter,
+  Certificate,
 };
 
 // ----- Associations -----
@@ -69,6 +75,16 @@ Payment.belongsTo(Student, { foreignKey: 'studentId' });
 Subject.belongsToMany(Result, { through: 'ResultSubjects', foreignKey: 'subjectId' });
 Result.belongsToMany(Subject, { through: 'ResultSubjects', foreignKey: 'resultId' });
 
+// New model associations
+State.hasMany(ExamCenter, { foreignKey: 'stateId', onDelete: 'CASCADE' });
+ExamCenter.belongsTo(State, { foreignKey: 'stateId' });
+
+LGA.hasMany(ExamCenter, { foreignKey: 'lgaId', onDelete: 'CASCADE' });
+ExamCenter.belongsTo(LGA, { foreignKey: 'lgaId' });
+
+Student.hasMany(Certificate, { foreignKey: 'studentId', onDelete: 'CASCADE' });
+Certificate.belongsTo(Student, { foreignKey: 'studentId' });
+
 // Export everything for convenient imports
 export {
   sequelize,
@@ -80,6 +96,9 @@ export {
   Subject,
   Payment,
   Result,
+  ExamTimetable,
+  ExamCenter,
+  Certificate,
 };
 
 export default {

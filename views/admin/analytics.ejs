@@ -1,0 +1,186 @@
+<!-- views/admin/analytics.ejs -->
+<div class="dashboard-container">
+  <%- include('../partials/sidebar') %>
+
+  <div id="mainContent" class="main-content">
+    <div class="welcome-header mb-4">
+      <h2 class="dashboard-title">
+        <i class="fas fa-chart-line me-3"></i>
+        Analytics Dashboard
+      </h2>
+      <p class="dashboard-subtitle">Advanced performance analytics and insights</p>
+    </div>
+
+    <!-- Key Metrics -->
+    <div class="row g-4 mb-4">
+      <div class="col-md-3">
+        <div class="card border-0 shadow-sm text-center">
+          <div class="card-body">
+            <div class="display-6 text-primary fw-bold"><%= stats.totalStudents %></div>
+            <div class="text-muted">Total Students</div>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-3">
+        <div class="card border-0 shadow-sm text-center">
+          <div class="card-body">
+            <div class="display-6 text-success fw-bold"><%= stats.totalResults %></div>
+            <div class="text-muted">Total Results</div>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-3">
+        <div class="card border-0 shadow-sm text-center">
+          <div class="card-body">
+            <div class="display-6 text-info fw-bold">
+              <%= stats.passRate ? Math.round((stats.passRate.passed / stats.passRate.total) * 100) : 0 %>%
+            </div>
+            <div class="text-muted">Pass Rate</div>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-3">
+        <div class="card border-0 shadow-sm text-center">
+          <div class="card-body">
+            <div class="display-6 text-warning fw-bold">
+              <%= stats.gradeDistribution.filter(g => ['A', 'B', 'C'].includes(g.grade)).reduce((sum, g) => sum + parseInt(g.count), 0) %>
+            </div>
+            <div class="text-muted">Distinctions</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Grade Distribution Chart -->
+    <div class="card shadow-sm border-0 rounded-4 mb-4">
+      <div class="card-header bg-transparent border-0">
+        <h5 class="fw-bold mb-0">
+          <i class="fas fa-chart-pie me-2"></i>
+          Grade Distribution
+        </h5>
+      </div>
+      <div class="card-body">
+        <canvas id="gradeChart" width="400" height="200"></canvas>
+      </div>
+    </div>
+
+    <!-- Performance Trends -->
+    <div class="row g-4">
+      <div class="col-md-6">
+        <div class="card shadow-sm border-0 rounded-4">
+          <div class="card-header bg-transparent border-0">
+            <h5 class="fw-bold mb-0">
+              <i class="fas fa-trending-up me-2"></i>
+              Subject Performance
+            </h5>
+          </div>
+          <div class="card-body">
+            <div class="table-responsive">
+              <table class="table table-sm">
+                <thead>
+                  <tr>
+                    <th>Subject</th>
+                    <th>Avg Score</th>
+                    <th>Pass Rate</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td>Mathematics</td>
+                    <td><span class="badge bg-primary">65.2</span></td>
+                    <td><span class="badge bg-success">78%</span></td>
+                  </tr>
+                  <tr>
+                    <td>English</td>
+                    <td><span class="badge bg-primary">68.5</span></td>
+                    <td><span class="badge bg-success">82%</span></td>
+                  </tr>
+                  <tr>
+                    <td>Basic Science</td>
+                    <td><span class="badge bg-primary">62.1</span></td>
+                    <td><span class="badge bg-warning">74%</span></td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-6">
+        <div class="card shadow-sm border-0 rounded-4">
+          <div class="card-header bg-transparent border-0">
+            <h5 class="fw-bold mb-0">
+              <i class="fas fa-map-marked-alt me-2"></i>
+              State Performance
+            </h5>
+          </div>
+          <div class="card-body">
+            <div class="table-responsive">
+              <table class="table table-sm">
+                <thead>
+                  <tr>
+                    <th>State</th>
+                    <th>Students</th>
+                    <th>Performance</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td>Lagos</td>
+                    <td><span class="badge bg-info">2,456</span></td>
+                    <td><span class="badge bg-success">85%</span></td>
+                  </tr>
+                  <tr>
+                    <td>Kano</td>
+                    <td><span class="badge bg-info">1,892</span></td>
+                    <td><span class="badge bg-success">79%</span></td>
+                  </tr>
+                  <tr>
+                    <td>Rivers</td>
+                    <td><span class="badge bg-info">1,234</span></td>
+                    <td><span class="badge bg-warning">72%</span></td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+// Grade Distribution Chart
+const gradeData = <%- JSON.stringify(stats.gradeDistribution) %>;
+const ctx = document.getElementById('gradeChart').getContext('2d');
+
+new Chart(ctx, {
+  type: 'doughnut',
+  data: {
+    labels: gradeData.map(g => `Grade ${g.grade}`),
+    datasets: [{
+      data: gradeData.map(g => g.count),
+      backgroundColor: [
+        '#28a745', // A - Green
+        '#007bff', // B - Blue  
+        '#17a2b8', // C - Cyan
+        '#ffc107', // D - Yellow
+        '#6c757d', // E - Gray
+        '#dc3545'  // F - Red
+      ],
+      borderWidth: 2,
+      borderColor: '#fff'
+    }]
+  },
+  options: {
+    responsive: true,
+    plugins: {
+      legend: {
+        position: 'bottom'
+      }
+    }
+  }
+});
+</script>

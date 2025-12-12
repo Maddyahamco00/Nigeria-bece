@@ -46,19 +46,25 @@ body.admin-layout .container-fluid {
   padding-right: 20px;
 }
 
-/* Header adjustments */
-.modern-header {
+/* Header adjustments for admin pages */
+body:has(.modern-sidebar) .modern-header {
   padding-left: 280px;
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  z-index: 999;
 }
 
-/* Footer adjustments */
-.modern-footer {
+/* Footer adjustments for admin pages */
+body:has(.modern-sidebar) .modern-footer {
   margin-left: 280px;
+}
+
+/* Footer for pages without sidebar */
+body:not(:has(.modern-sidebar)) .modern-footer {
+  margin-left: 0;
+  width: 100%;
+}
+
+/* Main content adjustment for header */
+body:has(.modern-header) .main-content {
+  padding-top: 80px;
 }
 
 /* Mobile responsive */

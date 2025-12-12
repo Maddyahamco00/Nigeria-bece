@@ -1,6 +1,6 @@
 // routes/admin.js
 import express from 'express';
-import { Student, School, Payment, Result, User, State, LGA } from '../models/index.js';
+import { Student, School, Payment, Result, User, State, LGA, ExamTimetable, ExamCenter, Certificate } from '../models/index.js';
 import { getGrade } from '../utils/grade.js';
 import sendEmail from '../utils/sendEmail.js';
 import db from '../config/database.js';
@@ -188,8 +188,11 @@ router.post('/users', requireSuperAdmin, async (req, res) => {
     if (role === 'school_admin' && schoolId) {
       userData.schoolId = schoolId;
     }
-    if (permissions) {
-      userData.permissions = JSON.parse(permissions || '{}');
+    if (permissions && Array.isArray(permissions)) {
+      userData.permissions = permissions.reduce((acc, perm) => {
+        acc[perm] = true;
+        return acc;
+      }, {});
     }
 
     await User.create(userData);
@@ -783,6 +786,193 @@ router.get('/payments', requireAdmin, async (req, res) => {
   }
 });
 
+/* ---------------- Timetable Management ---------------- */
+router.get('/timetable', requireAdmin, async (req, res) => {
+  try {
+    const timetables = await ExamTimetable.findAll({
+      order: [['examDate', 'ASC'], ['startTime', 'ASC']]
+    });
+    
+    res.render('admin/timetable', {
+      title: 'Exam Timetable',
+      timetables,
+      user: req.user
+    });
+  } catch (err) {
+    console.error('Timetable error:', err);
+    req.flash('error', 'Failed to load timetable');
+    res.redirect('/admin/dashboard');
+  }
+});
+
+router.post('/timetable', requireAdmin, async (req, res) => {
+  try {
+    const { examYear, subject, examDate, startTime, endTime, duration, paperType, instructions } = req.body;
+    
+    await ExamTimetable.create({
+      examYear: parseInt(examYear),
+      subject,
+      examDate,
+      startTime,
+      endTime,
+      duration: parseInt(duration),
+      paperType,
+      instructions
+    });
+    
+    req.flash('success', 'Timetable entry added successfully');
+    res.redirect('/admin/timetable');
+  } catch (err) {
+    console.error('Create timetable error:', err);
+    req.flash('error', 'Failed to create timetable entry');
+    res.redirect('/admin/timetable');
+  }
+});
+
+/* ---------------- Exam Centers ---------------- */
+router.get('/centers', requireAdmin, async (req, res) => {
+  try {
+    const centers = await ExamCenter.findAll({
+      include: [State, LGA],
+      order: [['name', 'ASC']]
+    });
+    const states = await State.findAll();
+    const lgas = await LGA.findAll();
+    
+    res.render('admin/centers', {
+      title: 'Exam Centers',
+      centers,
+      states,
+      lgas,
+      user: req.user
+    });
+  } catch (err) {
+    console.error('Centers error:', err);
+    req.flash('error', 'Failed to load exam centers');
+    res.redirect('/admin/dashboard');
+  }
+});
+
+router.post('/centers', requireAdmin, async (req, res) => {
+  try {
+    const { name, code, address, stateId, lgaId, capacity, contactPerson, contactPhone } = req.body;
+    
+    await ExamCenter.create({
+      name,
+      code,
+      address,
+      stateId: parseInt(stateId),
+      lgaId: parseInt(lgaId),
+      capacity: parseInt(capacity),
+      contactPerson,
+      contactPhone
+    });
+    
+    req.flash('success', 'Exam center added successfully');
+    res.redirect('/admin/centers');
+  } catch (err) {
+    console.error('Create center error:', err);
+    req.flash('error', 'Failed to create exam center');
+    res.redirect('/admin/centers');
+  }
+});
+
+/* ---------------- Certificates ---------------- */
+router.get('/certificates', requireAdmin, async (req, res) => {
+  try {
+    const certificates = await Certificate.findAll({
+      include: [Student],
+      order: [['createdAt', 'DESC']]
+    });
+    const students = await Student.findAll({ attributes: ['id', 'name', 'regNumber'] });
+    
+    res.render('admin/certificates', {
+      title: 'Digital Certificates',
+      certificates,
+      students,
+      user: req.user
+    });
+  } catch (err) {
+    console.error('Certificates error:', err);
+    req.flash('error', 'Failed to load certificates');
+    res.redirect('/admin/dashboard');
+  }
+});
+
+router.post('/certificates/generate', requireAdmin, async (req, res) => {
+  try {
+    const { studentId, examYear } = req.body;
+    
+    const student = await Student.findByPk(studentId);
+    if (!student) {
+      req.flash('error', 'Student not found');
+      return res.redirect('/admin/certificates');
+    }
+    
+    const certificateNumber = `BECE/${examYear}/${String(studentId).padStart(6, '0')}`;
+    
+    await Certificate.create({
+      studentId,
+      certificateNumber,
+      examYear: parseInt(examYear),
+      status: 'issued'
+    });
+    
+    req.flash('success', 'Certificate generated successfully');
+    res.redirect('/admin/certificates');
+  } catch (err) {
+    console.error('Generate certificate error:', err);
+    req.flash('error', 'Failed to generate certificate');
+    res.redirect('/admin/certificates');
+  }
+});
+
+/* ---------------- Analytics Dashboard ---------------- */
+router.get('/analytics', requireAdmin, async (req, res) => {
+  try {
+    // Performance analytics
+    const totalStudents = await Student.count();
+    const totalResults = await Result.count();
+    const passRate = await db.query(`
+      SELECT 
+        COUNT(DISTINCT studentId) as total,
+        COUNT(DISTINCT CASE WHEN score >= 35 THEN studentId END) as passed
+      FROM results
+    `);
+    
+    const gradeDistribution = await db.query(`
+      SELECT 
+        CASE 
+          WHEN score >= 70 THEN 'A'
+          WHEN score >= 60 THEN 'B'
+          WHEN score >= 50 THEN 'C'
+          WHEN score >= 40 THEN 'D'
+          WHEN score >= 35 THEN 'E'
+          ELSE 'F'
+        END as grade,
+        COUNT(*) as count
+      FROM results
+      GROUP BY grade
+      ORDER BY grade
+    `);
+    
+    res.render('admin/analytics', {
+      title: 'Analytics Dashboard',
+      stats: {
+        totalStudents,
+        totalResults,
+        passRate: passRate[0][0],
+        gradeDistribution: gradeDistribution[0]
+      },
+      user: req.user
+    });
+  } catch (err) {
+    console.error('Analytics error:', err);
+    req.flash('error', 'Failed to load analytics');
+    res.redirect('/admin/dashboard');
+  }
+});
+
 /* ---------------- Gazette Page & Export ---------------- */
 router.get('/gazette', requireAdmin, async (req, res) => {
   try {
@@ -803,9 +993,133 @@ router.get('/gazette', requireAdmin, async (req, res) => {
   }
 });
 
+// Gazette statistics API
+router.get('/gazette/stats', requireAdmin, async (req, res) => {
+  try {
+    const { year, state, grade } = req.query;
+    
+    let whereClause = {};
+    if (year) {
+      whereClause.createdAt = {
+        [Op.gte]: new Date(`${year}-01-01`),
+        [Op.lt]: new Date(`${parseInt(year) + 1}-01-01`)
+      };
+    }
+    
+    let includeClause = [
+      {
+        model: Student,
+        include: [
+          {
+            model: School,
+            include: [State],
+            where: state ? { stateId: state } : {}
+          }
+        ]
+      }
+    ];
+    
+    const results = await Result.findAll({
+      include: includeClause,
+      where: whereClause
+    });
+    
+    // Filter by grade if specified
+    const filteredResults = grade ? 
+      results.filter(r => getGrade(r.score) === grade) : 
+      results;
+    
+    const totalCandidates = new Set(filteredResults.map(r => r.studentId)).size;
+    const totalPassed = new Set(
+      filteredResults
+        .filter(r => ['A', 'B', 'C', 'D', 'E'].includes(getGrade(r.score)))
+        .map(r => r.studentId)
+    ).size;
+    const totalDistinction = new Set(
+      filteredResults
+        .filter(r => ['A', 'B', 'C'].includes(getGrade(r.score)))
+        .map(r => r.studentId)
+    ).size;
+    const totalSchools = new Set(
+      filteredResults.map(r => r.Student?.schoolId).filter(Boolean)
+    ).size;
+    
+    res.json({
+      success: true,
+      stats: {
+        totalCandidates,
+        totalPassed,
+        totalDistinction,
+        totalSchools
+      }
+    });
+  } catch (err) {
+    console.error('Gazette stats error:', err);
+    res.json({ success: false, error: 'Failed to load statistics' });
+  }
+});
+
+// Gazette preview API
+router.get('/gazette/preview', requireAdmin, async (req, res) => {
+  try {
+    const { year, state, grade } = req.query;
+    
+    let whereClause = {};
+    if (year) {
+      whereClause.createdAt = {
+        [Op.gte]: new Date(`${year}-01-01`),
+        [Op.lt]: new Date(`${parseInt(year) + 1}-01-01`)
+      };
+    }
+    
+    const results = await Result.findAll({
+      include: [
+        {
+          model: Student,
+          include: [
+            {
+              model: School,
+              include: [State],
+              where: state ? { stateId: state } : {}
+            }
+          ]
+        }
+      ],
+      where: whereClause,
+      limit: 50,
+      order: [['createdAt', 'DESC']]
+    });
+    
+    // Filter by grade if specified
+    const filteredResults = grade ? 
+      results.filter(r => getGrade(r.score) === grade) : 
+      results;
+    
+    const previewData = filteredResults.map(result => ({
+      studentName: result.Student?.name || 'N/A',
+      studentCode: result.Student?.studentCode || 'N/A',
+      school: result.Student?.School?.name || 'N/A',
+      state: result.Student?.School?.State?.name || 'N/A',
+      subject: result.subject,
+      score: result.score,
+      grade: getGrade(result.score),
+      examYear: new Date(result.createdAt).getFullYear()
+    }));
+    
+    res.json({
+      success: true,
+      data: previewData,
+      total: filteredResults.length
+    });
+  } catch (err) {
+    console.error('Gazette preview error:', err);
+    res.json({ success: false, error: 'Failed to load preview' });
+  }
+});
+
 router.get('/export/gazette', requireAdmin, async (req, res) => {
   try {
-    const { year, state, format } = req.query;
+    const { year, state, grade, format } = req.query;
     
     let whereClause = {};
     if (year) {
@@ -832,7 +1146,12 @@ router.get('/export/gazette', requireAdmin, async (req, res) => {
       order: [['createdAt', 'DESC']]
     });
 
-    const gazetteData = results.map(result => ({
+    // Filter by grade if specified
+    const filteredResults = grade ? 
+      results.filter(r => getGrade(r.score) === grade) : 
+      results;
+
+    const gazetteData = filteredResults.map(result => ({
       studentName: result.Student?.name || 'N/A',
       studentCode: result.Student?.studentCode || 'N/A',
       school: result.Student?.School?.name || 'N/A',
@@ -847,13 +1166,15 @@ router.get('/export/gazette', requireAdmin, async (req, res) => {
     const parser = new Parser({ fields: csvFields });
     const csv = parser.parse(gazetteData);
 
+    const filename = `bece_gazette_${year || new Date().getFullYear()}${state ? '_state_' + state : ''}${grade ? '_grade_' + grade : ''}.csv`;
+    
     res.header('Content-Type', 'text/csv');
-    res.attachment(`bece_gazette_${year || new Date().getFullYear()}.csv`);
+    res.attachment(filename);
     res.send(csv);
   } catch (err) {
     console.error('Gazette export error:', err);
     req.flash('error', 'Failed to export gazette');
-    res.redirect('/admin/dashboard');
+    res.redirect('/admin/gazette');
   }
 });
 

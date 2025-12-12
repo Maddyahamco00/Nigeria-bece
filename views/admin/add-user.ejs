@@ -1,112 +1,158 @@
 <!-- views/admin/add-user.ejs -->
-<div class="container mt-4">
-  <div class="row">
-    <div class="col-md-8 offset-md-2">
-      <div class="card">
-        <div class="card-header bg-primary text-white">
-          <h4><i class="fas fa-user-plus"></i> Add New Admin User</h4>
-        </div>
-        <div class="card-body">
-          <form action="/admin/users" method="POST">
+<div class="dashboard-container">
+  <%- include('../partials/sidebar') %>
+
+  <div id="mainContent" class="main-content">
+    <div class="welcome-header mb-4">
+      <h2 class="dashboard-title">
+        <i class="fas fa-user-plus me-3"></i>
+        Add New Admin
+      </h2>
+      <p class="dashboard-subtitle">Create new administrator account</p>
+    </div>
+
+    <!-- Add Admin Form -->
+    <div class="card shadow-sm border-0 rounded-4">
+      <div class="card-header bg-transparent border-0">
+        <h5 class="fw-bold mb-0">
+          <i class="fas fa-user-cog me-2"></i>
+          Administrator Details
+        </h5>
+      </div>
+      <div class="card-body">
+        <form action="/admin/users" method="POST" class="row g-3">
+          <div class="col-md-6">
+            <label class="form-label fw-bold">Full Name</label>
+            <input type="text" name="name" class="form-control" required placeholder="Enter full name">
+          </div>
+          <div class="col-md-6">
+            <label class="form-label fw-bold">Email Address</label>
+            <input type="email" name="email" class="form-control" required placeholder="admin@example.com">
+          </div>
+          <div class="col-md-6">
+            <label class="form-label fw-bold">Password</label>
+            <input type="password" name="password" class="form-control" required placeholder="Minimum 8 characters">
+          </div>
+          <div class="col-md-6">
+            <label class="form-label fw-bold">Admin Role</label>
+            <select name="role" class="form-control" required id="roleSelect">
+              <option value="">Select Role</option>
+              <option value="admin">General Admin</option>
+              <option value="state_admin">State Admin</option>
+              <option value="school_admin">School Admin</option>
+              <option value="exam_admin">Exam Admin</option>
+              <option value="feedback_admin">Feedback Admin</option>
+            </select>
+          </div>
+          
+          <!-- State Selection (for state_admin) -->
+          <div class="col-md-6" id="stateField" style="display: none;">
+            <label class="form-label fw-bold">Assigned State</label>
+            <select name="stateId" class="form-control">
+              <option value="">Select State</option>
+              <% states.forEach(state => { %>
+                <option value="<%= state.id %>"><%= state.name %></option>
+              <% }) %>
+            </select>
+          </div>
+          
+          <!-- School Selection (for school_admin) -->
+          <div class="col-md-6" id="schoolField" style="display: none;">
+            <label class="form-label fw-bold">Assigned School</label>
+            <select name="schoolId" class="form-control">
+              <option value="">Select School</option>
+              <% schools.forEach(school => { %>
+                <option value="<%= school.id %>"><%= school.name %> - <%= school.State?.name %></option>
+              <% }) %>
+            </select>
+          </div>
+          
+          <!-- Permissions -->
+          <div class="col-12">
+            <label class="form-label fw-bold">Permissions</label>
             <div class="row">
-              <div class="col-md-6">
-                <div class="form-group">
-                  <label for="name">Full Name *</label>
-                  <input type="text" class="form-control" id="name" name="name" required>
+              <div class="col-md-3">
+                <div class="form-check">
+                  <input class="form-check-input" type="checkbox" name="permissions[]" value="manage_students" id="perm1">
+                  <label class="form-check-label" for="perm1">Manage Students</label>
                 </div>
               </div>
-              <div class="col-md-6">
-                <div class="form-group">
-                  <label for="email">Email Address *</label>
-                  <input type="email" class="form-control" id="email" name="email" required>
+              <div class="col-md-3">
+                <div class="form-check">
+                  <input class="form-check-input" type="checkbox" name="permissions[]" value="manage_schools" id="perm2">
+                  <label class="form-check-label" for="perm2">Manage Schools</label>
                 </div>
               </div>
-            </div>
-
-            <div class="row">
-              <div class="col-md-6">
-                <div class="form-group">
-                  <label for="password">Password *</label>
-                  <input type="password" class="form-control" id="password" name="password" required minlength="6">
+              <div class="col-md-3">
+                <div class="form-check">
+                  <input class="form-check-input" type="checkbox" name="permissions[]" value="manage_results" id="perm3">
+                  <label class="form-check-label" for="perm3">Manage Results</label>
                 </div>
               </div>
-              <div class="col-md-6">
-                <div class="form-group">
-                  <label for="role">Role *</label>
-                  <select class="form-control" id="role" name="role" required onchange="toggleRoleFields()">
-                    <option value="">Select Role</option>
-                    <option value="admin">Admin</option>
-                    <option value="state_admin">State Admin</option>
-                    <option value="school_admin">School Admin</option>
-                    <option value="exam_admin">Exam Admin</option>
-                    <option value="feedback_admin">Feedback Admin</option>
-                  </select>
+              <div class="col-md-3">
+                <div class="form-check">
+                  <input class="form-check-input" type="checkbox" name="permissions[]" value="view_reports" id="perm4">
+                  <label class="form-check-label" for="perm4">View Reports</label>
                 </div>
               </div>
-            </div>
-
-            <div class="row" id="stateField" style="display: none;">
-              <div class="col-md-6">
-                <div class="form-group">
-                  <label for="stateId">State</label>
-                  <select class="form-control" id="stateId" name="stateId">
-                    <option value="">Select State</option>
-                    <% states.forEach(state => { %>
-                      <option value="<%= state.id %>"><%= state.name %></option>
-                    <% }); %>
-                  </select>
+              <div class="col-md-3">
+                <div class="form-check">
+                  <input class="form-check-input" type="checkbox" name="permissions[]" value="manage_payments" id="perm5">
+                  <label class="form-check-label" for="perm5">Manage Payments</label>
                 </div>
               </div>
-            </div>
-
-            <div class="row" id="schoolField" style="display: none;">
-              <div class="col-md-6">
-                <div class="form-group">
-                  <label for="schoolId">School</label>
-                  <select class="form-control" id="schoolId" name="schoolId">
-                    <option value="">Select School</option>
-                    <% schools.forEach(school => { %>
-                      <option value="<%= school.id %>"><%= school.name %> - <%= school.State?.name %></option>
-                    <% }); %>
-                  </select>
+              <div class="col-md-3">
+                <div class="form-check">
+                  <input class="form-check-input" type="checkbox" name="permissions[]" value="manage_timetable" id="perm6">
+                  <label class="form-check-label" for="perm6">Manage Timetable</label>
+                </div>
+              </div>
+              <div class="col-md-3">
+                <div class="form-check">
+                  <input class="form-check-input" type="checkbox" name="permissions[]" value="manage_centers" id="perm7">
+                  <label class="form-check-label" for="perm7">Manage Centers</label>
+                </div>
+              </div>
+              <div class="col-md-3">
+                <div class="form-check">
+                  <input class="form-check-input" type="checkbox" name="permissions[]" value="generate_certificates" id="perm8">
+                  <label class="form-check-label" for="perm8">Generate Certificates</label>
                 </div>
               </div>
             </div>
-
-            <div class="form-group">
-              <label for="permissions">Permissions (JSON)</label>
-              <textarea class="form-control" id="permissions" name="permissions" rows="3" placeholder='{"can_export": true, "can_delete": false}'></textarea>
-              <small class="form-text text-muted">Optional: JSON object with specific permissions</small>
-            </div>
-
-            <div class="form-group text-center">
-              <button type="submit" class="btn btn-primary">
-                <i class="fas fa-save"></i> Create Admin User
-              </button>
-              <a href="/admin/users" class="btn btn-secondary ml-2">
-                <i class="fas fa-arrow-left"></i> Cancel
-              </a>
-            </div>
-          </form>
-        </div>
+          </div>
+          
+          <div class="col-12">
+            <button type="submit" class="btn btn-primary btn-lg">
+              <i class="fas fa-user-plus me-2"></i>
+              Create Admin Account
+            </button>
+            <a href="/admin/users" class="btn btn-secondary btn-lg ms-2">
+              <i class="fas fa-times me-2"></i>
+              Cancel
+            </a>
+          </div>
+        </form>
       </div>
     </div>
   </div>
 </div>
 
 <script>
-function toggleRoleFields() {
-  const role = document.getElementById('role').value;
+document.getElementById('roleSelect').addEventListener('change', function() {
+  const role = this.value;
   const stateField = document.getElementById('stateField');
   const schoolField = document.getElementById('schoolField');
   
+  // Hide all fields first
   stateField.style.display = 'none';
   schoolField.style.display = 'none';
   
+  // Show relevant field based on role
   if (role === 'state_admin') {
     stateField.style.display = 'block';
   } else if (role === 'school_admin') {
     schoolField.style.display = 'block';
   }
-}
+});
 </script>

@@ -23,6 +23,55 @@ router.get('/login', (req, res) => {
 
 
 
+// Root of /auth → redirect to login
+router.get('/', (req, res) => {
+  if (req.user) {
+    return res.redirect('/admin/dashboard');
+  }
+  if (req.session.student) {
+    return res.redirect('/students/dashboard');
+  }
+  res.redirect('/auth/login');
+});
+
+/* ===== ADMIN AUTHENTICATION ===== */
+
+// Admin login page
+router.get('/admin', (req, res) => {
+  if (req.user) {
+    return res.redirect('/admin/dashboard');
+  }
+  res.render('auth/admin-login', {
+    title: 'Admin Login',
+    messages: req.flash()
+  });
+});
+
+// Admin login handler
+router.post('/admin', (req, res, next) => {
+  passport.authenticate('local-admin', (err, user, info) => {
+    if (err) {
+      console.error('Admin auth error:', err);
+      req.flash('error', 'Authentication error');
+      return res.redirect('/auth/admin');
+    }
+    if (!user) {
+      req.flash('error', info?.message || 'Invalid credentials');
+      return res.redirect('/auth/admin');
+    }
+    req.logIn(user, (err) => {
+      if (err) {
+        console.error('Login error:', err);
+        req.flash('error', 'Login failed');
+        return res.redirect('/auth/admin');
+      }
+      return res.redirect('/admin/dashboard');
+    });
+  })(req, res, next);
+});
+
+/* ===== STUDENT AUTHENTICATION ===== */
+
 // Registration page (redirect to biodata)
 router.get('/register', (req, res) => {
   res.redirect('/students/register/biodata');
@@ -31,86 +80,6 @@ router.get('/register', (req, res) => {
 // Handle registration form submission (redirect to biodata)
 router.post('/register', (req, res) => {
   res.redirect('/students/register/biodata');
-});
-
-// Root of /auth → redirect to login
-router.get('/', (req, res) => {
-  if (req.session.student) return res.redirect('/students/dashboard');
-  if (req.session.admin) return res.redirect('/admin/dashboard');
-  res.redirect('/auth/login');
-});
-
-/* ===== ADMIN AUTHENTICATION ===== */
-
-// Admin login page
-router.get('/admin', (req, res) => {
-  res.render('auth/admin-login', {
-    title: 'Admin Login',
-    messages: req.flash()
-  });
-});
-
-// Admin login handler
-router.post('/admin',
-  passport.authenticate('local-admin', {
-    successRedirect: '/admin/dashboard',
-    failureRedirect: '/auth/admin',
-    failureFlash: true
-  })
-);
-
-/* ===== STUDENT AUTHENTICATION ===== */
-
-// Show Registration Form
-router.get('/register', async (req, res) => {
-    const { payment_ref } = req.query;
-
-    let preData = {};
-    if(payment_ref){
-      const [rows] = await db.query(
-        "SELECT * FROM pre_reg_payments WHERE payment_reference = ? AND payment_status = 'Paid'",
-        { replacements: [payment_ref] }
-      );
-      if(rows.length > 0){
-        preData = rows[0];
-      } else {
-        return res.send("Invalid or expired payment reference.");
-      }
-    }
-
-    res.render('register', { preData, error: null });
-});
-
-// Handle Registration Submission
-router.post('/register', async (req, res) => {
-    const { name, email, guardian_number, password, payment_ref } = req.body;
-
-    if(!name || !email || !guardian_number || !password){
-        return res.render('register', { preData: req.body, error: "All fields are required!" });
-    }
-
-    try {
-        // Insert student (use createdAt column compatible with Sequelize timestamps)
-        await db.query(
-          "INSERT INTO students (name, email, guardian_number, password, `createdAt`) VALUES (?, ?, ?, ?, NOW())",
-          { replacements: [name, email, guardian_number, password] }
-        );
-
-        // Optional: mark payment as linked
-        await db.query(
-          "UPDATE pre_reg_payments SET payment_status='Registered' WHERE payment_reference=?",
-          { replacements: [payment_ref] }
-        );
-
-        // Auto-login (session)
-        req.session.user = { name, email }; 
-
-        res.redirect('/dashboard');
-
-    } catch (err) {
-        console.log(err);
-        res.render('register', { preData: req.body, error: "Registration failed!" });
-    }
 });
 
 // Student registration page

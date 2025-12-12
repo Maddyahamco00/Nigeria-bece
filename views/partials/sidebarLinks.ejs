@@ -8,7 +8,7 @@
   </li>
   <li class="nav-item">
     <a href="/admin/students" class="nav-link <%= currentPath && currentPath.startsWith('/admin/students') ? 'active' : '' %>">
-      <i class="fas fa-user-graduate me-2"></i>
+      <i class="fas fa-users me-2"></i>
       <span>Students</span>
     </a>
   </li>
@@ -30,17 +30,41 @@
       <span>Payments</span>
     </a>
   </li>
-  <% if (user && user.role === 'super_admin') { %>
   <li class="nav-item">
-    <a href="/admin/users" class="nav-link <%= currentPath && currentPath.startsWith('/admin/users') ? 'active' : '' %>">
-      <i class="fas fa-users-cog me-2"></i>
-      <span>Admin Management</span>
+    <a href="/admin/timetable" class="nav-link <%= currentPath && currentPath.startsWith('/admin/timetable') ? 'active' : '' %>">
+      <i class="fas fa-calendar-alt me-2"></i>
+      <span>Timetable</span>
+    </a>
+  </li>
+  <li class="nav-item">
+    <a href="/admin/centers" class="nav-link <%= currentPath && currentPath.startsWith('/admin/centers') ? 'active' : '' %>">
+      <i class="fas fa-map-marker-alt me-2"></i>
+      <span>Exam Centers</span>
+    </a>
+  </li>
+  <li class="nav-item">
+    <a href="/admin/certificates" class="nav-link <%= currentPath && currentPath.startsWith('/admin/certificates') ? 'active' : '' %>">
+      <i class="fas fa-certificate me-2"></i>
+      <span>Certificates</span>
     </a>
   </li>
   <li class="nav-item">
     <a href="/admin/gazette" class="nav-link <%= currentPath && currentPath.startsWith('/admin/gazette') ? 'active' : '' %>">
       <i class="fas fa-newspaper me-2"></i>
       <span>Gazette</span>
+    </a>
+  </li>
+  <li class="nav-item">
+    <a href="/admin/analytics" class="nav-link <%= currentPath && currentPath.startsWith('/admin/analytics') ? 'active' : '' %>">
+      <i class="fas fa-chart-line me-2"></i>
+      <span>Analytics</span>
+    </a>
+  </li>
+  <% if (user && user.role === 'super_admin') { %>
+  <li class="nav-item">
+    <a href="/admin/users" class="nav-link <%= currentPath && currentPath.startsWith('/admin/users') ? 'active' : '' %>">
+      <i class="fas fa-users-cog me-2"></i>
+      <span>Admin Management</span>
     </a>
   </li>
   <% } %>

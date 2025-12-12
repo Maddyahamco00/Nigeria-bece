@@ -23,31 +23,45 @@
       <nav class="header-nav">
         <% if (typeof user !== 'undefined' && user) { %>
           <!-- Admin Navigation -->
-          <div class="nav-item dropdown">
-            <button class="nav-btn dropdown-toggle" data-bs-toggle="dropdown">
-              <i class="fas fa-user-circle"></i>
-              <span><%= user.name %></span>
-            </button>
-            <ul class="dropdown-menu">
-              <li><a class="dropdown-item" href="/admin/profile"><i class="fas fa-user me-2"></i>Profile</a></li>
-              <li><a class="dropdown-item" href="/admin/settings"><i class="fas fa-cog me-2"></i>Settings</a></li>
-              <li><hr class="dropdown-divider"></li>
-              <li><a class="dropdown-item text-danger" href="/auth/logout"><i class="fas fa-sign-out-alt me-2"></i>Logout</a></li>
-            </ul>
+          <div class="nav-items">
+            <% if (user.role === 'super_admin') { %>
+              <a href="/admin/users" class="nav-btn">
+                <i class="fas fa-users-cog"></i>
+                <span>Manage Admins</span>
+              </a>
+            <% } %>
+            <div class="nav-item dropdown">
+              <button class="nav-btn dropdown-toggle" data-bs-toggle="dropdown">
+                <i class="fas fa-user-shield"></i>
+                <span><%= user.name %></span>
+              </button>
+              <ul class="dropdown-menu">
+                <li><a class="dropdown-item" href="/admin/profile"><i class="fas fa-user me-2"></i>Profile</a></li>
+                <li><a class="dropdown-item" href="/admin/settings"><i class="fas fa-cog me-2"></i>Settings</a></li>
+                <li><hr class="dropdown-divider"></li>
+                <li><a class="dropdown-item text-danger" href="/auth/logout"><i class="fas fa-sign-out-alt me-2"></i>Logout</a></li>
+              </ul>
+            </div>
           </div>
         <% } else if (typeof student !== 'undefined' && student) { %>
           <!-- Student Navigation -->
-          <div class="nav-item dropdown">
-            <button class="nav-btn dropdown-toggle" data-bs-toggle="dropdown">
-              <i class="fas fa-user-graduate"></i>
-              <span><%= student.name %></span>
-            </button>
-            <ul class="dropdown-menu">
-              <li><a class="dropdown-item" href="/students/profile"><i class="fas fa-user me-2"></i>Profile</a></li>
-              <li><a class="dropdown-item" href="/students/results"><i class="fas fa-chart-bar me-2"></i>Results</a></li>
-              <li><hr class="dropdown-divider"></li>
-              <li><a class="dropdown-item text-danger" href="/auth/logout"><i class="fas fa-sign-out-alt me-2"></i>Logout</a></li>
-            </ul>
+          <div class="nav-items">
+            <a href="/students/results" class="nav-btn">
+              <i class="fas fa-chart-bar"></i>
+              <span>Results</span>
+            </a>
+            <div class="nav-item dropdown">
+              <button class="nav-btn dropdown-toggle" data-bs-toggle="dropdown">
+                <i class="fas fa-user-graduate"></i>
+                <span><%= student.name %></span>
+              </button>
+              <ul class="dropdown-menu">
+                <li><a class="dropdown-item" href="/students/profile"><i class="fas fa-user me-2"></i>Profile</a></li>
+                <li><a class="dropdown-item" href="/students/payments"><i class="fas fa-credit-card me-2"></i>Payments</a></li>
+                <li><hr class="dropdown-divider"></li>
+                <li><a class="dropdown-item text-danger" href="/auth/logout"><i class="fas fa-sign-out-alt me-2"></i>Logout</a></li>
+              </ul>
+            </div>
           </div>
         <% } else { %>
           <!-- Public Navigation -->
@@ -56,7 +70,7 @@
               <i class="fas fa-sign-in-alt"></i>
               <span>Login</span>
             </a>
-            <a href="/students/register" class="nav-btn primary">
+            <a href="/students/register/biodata" class="nav-btn primary">
               <i class="fas fa-user-plus"></i>
               <span>Register</span>
             </a>
@@ -65,11 +79,90 @@
       </nav>
 
       <!-- Mobile Menu Toggle -->
-      <button class="mobile-toggle d-lg-none" onclick="toggleMobileMenu()">
+      <button class="mobile-toggle d-lg-none" onclick="toggleMobileMenu()" data-bs-toggle="collapse" data-bs-target="#mobileNav">
         <span></span>
         <span></span>
         <span></span>
       </button>
+    </div>
+    
+    <!-- Mobile Navigation Collapse -->
+    <div class="collapse" id="mobileNav">
+      <div class="mobile-nav-content">
+        <% if (typeof user !== 'undefined' && user) { %>
+          <!-- Admin Mobile Menu -->
+          <div class="mobile-nav-section">
+            <h6 class="mobile-nav-title">Admin Menu</h6>
+            <a href="/admin/dashboard" class="mobile-nav-link">
+              <i class="fas fa-tachometer-alt me-2"></i>Dashboard
+            </a>
+            <a href="/admin/students" class="mobile-nav-link">
+              <i class="fas fa-users me-2"></i>Students
+            </a>
+            <a href="/admin/schools" class="mobile-nav-link">
+              <i class="fas fa-school me-2"></i>Schools
+            </a>
+            <a href="/admin/results" class="mobile-nav-link">
+              <i class="fas fa-chart-bar me-2"></i>Results
+            </a>
+            <a href="/admin/payments" class="mobile-nav-link">
+              <i class="fas fa-credit-card me-2"></i>Payments
+            </a>
+            <a href="/admin/timetable" class="mobile-nav-link">
+              <i class="fas fa-calendar-alt me-2"></i>Timetable
+            </a>
+            <a href="/admin/centers" class="mobile-nav-link">
+              <i class="fas fa-map-marker-alt me-2"></i>Exam Centers
+            </a>
+            <a href="/admin/certificates" class="mobile-nav-link">
+              <i class="fas fa-certificate me-2"></i>Certificates
+            </a>
+            <a href="/admin/gazette" class="mobile-nav-link">
+              <i class="fas fa-newspaper me-2"></i>Gazette
+            </a>
+            <a href="/admin/analytics" class="mobile-nav-link">
+              <i class="fas fa-chart-line me-2"></i>Analytics
+            </a>
+            <% if (user.role === 'super_admin') { %>
+              <a href="/admin/users" class="mobile-nav-link">
+                <i class="fas fa-users-cog me-2"></i>Admin Management
+              </a>
+            <% } %>
+            <a href="/admin/settings" class="mobile-nav-link">
+              <i class="fas fa-cog me-2"></i>Settings
+            </a>
+          </div>
+          <div class="mobile-nav-section">
+            <h6 class="mobile-nav-title">Account</h6>
+            <a href="/admin/profile" class="mobile-nav-link">
+              <i class="fas fa-user me-2"></i>Profile
+            </a>
+            <a href="/auth/logout" class="mobile-nav-link text-danger">
+              <i class="fas fa-sign-out-alt me-2"></i>Logout
+            </a>
+          </div>
+        <% } else if (typeof student !== 'undefined' && student) { %>
+          <!-- Student Mobile Menu -->
+          <div class="mobile-nav-section">
+            <h6 class="mobile-nav-title">Student Menu</h6>
+            <a href="/students/dashboard" class="mobile-nav-link">
+              <i class="fas fa-tachometer-alt me-2"></i>Dashboard
+            </a>
+            <a href="/students/profile" class="mobile-nav-link">
+              <i class="fas fa-user me-2"></i>Profile
+            </a>
+            <a href="/students/results" class="mobile-nav-link">
+              <i class="fas fa-chart-bar me-2"></i>Results
+            </a>
+            <a href="/students/payments" class="mobile-nav-link">
+              <i class="fas fa-credit-card me-2"></i>Payments
+            </a>
+            <a href="/auth/logout" class="mobile-nav-link text-danger">
+              <i class="fas fa-sign-out-alt me-2"></i>Logout
+            </a>
+          </div>
+        <% } %>
+      </div>
     </div>
   </div>
 </header>
@@ -82,12 +175,6 @@
   top: 0;
   z-index: 1000;
   backdrop-filter: blur(10px);
-  display: none; /* Hide header by default */
-}
-
-/* Show header only on public pages */
-body:not(:has(.modern-sidebar)) .modern-header {
-  display: block;
 }
 
 .header-content {
@@ -209,6 +296,49 @@ body:not(:has(.modern-sidebar)) .modern-header {
   background: white;
   border-radius: 2px;
   transition: all 0.3s ease;
+}
+
+.mobile-nav-content {
+  background: rgba(255,255,255,0.95);
+  backdrop-filter: blur(10px);
+  margin: 10px;
+  border-radius: 15px;
+  padding: 20px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+}
+
+.mobile-nav-section {
+  margin-bottom: 20px;
+}
+
+.mobile-nav-title {
+  color: var(--primary-color);
+  font-weight: 600;
+  margin-bottom: 10px;
+  text-transform: uppercase;
+  font-size: 0.8rem;
+  letter-spacing: 0.5px;
+}
+
+.mobile-nav-link {
+  display: block;
+  padding: 12px 15px;
+  color: #333;
+  text-decoration: none;
+  border-radius: 10px;
+  margin-bottom: 5px;
+  transition: all 0.3s ease;
+}
+
+.mobile-nav-link:hover {
+  background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+  color: white;
+  transform: translateX(5px);
+}
+
+.mobile-nav-link.text-danger:hover {
+  background: #dc3545;
+  color: white;
 }
 
 @media (max-width: 768px) {

@@ -223,8 +223,8 @@ router.get('/payments', requireStudent, async (req, res) => {
       where: { studentId: req.session.student.id },
       order: [['createdAt', 'DESC']] 
     });
-    res.render('students/payment', {
-      title: 'Payment History',
+    res.render('students/payments', {
+      title: 'My Payments',
       student,
       payments,
       paystackPublicKey: process.env.PAYSTACK_PUBLIC_KEY,
