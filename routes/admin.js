@@ -19,11 +19,7 @@ router.use((req, res, next) => {
 });
 
 /* ---------------- Dashboard ---------------- */
-router.get('/dashboard', async (req, res) => {
-  // Simple auth check
-  if (!req.user) {
-    return res.redirect('/auth/admin');
-  }
+router.get('/dashboard', requireAdmin, async (req, res) => {
   
   try {
     // Simplified counters to prevent hanging

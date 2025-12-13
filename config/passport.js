@@ -15,7 +15,15 @@ export default function initialize(passport) {
       try {
         const user = await User.findOne({ where: { email } });
         if (!user) return done(null, false, { message: 'Email not found' });
-        if (user.role !== 'super_admin') return done(null, false, { message: 'Access denied' });
+        
+        const adminRoles = ['super_admin', 'admin', 'state_admin', 'school_admin', 'exam_admin', 'feedback_admin'];
+        if (!adminRoles.includes(user.role)) {
+          return done(null, false, { message: 'Access denied - Admin role required' });
+        }
+        
+        if (!user.isActive) {
+          return done(null, false, { message: 'Account is deactivated' });
+        }
         
         const isMatch = await bcrypt.compare(password, user.password);
         if (!isMatch) return done(null, false, { message: 'Incorrect password' });

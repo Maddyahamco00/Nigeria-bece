@@ -48,11 +48,11 @@ app.use(express.static(path.join(__dirname, 'public')));
 // ------------------------------
 app.use(
   session({
-    secret: process.env.SESSION_SECRET || 'secret_key', // ⚠️ Change this in production
+    secret: process.env.SESSION_SECRET || 'secret_key',
     resave: false,
     saveUninitialized: false,
     cookie: {
-      secure: process.env.NODE_ENV === 'production',
+      secure: false, // Set to false for development
       httpOnly: true,
       maxAge: 24 * 60 * 60 * 1000 // 24 hours
     }
