@@ -10,6 +10,8 @@ import { fileURLToPath } from 'url';
 import expressLayouts from 'express-ejs-layouts';
 import { sequelize } from './config/index.js';
 import cacheService from './services/cacheService.js';
+import bcrypt from 'bcryptjs';
+import { User } from './models/index.js';
 
 // ------------------------------
 // Route Imports
@@ -167,8 +169,29 @@ sequelize
       console.log('⚠️ Running without Redis cache (using mock client)');
       
       // Start server AFTER everything is initialized
-      app.listen(PORT, () => {
+      app.listen(PORT, async () => {
         console.log(`🚀 Server running on http://localhost:${PORT}`);
+        
+        // Ensure admin exists after server starts
+        setTimeout(async () => {
+          try {
+            const adminExists = await User.findOne({ where: { email: 'maddyahamco00@gmail.com' } });
+            if (!adminExists) {
+              const hashedPassword = await bcrypt.hash('123456', 10);
+              await User.create({
+                name: 'Muhammad Kabir Ahmad',
+                email: 'maddyahamco00@gmail.com',
+                password: hashedPassword,
+                role: 'super_admin',
+                isActive: true,
+                permissions: {}
+              });
+              console.log('✅ Fallback admin created');
+            }
+          } catch (err) {
+            console.error('❌ Fallback admin creation failed:', err.message);
+          }
+        }, 5000);
       });
       
     } catch (syncErr) {

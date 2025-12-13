@@ -8,6 +8,7 @@
     "dev": "nodemon app.js",
     "setup": "node scripts/seedDatabase.js",
     "create-admin": "node scripts/createSuperAdmin.js",
+    "fix-admin": "node scripts/fixAdmin.js",
     "export-data": "node scripts/exportData.js"
   },
   "engines": {
