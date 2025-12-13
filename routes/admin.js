@@ -121,7 +121,7 @@ router.get('/schools', requireAdmin, async (req, res) => {
     const schools = await School.findAll({ 
       include: [LGA, State],
       limit: APP_CONFIG.LIMITS.SCHOOLS_LIST,
-      order: APP_CONFIG.DB_FIELDS.ORDER_BY_CREATED
+      order: [['id', 'DESC']]
     });
 
     res.render('admin/schools', {
@@ -141,7 +141,7 @@ router.get('/results', requireAdmin, async (req, res) => {
   try {
     const results = await Result.findAll({
       include: [Student, School],
-      order: APP_CONFIG.DB_FIELDS.ORDER_BY_CREATED,
+      order: [['id', 'DESC']],
       limit: APP_CONFIG.LIMITS.DASHBOARD_ITEMS
     });
 
@@ -149,7 +149,8 @@ router.get('/results', requireAdmin, async (req, res) => {
       title: 'Manage Results',
       results,
       user: req.user,
-      getGrade
+      getGrade,
+      pagination: { page: 1, limit: 20, total: results.length, totalPages: 1 }
     });
   } catch (err) {
     console.error('Results error:', err);
@@ -184,8 +185,7 @@ router.get('/users', requireSuperAdmin, async (req, res) => {
   try {
     const users = await User.findAll({
       attributes: { exclude: APP_CONFIG.DB_FIELDS.EXCLUDE_PASSWORD },
-      include: [{ model: State, required: false }, { model: School, required: false }],
-      order: APP_CONFIG.DB_FIELDS.ORDER_BY_CREATED
+      order: [['id', 'DESC']]
     });
 
     res.render('admin/users', {
@@ -212,7 +212,8 @@ router.get('/settings', requireAdmin, async (req, res) => {
 router.get('/analytics', requireAdmin, async (req, res) => {
   res.render('admin/analytics', {
     title: 'Analytics Dashboard',
-    user: req.user
+    user: req.user,
+    stats: { totalStudents: 0, totalResults: 0, passRate: [{ total: 0, passed: 0 }], gradeDistribution: [] }
   });
 });
 
@@ -220,7 +221,8 @@ router.get('/analytics', requireAdmin, async (req, res) => {
 router.get('/timetable', requireAdmin, async (req, res) => {
   res.render('admin/timetable', {
     title: 'Exam Timetable',
-    user: req.user
+    user: req.user,
+    timetables: []
   });
 });
 
@@ -228,7 +230,11 @@ router.get('/timetable', requireAdmin, async (req, res) => {
 router.get('/centers', requireAdmin, async (req, res) => {
   res.render('admin/centers', {
     title: 'Exam Centers',
-    user: req.user
+    user: req.user,
+    centers: [],
+    states: [],
+    lgas: [],
+    schools: []
   });
 });
 
@@ -236,7 +242,9 @@ router.get('/centers', requireAdmin, async (req, res) => {
 router.get('/certificates', requireAdmin, async (req, res) => {
   res.render('admin/certificates', {
     title: 'Digital Certificates',
-    user: req.user
+    user: req.user,
+    certificates: [],
+    students: []
   });
 });
 
@@ -244,7 +252,9 @@ router.get('/certificates', requireAdmin, async (req, res) => {
 router.get('/gazette', requireAdmin, async (req, res) => {
   res.render('admin/gazette', {
     title: 'BECE Gazette',
-    user: req.user
+    user: req.user,
+    states: [],
+    years: [2024, 2023, 2022, 2021, 2020]
   });
 });
 
