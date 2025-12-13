@@ -398,8 +398,7 @@ router.get('/schools/new', requireAdmin, async (req, res) => {
     const states = await State.findAll();
     const lgas = await LGA.findAll();
 
-    // Render the add form located at views/admin/schools/add.ejs
-    res.render('admin/schools/add', {
+    res.render('admin/add-school', {
       title: 'Add School',
       states,
       lgas,
@@ -412,12 +411,11 @@ router.get('/schools/new', requireAdmin, async (req, res) => {
   }
 });
 
-// Support the legacy /admin/schools/add route (some templates/link point here)
 router.get('/schools/add', requireAdmin, async (req, res) => {
   try {
     const states = await State.findAll();
     const lgas = await LGA.findAll();
-    res.render('admin/schools/add', {
+    res.render('admin/add-school', {
       title: 'Add School',
       states,
       lgas,
