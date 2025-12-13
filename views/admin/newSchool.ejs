@@ -40,64 +40,33 @@
 
               <div class="row">
                 <div class="col-md-6 mb-3">
-                  <label for="stateCode" class="form-label fw-bold">
-                    <i class="fas fa-map-marker-alt me-2"></i>State Code *
+                  <label for="stateId" class="form-label fw-bold">
+                    <i class="fas fa-map-marker-alt me-2"></i>State *
                   </label>
-                  <select class="form-control" id="stateCode" name="stateCode" required>
+                  <select class="form-control" id="stateId" name="stateId" required>
                     <option value="">Select State</option>
-                    <option value="AB">Abia</option>
-                    <option value="AD">Adamawa</option>
-                    <option value="AK">Akwa Ibom</option>
-                    <option value="AN">Anambra</option>
-                    <option value="BA">Bauchi</option>
-                    <option value="BY">Bayelsa</option>
-                    <option value="BE">Benue</option>
-                    <option value="BO">Borno</option>
-                    <option value="CR">Cross River</option>
-                    <option value="DE">Delta</option>
-                    <option value="EB">Ebonyi</option>
-                    <option value="ED">Edo</option>
-                    <option value="EK">Ekiti</option>
-                    <option value="EN">Enugu</option>
-                    <option value="FC">FCT</option>
-                    <option value="GO">Gombe</option>
-                    <option value="IM">Imo</option>
-                    <option value="JI">Jigawa</option>
-                    <option value="KD">Kaduna</option>
-                    <option value="KN">Kano</option>
-                    <option value="KT">Katsina</option>
-                    <option value="KE">Kebbi</option>
-                    <option value="KO">Kogi</option>
-                    <option value="KW">Kwara</option>
-                    <option value="LA">Lagos</option>
-                    <option value="NA">Nasarawa</option>
-                    <option value="NI">Niger</option>
-                    <option value="OG">Ogun</option>
-                    <option value="ON">Ondo</option>
-                    <option value="OS">Osun</option>
-                    <option value="OY">Oyo</option>
-                    <option value="PL">Plateau</option>
-                    <option value="RI">Rivers</option>
-                    <option value="SO">Sokoto</option>
-                    <option value="TA">Taraba</option>
-                    <option value="YO">Yobe</option>
-                    <option value="ZA">Zamfara</option>
+                    <% states.forEach(state => { %>
+                      <option value="<%= state.id %>" data-code="<%= state.code %>"><%= state.name %></option>
+                    <% }) %>
                   </select>
                 </div>
                 <div class="col-md-6 mb-3">
                   <label for="lgaId" class="form-label fw-bold">
-                    <i class="fas fa-map me-2"></i>LGA ID *
+                    <i class="fas fa-map me-2"></i>LGA *
                   </label>
-                  <input type="number" class="form-control" id="lgaId" name="lgaId" placeholder="Enter LGA ID" required>
+                  <select class="form-control" id="lgaId" name="lgaId" required>
+                    <option value="">Select State First</option>
+                  </select>
                 </div>
               </div>
 
               <div class="row">
                 <div class="col-md-6 mb-3">
                   <label for="schoolSerial" class="form-label fw-bold">
-                    <i class="fas fa-hashtag me-2"></i>School Serial *
+                    <i class="fas fa-hashtag me-2"></i>School Serial (Auto-generated)
                   </label>
-                  <input type="text" class="form-control" id="schoolSerial" name="schoolSerial" placeholder="e.g., SCH001" required>
+                  <input type="number" class="form-control" id="schoolSerial" name="schoolSerial" placeholder="Auto-generated" readonly>
+                  <input type="hidden" id="stateCode" name="stateCode">
                 </div>
                 <div class="col-md-6 mb-3">
                   <label for="address" class="form-label fw-bold">
@@ -122,3 +91,58 @@
     </div>
   </div>
 </div>
+
+<script>
+// Load LGAs when state changes
+document.getElementById('stateId').addEventListener('change', async function() {
+  const stateId = this.value;
+  const stateCode = this.options[this.selectedIndex].dataset.code;
+  const lgaSelect = document.getElementById('lgaId');
+  
+  // Update hidden state code field
+  document.getElementById('stateCode').value = stateCode;
+  
+  // Clear LGA options
+  lgaSelect.innerHTML = '<option value="">Loading...</option>';
+  
+  if (stateId) {
+    try {
+      const response = await fetch(`/admin/api/lgas/${stateId}`);
+      const lgas = await response.json();
+      
+      lgaSelect.innerHTML = '<option value="">Select LGA</option>';
+      lgas.forEach(lga => {
+        lgaSelect.innerHTML += `<option value="${lga.id}">${lga.name}</option>`;
+      });
+    } catch (error) {
+      lgaSelect.innerHTML = '<option value="">Error loading LGAs</option>';
+    }
+  } else {
+    lgaSelect.innerHTML = '<option value="">Select State First</option>';
+  }
+  
+  generateSerial();
+});
+
+// Generate serial when LGA changes
+document.getElementById('lgaId').addEventListener('change', generateSerial);
+
+// Auto-generate school serial
+async function generateSerial() {
+  const stateId = document.getElementById('stateId').value;
+  const lgaId = document.getElementById('lgaId').value;
+  
+  if (stateId && lgaId) {
+    try {
+      // Get count of schools in this LGA
+      const response = await fetch(`/admin/api/schools?stateId=${stateId}&lgaId=${lgaId}`);
+      const schools = await response.json();
+      const nextSerial = schools.length + 1;
+      
+      document.getElementById('schoolSerial').value = nextSerial;
+    } catch (error) {
+      document.getElementById('schoolSerial').value = 1;
+    }
+  }
+}
+</script>

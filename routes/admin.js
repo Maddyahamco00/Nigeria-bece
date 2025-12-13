@@ -369,23 +369,16 @@ router.get('/schools', requireAdmin, async (req, res) => {
 
 router.post('/schools', requireAdmin, async (req, res) => {
   try {
-    const { name, stateCode, lgaId, schoolSerial, address } = req.body;
+    const { name, stateId, lgaId, schoolSerial, address, stateCode } = req.body;
     const userId = req.user?.id || 1;
-
-    // Resolve stateCode to stateId (database expects stateId)
-    const state = await State.findOne({ where: { code: stateCode } });
-    if (!state) {
-      req.flash('error', 'Invalid state selected');
-      return res.redirect('/admin/schools');
-    }
 
     await School.create({
       name,
-      lgaId,
+      lgaId: parseInt(lgaId),
       address,
       stateCode,
-      stateId: state.id,
-      schoolSerial,
+      stateId: parseInt(stateId),
+      schoolSerial: parseInt(schoolSerial),
       userId
     });
 
