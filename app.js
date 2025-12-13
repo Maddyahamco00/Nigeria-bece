@@ -159,7 +159,7 @@ sequelize
       console.log('✅ Tables synced successfully');
       
       // Seed states and LGAs
-      const seedStatesAndLGAs = (await import('../scripts/seedStatesAndLGAs.js')).default;
+      const seedStatesAndLGAs = (await import('./scripts/seedStatesAndLGAs.js')).default;
       await seedStatesAndLGAs();
       
       await initializeSuperAdmins();

@@ -47,6 +47,11 @@ router.get('/admin', (req, res) => {
   });
 });
 
+// Main login redirect to admin
+router.post('/login', (req, res) => {
+  res.redirect('/auth/admin');
+});
+
 // Admin registration page
 router.get('/admin/register', async (req, res) => {
   try {

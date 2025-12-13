@@ -21,6 +21,11 @@
 
       <!-- Navigation -->
       <nav class="header-nav">
+        <!-- Dark/Light Mode Toggle -->
+        <button class="theme-toggle" onclick="toggleTheme()" title="Toggle Dark/Light Mode">
+          <i class="fas fa-moon" id="theme-icon"></i>
+        </button>
+        
         <% if (typeof user !== 'undefined' && user) { %>
           <!-- Admin Role Badge -->
           <div class="role-indicator">
@@ -381,6 +386,64 @@
   letter-spacing: 0.5px;
 }
 
+.theme-toggle {
+  background: rgba(255,255,255,0.1);
+  border: 1px solid rgba(255,255,255,0.2);
+  color: white;
+  width: 45px;
+  height: 45px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  margin-right: 15px;
+}
+
+.theme-toggle:hover {
+  background: rgba(255,255,255,0.2);
+  transform: scale(1.1);
+}
+
+/* Dark theme styles */
+body.dark-theme {
+  background-color: #1a1a1a;
+  color: #e0e0e0;
+}
+
+body.dark-theme .card {
+  background-color: #2d2d2d;
+  border-color: #404040;
+}
+
+body.dark-theme .form-control {
+  background-color: #3d3d3d;
+  border-color: #555;
+  color: #e0e0e0;
+}
+
+body.dark-theme .btn-primary {
+  background-color: #0d6efd;
+  border-color: #0d6efd;
+}
+
+body.dark-theme .navbar {
+  background-color: #2d2d2d !important;
+}
+
+body.dark-theme .sidebar {
+  background-color: #2d2d2d;
+}
+
+body.dark-theme .table {
+  color: #e0e0e0;
+}
+
+body.dark-theme .table-dark {
+  background-color: #3d3d3d;
+}
+
 @media (max-width: 768px) {
   .brand-title {
     font-size: 1.2rem;
@@ -406,4 +469,31 @@ function toggleMobileMenu() {
   // Mobile menu toggle functionality
   console.log('Mobile menu toggle');
 }
+
+// Dark/Light theme toggle
+function toggleTheme() {
+  const body = document.body;
+  const themeIcon = document.getElementById('theme-icon');
+  
+  body.classList.toggle('dark-theme');
+  
+  if (body.classList.contains('dark-theme')) {
+    themeIcon.className = 'fas fa-sun';
+    localStorage.setItem('theme', 'dark');
+  } else {
+    themeIcon.className = 'fas fa-moon';
+    localStorage.setItem('theme', 'light');
+  }
+}
+
+// Load saved theme on page load
+document.addEventListener('DOMContentLoaded', function() {
+  const savedTheme = localStorage.getItem('theme');
+  const themeIcon = document.getElementById('theme-icon');
+  
+  if (savedTheme === 'dark') {
+    document.body.classList.add('dark-theme');
+    if (themeIcon) themeIcon.className = 'fas fa-sun';
+  }
+});
 </script>
