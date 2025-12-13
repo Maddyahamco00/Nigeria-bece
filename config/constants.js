@@ -18,7 +18,8 @@ export const APP_CONFIG = {
   LIMITS: {
     RECENT_ITEMS: 3,
     SCHOOLS_LIST: 100,
-    STUDENTS_LIST: 100
+    STUDENTS_LIST: 100,
+    DASHBOARD_ITEMS: 50
   },
   
   PAGINATION: {
