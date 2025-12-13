@@ -174,7 +174,12 @@ app.use((err, req, res, next) => {
 // ------------------------------
 const PORT = process.env.PORT || 3000;
 
-// Initialize database and admins BEFORE starting server
+// Start server immediately for Render port detection
+app.listen(PORT, () => {
+  console.log(`🚀 Server running on http://localhost:${PORT}`);
+});
+
+// Initialize database in background
 sequelize
   .authenticate()
   .then(async () => {
@@ -190,35 +195,9 @@ sequelize
       const seedStatesAndLGAs = (await import('./scripts/seedStatesAndLGAs.js')).default;
       await seedStatesAndLGAs();
       
-      // Initialize admins BEFORE server starts
+      // Initialize admins
       await initializeSuperAdmins();
       console.log('⚠️ Running without Redis cache (using mock client)');
-      
-      // Start server AFTER everything is initialized
-      app.listen(PORT, async () => {
-        console.log(`🚀 Server running on http://localhost:${PORT}`);
-        
-        // Ensure admin exists after server starts
-        setTimeout(async () => {
-          try {
-            const adminExists = await User.findOne({ where: { email: 'maddyahamco00@gmail.com' } });
-            if (!adminExists) {
-              const hashedPassword = await bcrypt.hash('123456', 10);
-              await User.create({
-                name: 'Muhammad Kabir Ahmad',
-                email: 'maddyahamco00@gmail.com',
-                password: hashedPassword,
-                role: 'super_admin',
-                isActive: true,
-                permissions: {}
-              });
-              console.log('✅ Fallback admin created');
-            }
-          } catch (err) {
-            console.error('❌ Fallback admin creation failed:', err.message);
-          }
-        }, 5000);
-      });
       
     } catch (syncErr) {
       console.error('❌ Table sync failed:', syncErr.message);
@@ -226,7 +205,6 @@ sequelize
   })
   .catch((err) => {
     console.error('❌ Database connection failed:', err);
-    console.log('🔄 Server will keep running, database will retry on requests');
   });
 
 
