@@ -5,31 +5,39 @@ services:
     buildCommand: npm ci
     startCommand: npm start
     envVars:
+      - key: MYSQL_ADDON_HOST
+        value: bligkjakztomxoqeghos-mysql.services.clever-cloud.com
+      - key: MYSQL_ADDON_USER
+        value: ufnzy83ycmv5aoot
+      - key: MYSQL_ADDON_PASSWORD
+        value: jXyymfvfGLP841AYBbCu
+      - key: MYSQL_ADDON_DB
+        value: bligkjakztomxoqeghos
+      - key: MYSQL_ADDON_PORT
+        value: 3306
+      - key: MYSQL_ADDON_URI
+        value: mysql://ufnzy83ycmv5aoot:jXyymfvfGLP841AYBbCu@bligkjakztomxoqeghos-mysql.services.clever-cloud.com:3306/bligkjakztomxoqeghos
       - key: NODE_ENV
         value: production
       - key: PORT
         value: 10000
       - key: SESSION_SECRET
-        generateValue: true
+        value: c94e71cdc86857a3d685ceb8eedde296
       - key: PAYSTACK_SECRET_KEY
-        sync: false
+        value: sk_test_8e34251ab4a825a3516648d6878d420bc06a90e8
       - key: PAYSTACK_PUBLIC_KEY
-        sync: false
-      - key: MYSQL_ADDON_HOST
-        sync: false
-      - key: MYSQL_ADDON_USER
-        sync: false
-      - key: MYSQL_ADDON_PASSWORD
-        sync: false
-      - key: MYSQL_ADDON_DB
-        sync: false
-      - key: MYSQL_ADDON_PORT
-        value: 3306
+        value: pk_test_459ec26b716655348ae00e8403393696999e59a0
       - key: EMAIL_HOST
         value: smtp.gmail.com
       - key: EMAIL_PORT
         value: 587
       - key: EMAIL_USER
-        sync: false
+        value: maddyahamco00@gmail.com
       - key: EMAIL_PASS
-        sync: false
+        value: salamatu1963#
+      - key: SMS_API_KEY
+        value: TLhXrJKGuVZYhOZUpXbJyLYpKwNDobwHprktqmHzpSMvWvgsycgJhNEZoYWMiq
+      - key: SMS_SENDER_ID
+        value: BECE_NG
+      - key: SMS_BASE_URL
+        value: https://api.ng.termii.com/api/sms/send
