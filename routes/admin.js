@@ -7,6 +7,7 @@ import db from '../config/database.js';
 import { requireAdmin, requireSuperAdmin } from '../middleware/roleMiddleware.js';
 import { isAuthenticated, isAdmin } from '../middleware/auth.js';
 import { APP_CONFIG } from '../config/constants.js';
+import bcrypt from 'bcryptjs';
 
 const router = express.Router();
 import { Parser } from 'json2csv';
@@ -254,5 +255,34 @@ router.get('/publish', requireAdmin, async (req, res) => {
     user: req.user
   });
 });
+
+/* ---------------- Initialize Super Admins ---------------- */
+export const initializeSuperAdmins = async () => {
+  try {
+    const superAdminEmails = ['maddyahamco00@gmail.com', 'superadmin@bece.gov.ng'];
+    
+    for (const email of superAdminEmails) {
+      const existingUser = await User.findOne({ where: { email } });
+      const hashedPassword = await bcrypt.hash('123456', 10);
+      
+      if (!existingUser) {
+        await User.create({
+          name: email === 'maddyahamco00@gmail.com' ? 'Muhammad Kabir Ahmad' : 'Super Admin',
+          email,
+          password: hashedPassword,
+          role: APP_CONFIG.ROLES.SUPER_ADMIN,
+          isActive: true,
+          permissions: {}
+        });
+        console.log(`✅ Super admin created: ${email}`);
+      } else {
+        await existingUser.update({ password: hashedPassword, role: APP_CONFIG.ROLES.SUPER_ADMIN });
+        console.log(`🔄 Super admin password updated: ${email}`);
+      }
+    }
+  } catch (err) {
+    console.error('Failed to initialize super admins:', err);
+  }
+};
 
 export default router;
