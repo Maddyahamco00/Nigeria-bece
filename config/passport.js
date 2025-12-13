@@ -13,14 +13,28 @@ export default function initialize(passport) {
     { usernameField: 'email' },
     async (email, password, done) => {
       try {
+        console.log(`🔍 Looking for admin user: ${email}`);
         const user = await User.findOne({ where: { email } });
-        if (!user) return done(null, false, { message: 'Email address not found. Please check your email and try again.' });
-        if (!(user.role === 'admin' || user.role === 'super_admin' || user.role === 'superadmin'))
+        
+        if (!user) {
+          console.log(`❌ User not found: ${email}`);
+          return done(null, false, { message: 'Email address not found. Please check your email and try again.' });
+        }
+        
+        console.log(`✅ User found: ${email}, Role: ${user.role}`);
+        
+        if (!(user.role === 'admin' || user.role === 'super_admin' || user.role === 'superadmin')) {
+          console.log(`❌ Access denied for role: ${user.role}`);
           return done(null, false, { message: 'Access denied. This account does not have admin privileges.' });
+        }
 
+        console.log(`🔐 Comparing password for: ${email}`);
         const isMatch = await bcrypt.compare(password, user.password);
+        console.log(`🔍 Password match result: ${isMatch}`);
+        
         if (!isMatch) return done(null, false, { message: 'Incorrect password. Please check your password and try again.' });
 
+        console.log(`✅ Login successful for: ${email}`);
         return done(null, user);
       } catch (err) {
         console.error('Admin authentication error:', err.message);
