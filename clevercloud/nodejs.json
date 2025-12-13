@@ -1,0 +1,16 @@
+{
+  "build": {
+    "type": "npm",
+    "commands": [
+      "npm ci"
+    ]
+  },
+  "run": {
+    "commands": [
+      "npm start"
+    ]
+  },
+  "deploy": {
+    "env": "production"
+  }
+}

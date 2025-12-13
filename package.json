@@ -8,7 +8,12 @@
     "dev": "nodemon app.js",
     "setup": "node scripts/seedDatabase.js",
     "create-admin": "node scripts/createSuperAdmin.js",
-    "export-data": "node scripts/exportData.js"
+    "export-data": "node scripts/exportData.js",
+    "postinstall": "npm run setup"
+  },
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=8.0.0"
   },
   "author": "Muhammad Kabir Ahmad ( Maddy)",
   "license": "ISC",

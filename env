@@ -1,0 +1,34 @@
+# .env
+
+# Server Configuration
+PORT=3000
+NODE_ENV=development
+
+# MySQL Database Configuration
+
+DB_USER=root
+DB_PASSWORD="1234567890#"
+DB_HOST=localhost
+DB_NAME=nigeria_bece_db
+
+# Session Secret
+SESSION_SECRET=c94e71cdc86857a3d685ceb8eedde296
+
+# Paystack API Keys
+PAYSTACK_SECRET_KEY=sk_test_8e34251ab4a825a3516648d6878d420bc06a90e8
+PAYSTACK_PUBLIC_KEY=pk_test_459ec26b716655348ae00e8403393696999e59a0
+
+# Email Configuration (Disabled - using console logging)
+ EMAIL_HOST=smtp.gmail.com
+ EMAIL_PORT=587
+ EMAIL_USER=maddyahamco00@gmail.com
+ EMAIL_PASS=salamatu1963#
+
+# SMS Configuration (Termii API)
+SMS_API_KEY=TLhXrJKGuVZYhOZUpXbJyLYpKwNDobwHprktqmHzpSMvWvgsycgJhNEZoYWMiq
+SMS_SENDER=BECE-NG
+SMS_BASE_URL=https://api.ng.termii.com/api/sms/send
+
+#Replace `your_mysql_password`, `your_session_secret_here`, `sk_test_your_paystack_secret_key`, and `pk_test_your_paystack_public_key` with actual values.
+#- The email and SMS configurations are optional and depend on whether you use services like Nodemailer or an SMS provider (e.g., Termii, Twilio).
+#- Ensure the `.env` file is added to `.gitignore` to prevent exposing sensitive data.
