@@ -1,8 +1,21 @@
 // routes/apiRoutes.js
 import express from 'express';
-import { LGA, School } from '../models/index.js';
+import { State, LGA, School } from '../models/index.js';
 
 const router = express.Router();
+
+// Get all states
+router.get('/states', async (req, res) => {
+  try {
+    const states = await State.findAll({
+      order: [['name', 'ASC']]
+    });
+    res.json(states);
+  } catch (err) {
+    console.error('❌ Error fetching states:', err);
+    res.status(500).json({ error: 'Failed to load states' });
+  }
+});
 
 // Get all LGAs for a given state
 router.get('/lgas/:stateId', async (req, res) => {

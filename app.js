@@ -157,6 +157,11 @@ sequelize
       await sequelize.query('SET FOREIGN_KEY_CHECKS = 1');
       
       console.log('✅ Tables synced successfully');
+      
+      // Seed states and LGAs
+      const seedStatesAndLGAs = (await import('../scripts/seedStatesAndLGAs.js')).default;
+      await seedStatesAndLGAs();
+      
       await initializeSuperAdmins();
       console.log('⚠️ Running without Redis cache (using mock client)');
     } catch (syncErr) {
