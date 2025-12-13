@@ -12,7 +12,7 @@
     <form action="/students/register/subjects" method="POST" class="row g-3" id="subjectForm">
       <input type="hidden" name="studentId" value="<%= student.id %>">
       <% subjects.forEach(subject => { %>
-        <% if (subject.name === 'Mathematics' || subject.name === 'English') { %>
+        <% if (subject.name === 'Mathematics' || subject.name === 'English Language') { %>
           <input type="hidden" name="subjects" value="<%= subject.id %>">
         <% } %>
       <% }) %>
@@ -26,10 +26,10 @@
               <div class="form-check p-3 border rounded">
                 <input class="form-check-input subject-checkbox" type="checkbox" name="subjects" value="<%= subject.id %>" 
                        id="subject-<%= subject.id %>"
-                       <%= (subject.name === 'Mathematics' || subject.name === 'English') ? 'checked disabled' : '' %>>
+                       <%= (subject.name === 'Mathematics' || subject.name === 'English Language') ? 'checked disabled' : '' %>>
                 <label class="form-check-label fw-semibold" for="subject-<%= subject.id %>">
                   <%= subject.name %>
-                  <%= (subject.name === 'Mathematics' || subject.name === 'English') ? '(Required)' : '' %>
+                  <%= (subject.name === 'Mathematics' || subject.name === 'English Language') ? '(Required)' : '' %>
                 </label>
               </div>
             </div>

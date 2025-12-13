@@ -1,11 +1,12 @@
 // routes/admin.js
 import express from 'express';
-import { Student, School, Payment, Result, User, State, LGA, ExamTimetable, ExamCenter, Certificate } from '../models/index.js';
+import { Student, School, Payment, Result, User, State, LGA, ExamTimetable, ExamCenter, Certificate, Subject } from '../models/index.js';
 import { getGrade } from '../utils/grade.js';
 import sendEmail from '../utils/sendEmail.js';
 import db from '../config/database.js';
 import { requireAdmin, requireSuperAdmin } from '../middleware/roleMiddleware.js';
 import { isAuthenticated, isAdmin } from '../middleware/auth.js';
+import { APP_CONFIG } from '../config/constants.js';
 
 const router = express.Router();
 import { Parser } from 'json2csv';
@@ -23,14 +24,7 @@ router.get('/dashboard', requireAdmin, async (req, res) => {
   
   try {
     // Simplified counters to prevent hanging
-    const analytics = {
-      totalStudents: 0,
-      totalSchools: 0,
-      totalPayments: 0,
-      monthlyRevenue: 0,
-      recentStudents: [],
-      recentPayments: []
-    };
+    const analytics = { ...APP_CONFIG.DEFAULT_ANALYTICS };
 
     res.render('admin/dashboard', {
       title: 'Admin Dashboard',
@@ -41,14 +35,7 @@ router.get('/dashboard', requireAdmin, async (req, res) => {
     console.error('Dashboard error:', err);
     res.render('admin/dashboard', {
       title: 'Admin Dashboard',
-      analytics: {
-        totalStudents: 0,
-        totalSchools: 0,
-        totalPayments: 0,
-        monthlyRevenue: 0,
-        recentStudents: [],
-        recentPayments: []
-      },
+      analytics: { ...APP_CONFIG.DEFAULT_ANALYTICS },
       user: req.user
     });
   }
@@ -57,8 +44,8 @@ router.get('/dashboard', requireAdmin, async (req, res) => {
 // Live counters for AJAX refresh (cached for mobile performance)
 router.get('/dashboard/live/counters', requireAdmin, async (req, res) => {
   try {
-    // Cache for 30 seconds to reduce mobile load
-    res.set('Cache-Control', 'public, max-age=30');
+    // Cache for mobile performance
+    res.set('Cache-Control', `public, max-age=${APP_CONFIG.CACHE.COUNTERS}`);
     
     const counters = {
       students: await Student.count(),
@@ -75,10 +62,10 @@ router.get('/dashboard/live/counters', requireAdmin, async (req, res) => {
 // Live recent activity (cached for mobile)
 router.get('/dashboard/live/recent', requireAdmin, async (req, res) => {
   try {
-    res.set('Cache-Control', 'public, max-age=60');
+    res.set('Cache-Control', `public, max-age=${APP_CONFIG.CACHE.RECENT_ACTIVITY}`);
     
-    const recentStudents = await Student.findAll({ include: [School], order: [['createdAt','DESC']], limit: 3 });
-    const recentPayments = await Payment.findAll({ include: [Student], order: [['createdAt','DESC']], limit: 3 });
+    const recentStudents = await Student.findAll({ include: [School], order: [['createdAt','DESC']], limit: APP_CONFIG.LIMITS.RECENT_ITEMS });
+    const recentPayments = await Payment.findAll({ include: [Student], order: [['createdAt','DESC']], limit: APP_CONFIG.LIMITS.RECENT_ITEMS });
 
     res.json({ success: true, recentStudents, recentPayments });
   } catch (err) {
@@ -90,11 +77,11 @@ router.get('/dashboard/live/recent', requireAdmin, async (req, res) => {
 // Stats for charts (cached for performance)
 router.get('/dashboard/stats', requireAdmin, async (req, res) => {
   try {
-    res.set('Cache-Control', 'public, max-age=300'); // 5 minutes cache
+    res.set('Cache-Control', `public, max-age=${APP_CONFIG.CACHE.STATS}`);
     
     // Simplified chart data
-    const labels = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'];
-    const data = [0, 0, 0, 0, 0, 0];
+    const labels = APP_CONFIG.CHART.DEFAULT_MONTHS;
+    const data = APP_CONFIG.CHART.DEFAULT_DATA;
     const stateRows = [];
 
     res.json({ success: true, chart: { labels, data }, studentsByState: stateRows });
@@ -211,11 +198,68 @@ router.post('/users/:id/toggle', requireSuperAdmin, async (req, res) => {
   }
 });
 
+/* ---------------- Subject Management ---------------- */
+router.get('/subjects', requireAdmin, async (req, res) => {
+  try {
+    const subjects = await Subject.findAll({ order: [['name', 'ASC']] });
+    res.render('admin/subjects', {
+      title: 'Manage Subjects',
+      subjects,
+      user: req.user
+    });
+  } catch (err) {
+    console.error('Subjects error:', err);
+    req.flash('error', 'Failed to load subjects');
+    res.redirect('/admin/dashboard');
+  }
+});
+
+// Add new subject
+router.post('/subjects', requireAdmin, async (req, res) => {
+  try {
+    const { name } = req.body;
+    if (!name || name.trim().length === 0) {
+      req.flash('error', 'Subject name is required');
+      return res.redirect('/admin/subjects');
+    }
+
+    const existingSubject = await Subject.findOne({ where: { name: name.trim() } });
+    if (existingSubject) {
+      req.flash('error', 'Subject already exists');
+      return res.redirect('/admin/subjects');
+    }
+
+    await Subject.create({ name: name.trim() });
+    req.flash('success', 'Subject added successfully');
+    res.redirect('/admin/subjects');
+  } catch (err) {
+    console.error('Add subject error:', err);
+    req.flash('error', 'Failed to add subject');
+    res.redirect('/admin/subjects');
+  }
+});
+
+// Delete subject
+router.delete('/subjects/:id', requireAdmin, async (req, res) => {
+  try {
+    const subject = await Subject.findByPk(req.params.id);
+    if (!subject) {
+      return res.json({ success: false, error: 'Subject not found' });
+    }
+
+    await subject.destroy();
+    res.json({ success: true });
+  } catch (err) {
+    console.error('Delete subject error:', err);
+    res.json({ success: false, error: 'Failed to delete subject' });
+  }
+});
+
 /* ---------------- Export ---------------- */
 router.get('/export/results', requireAdmin, async (req,res)=>{
   try {
     const [results] = await db.query("SELECT r.id, r.student_name, r.subject, r.score FROM results r ORDER BY r.createdAt DESC");
-    const csvFields = ['id','student_name','subject','score','grade'];
+    const csvFields = APP_CONFIG.CSV_FIELDS.RESULTS;
     const data = results.map(r => ({
         id: r.id,
         student_name: r.student_name,
@@ -240,8 +284,8 @@ router.get('/export/results', requireAdmin, async (req,res)=>{
 // Export only the current results page as CSV using pagination params
 router.get('/export/results-page', requireAdmin, async (req, res) => {
   try {
-    const page = Math.max(1, parseInt(req.query.page, 10) || 1);
-    const limit = Math.min(100, Math.max(10, parseInt(req.query.limit, 10) || 20));
+    const page = Math.max(APP_CONFIG.PAGINATION.DEFAULT_PAGE, parseInt(req.query.page, 10) || APP_CONFIG.PAGINATION.DEFAULT_PAGE);
+    const limit = Math.min(APP_CONFIG.PAGINATION.MAX_LIMIT, Math.max(APP_CONFIG.PAGINATION.MIN_LIMIT, parseInt(req.query.limit, 10) || APP_CONFIG.PAGINATION.DEFAULT_LIMIT));
     const offset = (page - 1) * limit;
 
     const { rows } = await Result.findAndCountAll({
@@ -251,7 +295,7 @@ router.get('/export/results-page', requireAdmin, async (req, res) => {
       offset
     });
 
-    const csvFields = ['id','student_name','subject','score','grade'];
+    const csvFields = APP_CONFIG.CSV_FIELDS.RESULTS;
     const data = rows.map(r => ({
       id: r.id,
       student_name: r.student ? r.student.name : (r.Student ? r.Student.name : ''),
@@ -336,7 +380,7 @@ router.get('/schools', requireAdmin, async (req, res) => {
   try {
     const schools = await School.findAll({ 
       include: [LGA, State],
-      limit: 50,
+      limit: APP_CONFIG.LIMITS.SCHOOLS_LIST,
       order: [['createdAt', 'DESC']]
     });
 
@@ -501,7 +545,7 @@ router.get('/students', requireAdmin, async (req, res) => {
   try {
     const students = await Student.findAll({ 
       include: [{ model: School, attributes: ['name'] }],
-      limit: 50,
+      limit: APP_CONFIG.LIMITS.STUDENTS_LIST,
       order: [['createdAt', 'DESC']]
     });
 

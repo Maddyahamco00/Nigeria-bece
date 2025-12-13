@@ -68,7 +68,8 @@ export const handleBiodata = async (req, res) => {
 export const renderSubjectsForm = async (req, res) => {
   try {
     const student = await Student.findByPk(req.session.studentId);
-    const subjects = await Subject.findAll();
+    const subjects = await Subject.findAll({ order: [['name', 'ASC']] });
+    console.log('Subjects loaded:', subjects.length);
     res.render('students/subjects', {
       title: 'Student Registration - Subjects',
       student,

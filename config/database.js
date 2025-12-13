@@ -4,8 +4,10 @@ import dotenv from 'dotenv';
 
 dotenv.config();
 
-// Clever Cloud MySQL configuration using URI
-const sequelize = new Sequelize(process.env.MYSQL_ADDON_URI || 'mysql://root:1234567890#@localhost:3306/nigeria_bece_db', {
+// Database configuration
+const sequelize = new Sequelize(process.env.MYSQL_ADDON_URI || process.env.DB_NAME || 'nigeria_bece_db', process.env.DB_USER || 'root', process.env.DB_PASSWORD || '1234567890#', {
+  host: process.env.DB_HOST || 'localhost',
+  port: process.env.DB_PORT || 3306,
   dialect: 'mysql',
   logging: process.env.NODE_ENV === 'development' ? console.log : false,
   pool: {
