@@ -104,8 +104,9 @@
       <!-- School -->
       <div class="col-md-6">
         <label for="school" class="form-label fw-bold">School</label>
-        <select id="school" name="schoolId" class="form-select form-select-lg" required disabled>
+        <select id="school" name="schoolId" class="form-select form-select-lg" disabled>
           <option value="">Select School</option>
+          <option value="other">Other/Not Listed</option>
         </select>
       </div>
 
@@ -208,17 +209,22 @@ lgaSelect.addEventListener('change', async (e) => {
     
     schoolSelect.innerHTML = '<option value="">Select School</option>';
     
+    // Always add Other option
+    const otherOption = document.createElement('option');
+    otherOption.value = 'other';
+    otherOption.textContent = 'Other/Not Listed';
+    schoolSelect.appendChild(otherOption);
+    
     if (schools.length === 0) {
-      schoolSelect.innerHTML = '<option value="">No schools found in this LGA</option>';
-      return;
+      console.log('No schools found, but Other option available');
+    } else {
+      schools.forEach(school => {
+        const option = document.createElement('option');
+        option.value = school.id;
+        option.textContent = school.name;
+        schoolSelect.appendChild(option);
+      });
     }
-
-    schools.forEach(school => {
-      const option = document.createElement('option');
-      option.value = school.id;
-      option.textContent = school.name;
-      schoolSelect.appendChild(option);
-    });
 
     schoolSelect.disabled = false;
   } catch (err) {
