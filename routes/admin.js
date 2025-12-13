@@ -403,7 +403,7 @@ router.get('/schools/new', requireAdmin, async (req, res) => {
     const states = await State.findAll();
     const lgas = await LGA.findAll();
 
-    res.render('admin/add-school', {
+    res.render('admin/newSchool', {
       title: 'Add School',
       states,
       lgas,
@@ -420,7 +420,7 @@ router.get('/schools/add', requireAdmin, async (req, res) => {
   try {
     const states = await State.findAll();
     const lgas = await LGA.findAll();
-    res.render('admin/add-school', {
+    res.render('admin/newSchool', {
       title: 'Add School',
       states,
       lgas,

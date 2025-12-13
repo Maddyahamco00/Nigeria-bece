@@ -97,20 +97,6 @@
             <span>Analytics</span>
           </a>
         </li>
-        <% if (user && user.role === 'super_admin') { %>
-        <li class="nav-item">
-          <a href="/admin/users" class="nav-link <%= currentPath && currentPath.startsWith('/admin/users') ? 'active' : '' %>">
-            <i class="fas fa-users-cog me-2"></i>
-            <span>Admin Management</span>
-          </a>
-        </li>
-        <li class="nav-item">
-          <a href="/admin/users/new" class="nav-link <%= currentPath && currentPath.startsWith('/admin/users/new') ? 'active' : '' %>">
-            <i class="fas fa-user-plus me-2"></i>
-            <span>Add Sub-Admin</span>
-          </a>
-        </li>
-        <% } %>
         <li class="nav-item">
           <a href="/admin/settings" class="nav-link <%= currentPath && currentPath.startsWith('/admin/settings') ? 'active' : '' %>">
             <i class="fas fa-cog me-2"></i>
