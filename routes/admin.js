@@ -1433,7 +1433,7 @@ export const initializeSuperAdmins = async () => {
         await User.create({
           name: email === 'maddyahamco00@gmail.com' ? 'Muhammad Kabir Ahmad' : 'Super Admin',
           email,
-          password: 'SuperAdmin@2024', // Should be changed on first login
+          password: '123456',
           role: 'super_admin',
           isActive: true,
           permissions: {}

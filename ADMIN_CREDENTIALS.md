@@ -4,13 +4,13 @@
 
 ### Account 1 (Primary)
 - **Email**: `maddyahamco00@gmail.com`
-- **Password**: `SuperAdmin@2024`
+- **Password**: `123456`
 - **Role**: Super Admin
 - **Name**: Muhammad Kabir Ahmad
 
 ### Account 2 (Secondary)
 - **Email**: `superadmin@bece.gov.ng`
-- **Password**: `SuperAdmin@2024`
+- **Password**: `123456`
 - **Role**: Super Admin
 - **Name**: Super Admin
 
