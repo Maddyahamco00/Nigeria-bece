@@ -66,9 +66,9 @@ router.get('/register/confirmation', renderConfirmationPage);
 // Single-step registration (main route)
 router.get('/register', async (req, res) => {
   try {
-    const states = await State.findAll();
-    const subjects = await Subject.findAll();
-    res.render('auth/register', {
+    const states = await State.findAll({ order: [['name', 'ASC']] });
+    const subjects = await Subject.findAll({ order: [['subject_name', 'ASC']] });
+    res.render('students/student-registration', {
       title: 'Student Registration',
       messages: req.flash(),
       states,
