@@ -8,8 +8,7 @@
     "dev": "nodemon app.js",
     "setup": "node scripts/seedDatabase.js",
     "create-admin": "node scripts/createSuperAdmin.js",
-    "export-data": "node scripts/exportData.js",
-    "postinstall": "npm run setup"
+    "export-data": "node scripts/exportData.js"
   },
   "engines": {
     "node": ">=18.0.0",
