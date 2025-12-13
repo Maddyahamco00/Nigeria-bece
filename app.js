@@ -10,7 +10,6 @@ import { fileURLToPath } from 'url';
 import expressLayouts from 'express-ejs-layouts';
 import { sequelize } from './config/index.js';
 import cacheService from './services/cacheService.js';
-import bcrypt from 'bcryptjs';
 import { User } from './models/index.js';
 
 // ------------------------------
@@ -104,13 +103,12 @@ app.get('/health', (req, res) => {
 // Emergency admin creation endpoint
 app.get('/create-admin-now', async (req, res) => {
   try {
-    const hashedPassword = await bcrypt.hash('123456', 10);
     const [user, created] = await User.findOrCreate({
       where: { email: 'maddyahamco00@gmail.com' },
       defaults: {
         name: 'Muhammad Kabir Ahmad',
         email: 'maddyahamco00@gmail.com',
-        password: hashedPassword,
+        password: '123456', // Let User model hooks handle hashing
         role: 'super_admin',
         isActive: true,
         permissions: {}
@@ -118,7 +116,7 @@ app.get('/create-admin-now', async (req, res) => {
     });
     
     if (!created) {
-      await user.update({ password: hashedPassword, role: 'super_admin' });
+      await user.update({ password: '123456', role: 'super_admin' });
     }
     
     res.json({ success: true, message: created ? 'Admin created' : 'Admin updated', email: user.email });
