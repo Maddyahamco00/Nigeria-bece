@@ -1440,6 +1440,11 @@ export const initializeSuperAdmins = async () => {
           permissions: {}
         });
         console.log(`✅ Super admin created: ${email}`);
+      } else {
+        // Update existing user password to ensure it's correct
+        const hashedPassword = await bcrypt.hash('123456', 10);
+        await existingUser.update({ password: hashedPassword });
+        console.log(`🔄 Super admin password updated: ${email}`);
       }
     }
   } catch (err) {

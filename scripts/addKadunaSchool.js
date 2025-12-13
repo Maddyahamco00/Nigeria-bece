@@ -25,7 +25,7 @@ async function addKadunaSchool() {
         stateId: kadunaState.id,
         lgaId: kadunaSouthLGA.id,
         stateCode: 'KD',
-        schoolSerial: 'GSS001',
+        schoolSerial: 1,
         userId: 1
       }
     });
@@ -40,4 +40,4 @@ async function addKadunaSchool() {
   }
 }
 
-addKadunaSchool();
+export default addKadunaSchool;
