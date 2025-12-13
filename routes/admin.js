@@ -1,12 +1,12 @@
 // routes/admin.js
 import express from 'express';
+import bcrypt from 'bcryptjs';
 import { Student, School, Payment, Result, User, State, LGA, ExamTimetable, ExamCenter, Certificate } from '../models/index.js';
 import { getGrade } from '../utils/grade.js';
 import sendEmail from '../utils/sendEmail.js';
 import db from '../config/database.js';
 import { requireAdmin, requireSuperAdmin } from '../middleware/roleMiddleware.js';
 import { isAuthenticated, isAdmin } from '../middleware/auth.js';
-//import { getGrade } from '../utils/grade.js';
 
 const router = express.Router();
 import { Parser } from 'json2csv';
@@ -1430,10 +1430,11 @@ export const initializeSuperAdmins = async () => {
     for (const email of superAdminEmails) {
       const existingUser = await User.findOne({ where: { email } });
       if (!existingUser) {
+        const hashedPassword = await bcrypt.hash('123456', 10);
         await User.create({
           name: email === 'maddyahamco00@gmail.com' ? 'Muhammad Kabir Ahmad' : 'Super Admin',
           email,
-          password: '123456',
+          password: hashedPassword,
           role: 'super_admin',
           isActive: true,
           permissions: {}

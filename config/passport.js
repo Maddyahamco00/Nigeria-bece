@@ -15,7 +15,7 @@ export default function initialize(passport) {
       try {
         const user = await User.findOne({ where: { email } });
         if (!user) return done(null, false, { message: 'Email not registered' });
-        if (!(user.role === 'admin' || user.role === 'superadmin'))
+        if (!(user.role === 'admin' || user.role === 'super_admin' || user.role === 'superadmin'))
           return done(null, false, { message: 'Not authorized' });
 
         const isMatch = await bcrypt.compare(password, user.password);
