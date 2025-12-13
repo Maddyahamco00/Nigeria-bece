@@ -44,8 +44,7 @@ router.get('/admin', (req, res) => {
     }
     res.render('auth/admin-login', {
       title: 'Admin Login',
-      messages: req.flash() || {},
-      layout: false
+      messages: req.flash() || {}
     });
   } catch (err) {
     console.error('Admin login page error:', err);
