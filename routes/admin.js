@@ -39,6 +39,29 @@ router.get('/dashboard', requireAdmin, async (req, res) => {
   }
 });
 
+router.get('/dashboard/live/counters', requireAdmin, async (req, res) => {
+  try {
+    const counters = {
+      students: await Student.count(),
+      schools: await School.count(),
+      paid: await Payment.count({ where: { status: 'success' } })
+    };
+    res.json({ success: true, counters });
+  } catch (err) {
+    res.json({ success: false, error: 'Failed to fetch counters' });
+  }
+});
+
+router.get('/dashboard/stats', requireAdmin, async (req, res) => {
+  try {
+    const labels = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'];
+    const data = [0, 0, 0, 0, 0, 0];
+    res.json({ success: true, chart: { labels, data }, studentsByState: [] });
+  } catch (err) {
+    res.json({ success: false, error: 'Failed to fetch stats' });
+  }
+});
+
 /* ---------------- Subject Management ---------------- */
 router.get('/subjects', requireAdmin, async (req, res) => {
   try {
@@ -133,6 +156,23 @@ router.get('/schools', requireAdmin, async (req, res) => {
     console.error('Schools error:', err);
     req.flash('error', 'Failed to load schools');
     res.redirect('/admin/dashboard');
+  }
+});
+
+router.get('/schools/add', requireAdmin, async (req, res) => {
+  try {
+    const states = await State.findAll();
+    const lgas = await LGA.findAll();
+    res.render('admin/newSchool', {
+      title: 'Add School',
+      states,
+      lgas,
+      user: req.user
+    });
+  } catch (err) {
+    console.error('Add school error:', err);
+    req.flash('error', 'Failed to load form');
+    res.redirect('/admin/schools');
   }
 });
 
