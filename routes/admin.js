@@ -54,9 +54,12 @@ router.get('/dashboard', requireAdmin, async (req, res) => {
   }
 });
 
-// Live counters for AJAX refresh
+// Live counters for AJAX refresh (cached for mobile performance)
 router.get('/dashboard/live/counters', requireAdmin, async (req, res) => {
   try {
+    // Cache for 30 seconds to reduce mobile load
+    res.set('Cache-Control', 'public, max-age=30');
+    
     const counters = {
       students: await Student.count(),
       schools: await School.count(),
@@ -69,11 +72,13 @@ router.get('/dashboard/live/counters', requireAdmin, async (req, res) => {
   }
 });
 
-// Live recent activity
+// Live recent activity (cached for mobile)
 router.get('/dashboard/live/recent', requireAdmin, async (req, res) => {
   try {
-    const recentStudents = await Student.findAll({ include: [School], order: [['createdAt','DESC']], limit: 5 });
-    const recentPayments = await Payment.findAll({ include: [Student], order: [['createdAt','DESC']], limit: 5 });
+    res.set('Cache-Control', 'public, max-age=60');
+    
+    const recentStudents = await Student.findAll({ include: [School], order: [['createdAt','DESC']], limit: 3 });
+    const recentPayments = await Payment.findAll({ include: [Student], order: [['createdAt','DESC']], limit: 3 });
 
     res.json({ success: true, recentStudents, recentPayments });
   } catch (err) {
