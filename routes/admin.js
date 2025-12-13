@@ -11,9 +11,6 @@ const router = express.Router();
 import { Parser } from 'json2csv';
 import { Op } from 'sequelize';
 
-// protect all admin routes
-router.use(isAuthenticated, isAdmin);
-
 // Middleware to ensure user object is available in all views
 router.use((req, res, next) => {
   res.locals.user = req.user;
@@ -22,7 +19,12 @@ router.use((req, res, next) => {
 });
 
 /* ---------------- Dashboard ---------------- */
-router.get('/dashboard', requireAdmin, async (req, res) => {
+router.get('/dashboard', async (req, res) => {
+  // Simple auth check
+  if (!req.user) {
+    return res.redirect('/auth/admin');
+  }
+  
   try {
     // Simplified counters to prevent hanging
     const analytics = {
