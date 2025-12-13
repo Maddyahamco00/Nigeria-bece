@@ -38,13 +38,26 @@ router.get('/', (req, res) => {
 
 // Admin login page
 router.get('/admin', (req, res) => {
-  if (req.user) {
-    return res.redirect('/admin/dashboard');
+  try {
+    if (req.user) {
+      return res.redirect('/admin/dashboard');
+    }
+    res.render('auth/admin-login', {
+      title: 'Admin Login',
+      messages: req.flash() || {},
+      layout: false
+    });
+  } catch (err) {
+    console.error('Admin login page error:', err);
+    res.send(`
+      <h1>Admin Login</h1>
+      <form action="/auth/admin" method="POST">
+        <input type="email" name="email" placeholder="Email" required><br><br>
+        <input type="password" name="password" placeholder="Password" required><br><br>
+        <button type="submit">Login</button>
+      </form>
+    `);
   }
-  res.render('auth/admin-login', {
-    title: 'Admin Login',
-    messages: req.flash()
-  });
 });
 
 // Main login handler - process admin login directly
