@@ -140,30 +140,37 @@ router.post('/admin/register', async (req, res) => {
 
 // Admin login handler
 router.post('/admin', (req, res, next) => {
+  console.log('🔐 Admin login attempt:', req.body.email);
+  
   passport.authenticate('local-admin', (err, user, info) => {
+    console.log('🔍 Auth result - Error:', err, 'User:', user?.email, 'Info:', info);
+    
     if (err) {
       console.error('Admin auth error:', err);
       req.flash('error', 'Authentication error');
       return res.redirect('/auth/admin');
     }
     if (!user) {
+      console.log('❌ Login failed for:', req.body.email, 'Reason:', info?.message);
       req.flash('error', info?.message || 'Invalid credentials');
       return res.redirect('/auth/admin');
     }
     
     // Check if user is active
     if (!user.isActive) {
+      console.log('❌ Account deactivated:', user.email);
       req.flash('error', 'Account is deactivated');
       return res.redirect('/auth/admin');
     }
     
     req.logIn(user, (err) => {
       if (err) {
-        console.error('Login error:', err);
+        console.error('Login session error:', err);
         req.flash('error', 'Login failed');
         return res.redirect('/auth/admin');
       }
-      console.log('Admin logged in:', user.email, 'Role:', user.role);
+      console.log('✅ Admin logged in successfully:', user.email, 'Role:', user.role);
+      console.log('🔄 Redirecting to /admin/dashboard');
       return res.redirect('/admin/dashboard');
     });
   })(req, res, next);
