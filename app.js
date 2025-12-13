@@ -162,6 +162,10 @@ sequelize
       const seedStatesAndLGAs = (await import('./scripts/seedStatesAndLGAs.js')).default;
       await seedStatesAndLGAs();
       
+      // Add Kaduna school for testing
+      const addKadunaSchool = (await import('./scripts/addKadunaSchool.js')).default;
+      await addKadunaSchool();
+      
       await initializeSuperAdmins();
       console.log('⚠️ Running without Redis cache (using mock client)');
     } catch (syncErr) {
