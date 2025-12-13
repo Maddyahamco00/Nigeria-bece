@@ -21,7 +21,12 @@ router.get('/states', async (req, res) => {
 router.get('/lgas/:stateId', async (req, res) => {
   try {
     const { stateId } = req.params;
-    const lgas = await LGA.findAll({ where: { stateId } });
+    console.log('🏢 Fetching LGAs for state:', stateId);
+    const lgas = await LGA.findAll({ 
+      where: { stateId },
+      attributes: ['id', 'name']
+    });
+    console.log('🏢 Found LGAs:', lgas.length);
     res.json(lgas);
   } catch (err) {
     console.error('❌ Error fetching LGAs:', err);
@@ -33,7 +38,12 @@ router.get('/lgas/:stateId', async (req, res) => {
 router.get('/schools/:lgaId', async (req, res) => {
   try {
     const { lgaId } = req.params;
-    const schools = await School.findAll({ where: { lgaId } });
+    console.log('🏫 Fetching schools for LGA:', lgaId);
+    const schools = await School.findAll({ 
+      where: { lgaId },
+      attributes: ['id', 'name', 'address']
+    });
+    console.log('🏫 Found schools:', schools.length);
     res.json(schools);
   } catch (err) {
     console.error('❌ Error fetching schools:', err);
