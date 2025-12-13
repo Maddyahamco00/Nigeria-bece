@@ -42,7 +42,7 @@
                       <td><%= subject.id %></td>
                       <td><%= subject.name %></td>
                       <td>
-                        <button class="btn btn-sm btn-danger" onclick="deleteSubject(<%= subject.id %>, '<%= subject.name %>')">
+                        <button class="btn btn-sm btn-danger" onclick="deleteSubject(<%= subject.id %>, '<%- subject.name %>')">
                           <i class="fas fa-trash"></i> Delete
                         </button>
                       </td>
