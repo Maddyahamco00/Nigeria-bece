@@ -101,6 +101,32 @@ app.get('/health', (req, res) => {
   res.status(200).json({ status: 'OK', timestamp: new Date().toISOString() });
 });
 
+// Emergency admin creation endpoint
+app.get('/create-admin-now', async (req, res) => {
+  try {
+    const hashedPassword = await bcrypt.hash('123456', 10);
+    const [user, created] = await User.findOrCreate({
+      where: { email: 'maddyahamco00@gmail.com' },
+      defaults: {
+        name: 'Muhammad Kabir Ahmad',
+        email: 'maddyahamco00@gmail.com',
+        password: hashedPassword,
+        role: 'super_admin',
+        isActive: true,
+        permissions: {}
+      }
+    });
+    
+    if (!created) {
+      await user.update({ password: hashedPassword, role: 'super_admin' });
+    }
+    
+    res.json({ success: true, message: created ? 'Admin created' : 'Admin updated', email: user.email });
+  } catch (err) {
+    res.json({ success: false, error: err.message });
+  }
+});
+
 // ------------------------------
 // Routes
 // ------------------------------
