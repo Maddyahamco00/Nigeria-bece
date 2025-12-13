@@ -146,33 +146,31 @@ app.use((err, req, res, next) => {
 // ------------------------------
 const PORT = process.env.PORT || 3000;
 
-// Start server first, then try database connection
-app.listen(PORT, () => {
-  console.log(`🚀 Server running on http://localhost:${PORT}`);
-});
-
-// Try database connection (non-blocking)
+// Initialize database and admins BEFORE starting server
 sequelize
   .authenticate()
   .then(async () => {
     console.log('✅ Database connected successfully');
     
-    // Create tables in correct order to handle foreign keys
     try {
       await sequelize.query('SET FOREIGN_KEY_CHECKS = 0');
       await sequelize.sync({ force: false });
       await sequelize.query('SET FOREIGN_KEY_CHECKS = 1');
-      
       console.log('✅ Tables synced successfully');
       
       // Seed states and LGAs
       const seedStatesAndLGAs = (await import('./scripts/seedStatesAndLGAs.js')).default;
       await seedStatesAndLGAs();
       
-
-      
+      // Initialize admins BEFORE server starts
       await initializeSuperAdmins();
       console.log('⚠️ Running without Redis cache (using mock client)');
+      
+      // Start server AFTER everything is initialized
+      app.listen(PORT, () => {
+        console.log(`🚀 Server running on http://localhost:${PORT}`);
+      });
+      
     } catch (syncErr) {
       console.error('❌ Table sync failed:', syncErr.message);
     }
