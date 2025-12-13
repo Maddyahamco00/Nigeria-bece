@@ -6,6 +6,14 @@
       <span>Dashboard</span>
     </a>
   </li>
+  <% if (typeof user !== 'undefined' && user && user.role === 'super_admin') { %>
+  <li class="nav-item">
+    <a href="/admin/users/new" class="nav-link <%= typeof currentPath !== 'undefined' && currentPath && currentPath.startsWith('/admin/users/new') ? 'active' : '' %>">
+      <i class="fas fa-user-plus me-2"></i>
+      <span>Add Sub-Admin</span>
+    </a>
+  </li>
+  <% } %>
   <li class="nav-item">
     <a href="/admin/students" class="nav-link <%= currentPath && currentPath.startsWith('/admin/students') ? 'active' : '' %>">
       <i class="fas fa-users me-2"></i>
@@ -71,12 +79,6 @@
     <a href="/admin/users" class="nav-link <%= typeof currentPath !== 'undefined' && currentPath && currentPath.startsWith('/admin/users') && !currentPath.includes('/new') ? 'active' : '' %>">
       <i class="fas fa-users-cog me-2"></i>
       <span>Admin Management</span>
-    </a>
-  </li>
-  <li class="nav-item">
-    <a href="/admin/users/new" class="nav-link <%= typeof currentPath !== 'undefined' && currentPath && currentPath.startsWith('/admin/users/new') ? 'active' : '' %>">
-      <i class="fas fa-user-plus me-2"></i>
-      <span>Add Sub-Admin</span>
     </a>
   </li>
   <% } %>
