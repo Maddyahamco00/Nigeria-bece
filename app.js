@@ -139,20 +139,23 @@ app.use((err, req, res, next) => {
 // ------------------------------
 const PORT = process.env.PORT || 3000;
 
+// Start server first, then try database connection
+app.listen(PORT, () => {
+  console.log(`🚀 Server running on http://localhost:${PORT}`);
+});
+
+// Try database connection (non-blocking)
 sequelize
   .sync({ alter: false })
   .then(async () => {
+    console.log('✅ Database connected successfully');
     // Initialize super admins
     await initializeSuperAdmins();
-    
     console.log('⚠️ Running without Redis cache (using mock client)');
-    
-    app.listen(PORT, () => {
-      console.log(`🚀 Server running on http://localhost:${PORT}`);
-    });
   })
   .catch((err) => {
     console.error('❌ Database connection failed:', err);
+    console.log('🔄 Server will keep running, database will retry on requests');
   });
 
 
