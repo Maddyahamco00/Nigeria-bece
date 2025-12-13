@@ -14,12 +14,12 @@ export default function initialize(passport) {
     async (email, password, done) => {
       try {
         const user = await User.findOne({ where: { email } });
-        if (!user) return done(null, false, { message: 'Email not registered' });
+        if (!user) return done(null, false, { message: 'Email address not found. Please check your email and try again.' });
         if (!(user.role === 'admin' || user.role === 'super_admin' || user.role === 'superadmin'))
-          return done(null, false, { message: 'Not authorized' });
+          return done(null, false, { message: 'Access denied. This account does not have admin privileges.' });
 
         const isMatch = await bcrypt.compare(password, user.password);
-        if (!isMatch) return done(null, false, { message: 'Incorrect password' });
+        if (!isMatch) return done(null, false, { message: 'Incorrect password. Please check your password and try again.' });
 
         return done(null, user);
       } catch (err) {
@@ -46,10 +46,10 @@ export default function initialize(passport) {
           }
         });
 
-        if (!student) return done(null, false, { message: 'Registration number or email not registered' });
+        if (!student) return done(null, false, { message: 'Registration number or email not found. Please check your details and try again.' });
 
         const isMatch = await bcrypt.compare(password, student.password);
-        if (!isMatch) return done(null, false, { message: 'Incorrect password' });
+        if (!isMatch) return done(null, false, { message: 'Incorrect password. Please check your password and try again.' });
 
         return done(null, student);
       } catch (err) {

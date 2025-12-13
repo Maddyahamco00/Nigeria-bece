@@ -47,9 +47,35 @@ router.get('/admin', (req, res) => {
   });
 });
 
-// Main login redirect to admin
-router.post('/login', (req, res) => {
-  res.redirect('/auth/admin');
+// Main login handler - process admin login directly
+router.post('/login', (req, res, next) => {
+  passport.authenticate('local-admin', (err, user, info) => {
+    if (err) {
+      console.error('Admin auth error:', err);
+      req.flash('error', 'Authentication error');
+      return res.redirect('/auth/login');
+    }
+    if (!user) {
+      req.flash('error', info?.message || 'Invalid credentials');
+      return res.redirect('/auth/login');
+    }
+    
+    // Check if user is active
+    if (!user.isActive) {
+      req.flash('error', 'Account is deactivated');
+      return res.redirect('/auth/login');
+    }
+    
+    req.logIn(user, (err) => {
+      if (err) {
+        console.error('Login error:', err);
+        req.flash('error', 'Login failed');
+        return res.redirect('/auth/login');
+      }
+      console.log('Admin logged in:', user.email, 'Role:', user.role);
+      return res.redirect('/admin/dashboard');
+    });
+  })(req, res, next);
 });
 
 // Admin registration page
