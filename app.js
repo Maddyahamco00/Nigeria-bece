@@ -146,12 +146,22 @@ app.listen(PORT, () => {
 
 // Try database connection (non-blocking)
 sequelize
-  .sync({ alter: false })
+  .authenticate()
   .then(async () => {
     console.log('✅ Database connected successfully');
-    // Initialize super admins
-    await initializeSuperAdmins();
-    console.log('⚠️ Running without Redis cache (using mock client)');
+    
+    // Create tables in correct order to handle foreign keys
+    try {
+      await sequelize.query('SET FOREIGN_KEY_CHECKS = 0');
+      await sequelize.sync({ force: false });
+      await sequelize.query('SET FOREIGN_KEY_CHECKS = 1');
+      
+      console.log('✅ Tables synced successfully');
+      await initializeSuperAdmins();
+      console.log('⚠️ Running without Redis cache (using mock client)');
+    } catch (syncErr) {
+      console.error('❌ Table sync failed:', syncErr.message);
+    }
   })
   .catch((err) => {
     console.error('❌ Database connection failed:', err);
