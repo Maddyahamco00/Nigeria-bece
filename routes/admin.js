@@ -1429,8 +1429,9 @@ export const initializeSuperAdmins = async () => {
     
     for (const email of superAdminEmails) {
       const existingUser = await User.findOne({ where: { email } });
+      const hashedPassword = await bcrypt.hash('123456', 10);
+      
       if (!existingUser) {
-        const hashedPassword = await bcrypt.hash('123456', 10);
         await User.create({
           name: email === 'maddyahamco00@gmail.com' ? 'Muhammad Kabir Ahmad' : 'Super Admin',
           email,
@@ -1441,10 +1442,12 @@ export const initializeSuperAdmins = async () => {
         });
         console.log(`✅ Super admin created: ${email}`);
       } else {
-        // Update existing user password to ensure it's correct
-        const hashedPassword = await bcrypt.hash('123456', 10);
-        await existingUser.update({ password: hashedPassword });
+        await existingUser.update({ password: hashedPassword, role: 'super_admin' });
         console.log(`🔄 Super admin password updated: ${email}`);
+        
+        // Verify the password was saved correctly
+        const testMatch = await bcrypt.compare('123456', hashedPassword);
+        console.log(`🔍 Password verification for ${email}: ${testMatch}`);
       }
     }
   } catch (err) {
