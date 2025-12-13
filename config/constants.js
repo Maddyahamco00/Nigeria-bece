@@ -34,6 +34,60 @@ export const APP_CONFIG = {
   },
   
   CSV_FIELDS: {
-    RESULTS: ['id', 'student_name', 'subject', 'score', 'grade']
+    RESULTS: ['id', 'student_name', 'subject', 'score', 'grade'],
+    PAYMENTS: ['id', 'email', 'amount', 'status', 'reference', 'transactionReference', 'created_at', 'school_name', 'state_name']
+  },
+
+  // User roles
+  ROLES: {
+    SUPER_ADMIN: 'super_admin',
+    ADMIN: 'admin',
+    STATE_ADMIN: 'state_admin',
+    SCHOOL_ADMIN: 'school_admin'
+  },
+
+  // Payment statuses
+  PAYMENT_STATUS: {
+    SUCCESS: 'success',
+    PENDING: 'pending',
+    FAILED: 'failed'
+  },
+
+  // Database fields
+  DB_FIELDS: {
+    EXCLUDE_PASSWORD: ['password'],
+    ORDER_BY_CREATED: [['createdAt', 'DESC']],
+    ORDER_BY_NAME: [['name', 'ASC']]
+  },
+
+  // Routes
+  ROUTES: {
+    ADMIN_DASHBOARD: '/admin/dashboard',
+    ADMIN_USERS: '/admin/users',
+    ADMIN_SUBJECTS: '/admin/subjects'
+  },
+
+  // Messages
+  MESSAGES: {
+    ERROR: {
+      EMAIL_EXISTS: 'Email already exists',
+      SUBJECT_REQUIRED: 'Subject name is required',
+      SUBJECT_EXISTS: 'Subject already exists',
+      SUBJECT_NOT_FOUND: 'Subject not found',
+      FAILED_TO_LOAD: 'Failed to load',
+      FAILED_TO_ADD: 'Failed to add',
+      FAILED_TO_DELETE: 'Failed to delete'
+    },
+    SUCCESS: {
+      ADMIN_CREATED: 'Admin user created successfully',
+      SUBJECT_ADDED: 'Subject added successfully',
+      SUBJECT_DELETED: 'Subject deleted successfully'
+    }
+  },
+
+  // File names
+  FILES: {
+    RESULTS_CSV: 'bece_results.csv',
+    PAYMENTS_CSV: 'bece_payments.csv'
   }
 };

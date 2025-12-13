@@ -41,7 +41,7 @@ router.get('/dashboard', requireAdmin, async (req, res) => {
 /* ---------------- Subject Management ---------------- */
 router.get('/subjects', requireAdmin, async (req, res) => {
   try {
-    const subjects = await Subject.findAll({ order: [['name', 'ASC']] });
+    const subjects = await Subject.findAll({ order: APP_CONFIG.DB_FIELDS.ORDER_BY_NAME });
     res.render('admin/subjects', {
       title: 'Manage Subjects',
       subjects,
@@ -49,8 +49,8 @@ router.get('/subjects', requireAdmin, async (req, res) => {
     });
   } catch (err) {
     console.error('Subjects error:', err);
-    req.flash('error', 'Failed to load subjects');
-    res.redirect('/admin/dashboard');
+    req.flash('error', `${APP_CONFIG.MESSAGES.ERROR.FAILED_TO_LOAD} subjects`);
+    res.redirect(APP_CONFIG.ROUTES.ADMIN_DASHBOARD);
   }
 });
 
@@ -58,23 +58,23 @@ router.post('/subjects', requireAdmin, async (req, res) => {
   try {
     const { name } = req.body;
     if (!name || name.trim().length === 0) {
-      req.flash('error', 'Subject name is required');
-      return res.redirect('/admin/subjects');
+      req.flash('error', APP_CONFIG.MESSAGES.ERROR.SUBJECT_REQUIRED);
+      return res.redirect(APP_CONFIG.ROUTES.ADMIN_SUBJECTS);
     }
 
     const existingSubject = await Subject.findOne({ where: { name: name.trim() } });
     if (existingSubject) {
-      req.flash('error', 'Subject already exists');
-      return res.redirect('/admin/subjects');
+      req.flash('error', APP_CONFIG.MESSAGES.ERROR.SUBJECT_EXISTS);
+      return res.redirect(APP_CONFIG.ROUTES.ADMIN_SUBJECTS);
     }
 
     await Subject.create({ name: name.trim() });
-    req.flash('success', 'Subject added successfully');
-    res.redirect('/admin/subjects');
+    req.flash('success', APP_CONFIG.MESSAGES.SUCCESS.SUBJECT_ADDED);
+    res.redirect(APP_CONFIG.ROUTES.ADMIN_SUBJECTS);
   } catch (err) {
     console.error('Add subject error:', err);
-    req.flash('error', 'Failed to add subject');
-    res.redirect('/admin/subjects');
+    req.flash('error', `${APP_CONFIG.MESSAGES.ERROR.FAILED_TO_ADD} subject`);
+    res.redirect(APP_CONFIG.ROUTES.ADMIN_SUBJECTS);
   }
 });
 
@@ -82,14 +82,14 @@ router.delete('/subjects/:id', requireAdmin, async (req, res) => {
   try {
     const subject = await Subject.findByPk(req.params.id);
     if (!subject) {
-      return res.json({ success: false, error: 'Subject not found' });
+      return res.json({ success: false, error: APP_CONFIG.MESSAGES.ERROR.SUBJECT_NOT_FOUND });
     }
 
     await subject.destroy();
     res.json({ success: true });
   } catch (err) {
     console.error('Delete subject error:', err);
-    res.json({ success: false, error: 'Failed to delete subject' });
+    res.json({ success: false, error: `${APP_CONFIG.MESSAGES.ERROR.FAILED_TO_DELETE} subject` });
   }
 });
 
@@ -98,8 +98,8 @@ router.get('/students', requireAdmin, async (req, res) => {
   try {
     const students = await Student.findAll({ 
       include: [{ model: School, attributes: ['name'] }],
-      limit: 100,
-      order: [['createdAt', 'DESC']]
+      limit: APP_CONFIG.LIMITS.STUDENTS_LIST,
+      order: APP_CONFIG.DB_FIELDS.ORDER_BY_CREATED
     });
 
     res.render('admin/students', {
@@ -119,8 +119,8 @@ router.get('/schools', requireAdmin, async (req, res) => {
   try {
     const schools = await School.findAll({ 
       include: [LGA, State],
-      limit: 100,
-      order: [['createdAt', 'DESC']]
+      limit: APP_CONFIG.LIMITS.SCHOOLS_LIST,
+      order: APP_CONFIG.DB_FIELDS.ORDER_BY_CREATED
     });
 
     res.render('admin/schools', {
@@ -140,8 +140,8 @@ router.get('/results', requireAdmin, async (req, res) => {
   try {
     const results = await Result.findAll({
       include: [Student, School],
-      order: [['createdAt', 'DESC']],
-      limit: 50
+      order: APP_CONFIG.DB_FIELDS.ORDER_BY_CREATED,
+      limit: APP_CONFIG.LIMITS.DASHBOARD_ITEMS
     });
 
     res.render('admin/results', {
@@ -152,8 +152,8 @@ router.get('/results', requireAdmin, async (req, res) => {
     });
   } catch (err) {
     console.error('Results error:', err);
-    req.flash('error', 'Failed to load results');
-    res.redirect('/admin/dashboard');
+    req.flash('error', `${APP_CONFIG.MESSAGES.ERROR.FAILED_TO_LOAD} results`);
+    res.redirect(APP_CONFIG.ROUTES.ADMIN_DASHBOARD);
   }
 });
 
@@ -162,8 +162,8 @@ router.get('/payments', requireAdmin, async (req, res) => {
   try {
     const payments = await Payment.findAll({
       include: [Student, School],
-      order: [['createdAt', 'DESC']],
-      limit: 50
+      order: APP_CONFIG.DB_FIELDS.ORDER_BY_CREATED,
+      limit: APP_CONFIG.LIMITS.DASHBOARD_ITEMS
     });
 
     res.render('admin/payments', {
@@ -182,9 +182,9 @@ router.get('/payments', requireAdmin, async (req, res) => {
 router.get('/users', requireSuperAdmin, async (req, res) => {
   try {
     const users = await User.findAll({
-      attributes: { exclude: ['password'] },
+      attributes: { exclude: APP_CONFIG.DB_FIELDS.EXCLUDE_PASSWORD },
       include: [{ model: State, required: false }, { model: School, required: false }],
-      order: [['createdAt', 'DESC']]
+      order: APP_CONFIG.DB_FIELDS.ORDER_BY_CREATED
     });
 
     res.render('admin/users', {
