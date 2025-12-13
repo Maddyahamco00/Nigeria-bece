@@ -268,14 +268,31 @@ router.get('/timetable', requireAdmin, async (req, res) => {
 
 /* ---------------- Centers ---------------- */
 router.get('/centers', requireAdmin, async (req, res) => {
-  res.render('admin/centers', {
-    title: 'Exam Centers',
-    user: req.user,
-    centers: [],
-    states: [],
-    lgas: [],
-    schools: []
-  });
+  try {
+    const centers = await ExamCenter.findAll({ include: [State, LGA], order: [['name', 'ASC']] });
+    const states = await State.findAll({ order: [['name', 'ASC']] });
+    const lgas = await LGA.findAll({ order: [['name', 'ASC']] });
+    const schools = await School.findAll({ include: [State, LGA], order: [['name', 'ASC']] });
+    
+    res.render('admin/centers', {
+      title: 'Exam Centers',
+      user: req.user,
+      centers,
+      states,
+      lgas,
+      schools
+    });
+  } catch (err) {
+    console.error('Centers error:', err);
+    res.render('admin/centers', {
+      title: 'Exam Centers',
+      user: req.user,
+      centers: [],
+      states: [],
+      lgas: [],
+      schools: []
+    });
+  }
 });
 
 /* ---------------- Certificates ---------------- */
