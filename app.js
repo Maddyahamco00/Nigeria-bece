@@ -93,6 +93,13 @@ app.use((req, res, next) => {
 });
 
 // ------------------------------
+// Health Check for Render
+// ------------------------------
+app.get('/health', (req, res) => {
+  res.status(200).json({ status: 'OK', timestamp: new Date().toISOString() });
+});
+
+// ------------------------------
 // Routes
 // ------------------------------
 app.use('/', publicRoutes);

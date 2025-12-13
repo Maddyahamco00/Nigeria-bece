@@ -1,0 +1,25 @@
+# Development files
+.env
+.env.example
+.env.render
+*.log
+npm-debug.log*
+
+# Documentation
+docs/
+*.md
+!README.md
+
+# Development tools
+nodemon.json
+.vscode/
+.idea/
+
+# Test files
+test/
+tests/
+__tests__/
+
+# Temporary files
+tmp/
+temp/

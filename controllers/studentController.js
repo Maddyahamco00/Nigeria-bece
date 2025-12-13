@@ -170,9 +170,9 @@ export const registerStudent = async (req, res) => {
   const { name, email, password, confirmPassword, stateId, lgaId, schoolId, gender, dob, guardianPhone, payment, payment_ref } = req.body;
 
     // Basic validation - only check absolutely required fields
-    if (!name || !password || !confirmPassword || !stateId || !lgaId) {
+    if (!name || !password || !confirmPassword || !stateId || !lgaId || !schoolId) {
       console.log("❌ Missing required fields");
-      req.flash('error', 'Name, password, state and LGA are required');
+      req.flash('error', 'Name, password, and school selection are required');
       return res.redirect('/students/register');
     }
 
@@ -215,27 +215,17 @@ export const registerStudent = async (req, res) => {
     const lgaIdInt = parseInt(lgaId);
     const schoolIdInt = parseInt(schoolId);
 
-    const [state, lga] = await Promise.all([
+    const [school, state, lga] = await Promise.all([
+      School.findByPk(schoolIdInt),
       State.findByPk(stateIdInt),
       LGA.findByPk(lgaIdInt)
     ]);
 
-    let school = null;
-    if (schoolId && schoolId !== 'other') {
-      school = await School.findByPk(schoolIdInt);
-    }
-
     console.log("Validation results:", { school: !!school, state: !!state, lga: !!lga });
 
-    if (!state || !lga) {
+    if (!school || !state || !lga) {
       console.log("❌ Invalid references selected");
-      req.flash('error', 'Invalid state or LGA selected');
-      return res.redirect('/students/register');
-    }
-    
-    if (schoolId && schoolId !== 'other' && !school) {
-      console.log("❌ Invalid school selected");
-      req.flash('error', 'Invalid school selected');
+      req.flash('error', 'Invalid school, state, or LGA selected');
       return res.redirect('/students/register');
     }
     console.log("✅ All references validated");
@@ -252,7 +242,7 @@ export const registerStudent = async (req, res) => {
       password: hashedPassword,
       stateId: stateIdInt,
       lgaId: lgaIdInt,
-      schoolId: (schoolId === 'other' || !schoolId) ? null : schoolIdInt,
+      schoolId: schoolIdInt,
   paymentStatus: (typeof payment !== 'undefined' && (payment === 'on' || payment === 'paid' || payment === 'true')) ? 'paid' : 'pending'
 
     };
@@ -286,8 +276,7 @@ export const registerStudent = async (req, res) => {
     // Generate registration number
     console.log("🔍 Generating registration number...");
     const currentYear = new Date().getFullYear().toString().slice(-2);
-    const schoolCode = (schoolId === 'other' || !schoolId) ? '999' : schoolIdInt.toString().padStart(3, '0');
-    const regNumber = `BECE${currentYear}${stateIdInt.toString().padStart(2, '0')}${lgaIdInt.toString().padStart(2, '0')}${schoolCode}${student.id.toString().padStart(4, '0')}`;
+    const regNumber = `BECE${currentYear}${stateIdInt.toString().padStart(2, '0')}${lgaIdInt.toString().padStart(2, '0')}${schoolIdInt.toString().padStart(3, '0')}${student.id.toString().padStart(4, '0')}`;
     
     console.log("Registration number:", regNumber);
 

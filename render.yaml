@@ -2,8 +2,11 @@ services:
   - type: web
     name: nigeria-bece
     env: node
+    region: oregon
+    plan: free
     buildCommand: npm ci
     startCommand: npm start
+    healthCheckPath: /
     envVars:
       - key: MYSQL_ADDON_HOST
         value: bligkjakztomxoqeghos-mysql.services.clever-cloud.com

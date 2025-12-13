@@ -104,9 +104,8 @@
       <!-- School -->
       <div class="col-md-6">
         <label for="school" class="form-label fw-bold">School</label>
-        <select id="school" name="schoolId" class="form-select form-select-lg" disabled>
+        <select id="school" name="schoolId" class="form-select form-select-lg" required disabled>
           <option value="">Select School</option>
-          <option value="other">Other/Not Listed</option>
         </select>
       </div>
 
@@ -188,43 +187,23 @@ stateSelect.addEventListener('change', async (e) => {
 
 lgaSelect.addEventListener('change', async (e) => {
   const lgaId = e.target.value;
-  schoolSelect.innerHTML = '<option value="">Loading schools...</option>';
-  schoolSelect.disabled = true;
+  schoolSelect.innerHTML = '<option value="">Select School</option>';
 
   if (!lgaId) {
-    schoolSelect.innerHTML = '<option value="">Select School</option>';
+    schoolSelect.disabled = true;
     return;
   }
 
   try {
-    console.log('Fetching schools for LGA:', lgaId);
     const res = await fetch(`/api/schools/${lgaId}`);
-    
-    if (!res.ok) {
-      throw new Error(`HTTP ${res.status}: ${res.statusText}`);
-    }
-    
     const schools = await res.json();
-    console.log('Schools received:', schools);
-    
-    schoolSelect.innerHTML = '<option value="">Select School</option>';
-    
-    // Always add Other option
-    const otherOption = document.createElement('option');
-    otherOption.value = 'other';
-    otherOption.textContent = 'Other/Not Listed';
-    schoolSelect.appendChild(otherOption);
-    
-    if (schools.length === 0) {
-      console.log('No schools found, but Other option available');
-    } else {
-      schools.forEach(school => {
-        const option = document.createElement('option');
-        option.value = school.id;
-        option.textContent = school.name;
-        schoolSelect.appendChild(option);
-      });
-    }
+
+    schools.forEach(school => {
+      const option = document.createElement('option');
+      option.value = school.id;
+      option.textContent = school.name;
+      schoolSelect.appendChild(option);
+    });
 
     schoolSelect.disabled = false;
   } catch (err) {
