@@ -187,16 +187,31 @@ stateSelect.addEventListener('change', async (e) => {
 
 lgaSelect.addEventListener('change', async (e) => {
   const lgaId = e.target.value;
-  schoolSelect.innerHTML = '<option value="">Select School</option>';
+  schoolSelect.innerHTML = '<option value="">Loading schools...</option>';
+  schoolSelect.disabled = true;
 
   if (!lgaId) {
-    schoolSelect.disabled = true;
+    schoolSelect.innerHTML = '<option value="">Select School</option>';
     return;
   }
 
   try {
+    console.log('Fetching schools for LGA:', lgaId);
     const res = await fetch(`/api/schools/${lgaId}`);
+    
+    if (!res.ok) {
+      throw new Error(`HTTP ${res.status}: ${res.statusText}`);
+    }
+    
     const schools = await res.json();
+    console.log('Schools received:', schools);
+    
+    schoolSelect.innerHTML = '<option value="">Select School</option>';
+    
+    if (schools.length === 0) {
+      schoolSelect.innerHTML = '<option value="">No schools found in this LGA</option>';
+      return;
+    }
 
     schools.forEach(school => {
       const option = document.createElement('option');
