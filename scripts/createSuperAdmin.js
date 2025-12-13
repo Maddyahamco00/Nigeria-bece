@@ -1,7 +1,6 @@
 // scripts/createSuperAdmin.js
 import sequelize from '../config/database.js';
 import User from '../models/User.js';
-import bcrypt from 'bcryptjs';
 
 const createSuperAdmin = async () => {
   try {
@@ -20,11 +19,10 @@ const createSuperAdmin = async () => {
     }
 
     // Create super admin
-    const hashedPassword = await bcrypt.hash('admin123', 10);
     const superAdmin = await User.create({
       name: 'Super Administrator',
       email: 'superadmin@bece.gov.ng',
-      password: hashedPassword,
+      password: 'admin123', // Let User model hooks handle hashing
       role: 'superadmin'
     });
 

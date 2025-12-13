@@ -1,6 +1,5 @@
 // routes/admin.js
 import express from 'express';
-import bcrypt from 'bcryptjs';
 import { Student, School, Payment, Result, User, State, LGA, ExamTimetable, ExamCenter, Certificate } from '../models/index.js';
 import { getGrade } from '../utils/grade.js';
 import sendEmail from '../utils/sendEmail.js';
@@ -1429,25 +1428,20 @@ export const initializeSuperAdmins = async () => {
     
     for (const email of superAdminEmails) {
       const existingUser = await User.findOne({ where: { email } });
-      const hashedPassword = await bcrypt.hash('123456', 10);
       
       if (!existingUser) {
         await User.create({
           name: email === 'maddyahamco00@gmail.com' ? 'Muhammad Kabir Ahmad' : 'Super Admin',
           email,
-          password: hashedPassword,
+          password: '123456', // Let model hooks handle hashing
           role: 'super_admin',
           isActive: true,
           permissions: {}
         });
         console.log(`✅ Super admin created: ${email}`);
       } else {
-        await existingUser.update({ password: hashedPassword, role: 'super_admin' });
+        await existingUser.update({ password: '123456', role: 'super_admin' });
         console.log(`🔄 Super admin password updated: ${email}`);
-        
-        // Verify the password was saved correctly
-        const testMatch = await bcrypt.compare('123456', hashedPassword);
-        console.log(`🔍 Password verification for ${email}: ${testMatch}`);
       }
     }
   } catch (err) {

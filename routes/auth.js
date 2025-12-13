@@ -116,7 +116,7 @@ router.post('/admin/register', async (req, res) => {
     const userData = {
       name,
       email,
-      password,
+      password, // Let User model hooks handle hashing
       role: role || 'admin',
       isActive: true
     };
@@ -394,8 +394,7 @@ router.post('/reset-password/:token', async (req, res) => {
       return res.redirect('/auth/forgot-password');
     }
 
-    const hashedPassword = await bcrypt.hash(password, 10);
-    user.password = hashedPassword;
+    user.password = password; // Let User model hooks handle hashing
     user.resetToken = null;
     user.resetTokenExpiration = null;
     await user.save();
