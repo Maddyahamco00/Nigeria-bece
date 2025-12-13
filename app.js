@@ -189,9 +189,15 @@ sequelize
       await sequelize.query('SET FOREIGN_KEY_CHECKS = 1');
       console.log('✅ Tables synced successfully');
       
-      // Seed states and LGAs
-      const seedStatesAndLGAs = (await import('./scripts/seedStatesAndLGAs.js')).default;
-      await seedStatesAndLGAs();
+      // Seed states and LGAs (only if needed)
+      const State = (await import('./models/State.js')).default;
+      const existingStates = await State.count();
+      if (existingStates === 0) {
+        const seedStatesAndLGAs = (await import('./scripts/seedStatesAndLGAs.js')).default;
+        await seedStatesAndLGAs();
+      } else {
+        console.log('✅ States already exist, skipping seeding');
+      }
       
       // Initialize admins
       await initializeSuperAdmins();

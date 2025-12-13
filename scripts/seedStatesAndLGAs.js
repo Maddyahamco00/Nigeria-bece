@@ -81,10 +81,17 @@ const statesAndLGAs = {
 
 async function seedStatesAndLGAs() {
   try {
+    // Check if data already exists
+    const existingStates = await State.count();
+    if (existingStates > 0) {
+      console.log(`✅ States and LGAs already seeded (${existingStates} states found)`);
+      return;
+    }
+    
     console.log('🌍 Seeding Nigerian States and LGAs...');
     
     for (const [stateName, lgaList] of Object.entries(statesAndLGAs)) {
-      // Create or find state
+      // Create state
       const [state] = await State.findOrCreate({
         where: { name: stateName },
         defaults: { name: stateName, code: stateName.substring(0, 3).toUpperCase() }
@@ -92,13 +99,13 @@ async function seedStatesAndLGAs() {
       
       console.log(`📍 Processing ${stateName} (${lgaList.length} LGAs)`);
       
-      // Create LGAs for this state
-      for (const lgaName of lgaList) {
-        await LGA.findOrCreate({
-          where: { name: lgaName, stateId: state.id },
-          defaults: { name: lgaName, stateId: state.id }
-        });
-      }
+      // Bulk create LGAs for this state
+      const lgaData = lgaList.map(lgaName => ({
+        name: lgaName,
+        stateId: state.id
+      }));
+      
+      await LGA.bulkCreate(lgaData, { ignoreDuplicates: true });
     }
     
     const stateCount = await State.count();
