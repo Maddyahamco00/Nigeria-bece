@@ -1,17 +1,90 @@
 <!-- views/admin/edit-school.ejs -->
+<div class="dashboard-container">
+  <%- include('../partials/sidebar') %>
 
-<h2>Edit School</h2>
+  <div id="mainContent" class="main-content">
+    <div class="welcome-header mb-4">
+      <h2 class="dashboard-title">
+        <i class="fas fa-school me-3"></i>
+        Edit School
+      </h2>
+      <p class="dashboard-subtitle">Update school information</p>
+    </div>
 
-<form action="/admin/schools/edit/<%= school.id %>" method="POST">
-  <label>School Name:</label>
-  <input type="text" name="name" value="<%= school.name %>" required><br><br>
+    <div class="row justify-content-center">
+      <div class="col-lg-8">
+        <div class="card shadow-sm border-0 rounded-4">
+          <div class="card-body p-4">
+            <% if (messages && messages.error) { %>
+              <div class="alert alert-danger">
+                <i class="fas fa-exclamation-triangle me-2"></i>
+                <%= messages.error %>
+              </div>
+            <% } %>
+            <% if (messages && messages.success) { %>
+              <div class="alert alert-success">
+                <i class="fas fa-check-circle me-2"></i>
+                <%= messages.success %>
+              </div>
+            <% } %>
 
-  <label>LGA ID:</label>
-  <input type="number" name="lgaId" value="<%= school.lgaId %>" required><br><br>
+            <form action="/admin/schools/edit/<%= school.id %>" method="POST">
+              <div class="row">
+                <div class="col-md-12 mb-3">
+                  <label for="name" class="form-label fw-bold">
+                    <i class="fas fa-school me-2"></i>School Name *
+                  </label>
+                  <input type="text" class="form-control" id="name" name="name" value="<%= school.name %>" required>
+                </div>
+              </div>
 
-  <label>State ID:</label>
-  <input type="number" name="stateId" value="<%= school.stateId %>" required><br><br>
+              <div class="row">
+                <div class="col-md-6 mb-3">
+                  <label for="stateId" class="form-label fw-bold">
+                    <i class="fas fa-map-marker-alt me-2"></i>State *
+                  </label>
+                  <select class="form-control" id="stateId" name="stateId" required>
+                    <option value="">Select State</option>
+                    <% states.forEach(state => { %>
+                      <option value="<%= state.id %>" <%= school.stateId == state.id ? 'selected' : '' %>><%= state.name %></option>
+                    <% }) %>
+                  </select>
+                </div>
+                <div class="col-md-6 mb-3">
+                  <label for="lgaId" class="form-label fw-bold">
+                    <i class="fas fa-map me-2"></i>LGA *
+                  </label>
+                  <select class="form-control" id="lgaId" name="lgaId" required>
+                    <option value="">Select LGA</option>
+                    <% lgas.forEach(lga => { %>
+                      <option value="<%= lga.id %>" <%= school.lgaId == lga.id ? 'selected' : '' %>><%= lga.name %> - <%= lga.State?.name %></option>
+                    <% }) %>
+                  </select>
+                </div>
+              </div>
 
-  <button type="submit">Update</button>
-</form>
+              <div class="row">
+                <div class="col-md-12 mb-3">
+                  <label for="address" class="form-label fw-bold">
+                    <i class="fas fa-location-dot me-2"></i>Address
+                  </label>
+                  <input type="text" class="form-control" id="address" name="address" value="<%= school.address || '' %>">
+                </div>
+              </div>
+
+              <div class="d-flex gap-2 mt-4">
+                <button type="submit" class="btn btn-primary">
+                  <i class="fas fa-save me-2"></i>Update School
+                </button>
+                <a href="/admin/schools/<%= school.id %>" class="btn btn-secondary">
+                  <i class="fas fa-times me-2"></i>Cancel
+                </a>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
 

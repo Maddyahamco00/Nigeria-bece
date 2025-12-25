@@ -333,6 +333,7 @@ body.dark-mode {
   --bg: #0f1724;
   --surface: #121212;
   --muted: #9ca3af;
+  background-color: #0f1724 !important;
 }
 
 body.dark-mode .bg-light {
@@ -355,29 +356,75 @@ body.dark-mode .text-muted {
 
 body.dark-mode .table-light th,
 body.dark-mode .table thead th {
-  background-color: transparent !important;
+  background-color: #1f2937 !important;
   color: #e5e7eb !important;
   border-bottom-color: rgba(255,255,255,0.06) !important;
 }
 
-body.dark-mode .alert-light {
-  background-color: #1f2937 !important;
+body.dark-mode .table {
   color: #e5e7eb !important;
-  border: 1px solid rgba(255,255,255,0.04) !important;
 }
 
-body.dark-mode .card,
-body.dark-mode .card-body {
-  background-color: #111111 !important;
+body.dark-mode .table td {
+  border-color: rgba(255,255,255,0.06) !important;
+}
+
+body.dark-mode .alert {
+  background-color: #1f2937 !important;
   color: #e5e7eb !important;
-  border: 1px solid rgba(255,255,255,0.04) !important;
+  border: 1px solid rgba(255,255,255,0.1) !important;
+}
+
+body.dark-mode .alert-success {
+  background-color: rgba(22, 163, 74, 0.2) !important;
+  color: #4ade80 !important;
+  border-color: rgba(22, 163, 74, 0.3) !important;
+}
+
+body.dark-mode .alert-danger {
+  background-color: rgba(220, 38, 38, 0.2) !important;
+  color: #f87171 !important;
+  border-color: rgba(220, 38, 38, 0.3) !important;
+}
+
+body.dark-mode .card {
+  background-color: #1f2937 !important;
+  color: #e5e7eb !important;
+  border: 1px solid rgba(255,255,255,0.1) !important;
+}
+
+body.dark-mode .card-header {
+  background-color: #374151 !important;
+  color: #e5e7eb !important;
+  border-bottom: 1px solid rgba(255,255,255,0.1) !important;
+}
+
+body.dark-mode .card-body {
+  background-color: #1f2937 !important;
+  color: #e5e7eb !important;
+}
+
+body.dark-mode .modal-content {
+  background-color: #1f2937 !important;
+  color: #e5e7eb !important;
+  border: 1px solid rgba(255,255,255,0.1) !important;
+}
+
+body.dark-mode .modal-header {
+  background-color: #374151 !important;
+  border-bottom: 1px solid rgba(255,255,255,0.1) !important;
+}
+
+body.dark-mode .modal-footer {
+  background-color: #374151 !important;
+  border-top: 1px solid rgba(255,255,255,0.1) !important;
 }
 
 /* Dark-mode specific sidebar look */
 body.dark-mode .sidebar {
   background: linear-gradient(180deg, var(--dark), #374151) !important;
   color: #e5e7eb !important;
-  border-right-color: rgba(255,255,255,0.04) !important;
+  border-right-color: rgba(255,255,255,0.1) !important;
 }
 
 body.dark-mode .sidebar .nav-link {
@@ -385,15 +432,39 @@ body.dark-mode .sidebar .nav-link {
 }
 
 body.dark-mode .sidebar .nav-link:hover {
-  background: rgba(255,255,255,0.06) !important;
+  background: rgba(255,255,255,0.1) !important;
   color: #fff !important;
 }
 
 body.dark-mode .form-control,
 body.dark-mode .form-select {
-  background-color: #0b1220 !important;
+  background-color: #374151 !important;
   color: #e5e7eb !important;
-  border-color: rgba(255,255,255,0.06) !important;
+  border-color: rgba(255,255,255,0.2) !important;
+}
+
+body.dark-mode .form-control:focus,
+body.dark-mode .form-select:focus {
+  background-color: #374151 !important;
+  color: #e5e7eb !important;
+  border-color: var(--primary) !important;
+  box-shadow: 0 0 0 0.2rem rgba(37, 99, 235, 0.25) !important;
+}
+
+body.dark-mode .btn-secondary {
+  background-color: #6b7280 !important;
+  border-color: #6b7280 !important;
+  color: #fff !important;
+}
+
+body.dark-mode .btn-outline-secondary {
+  color: #9ca3af !important;
+  border-color: #6b7280 !important;
+}
+
+body.dark-mode .btn-outline-secondary:hover {
+  background-color: #6b7280 !important;
+  color: #fff !important;
 }
 
 /* Ensure buttons remain readable */
@@ -402,7 +473,31 @@ body.dark-mode .btn-primary {
   border-color: #2563eb !important;
 }
 
+body.dark-mode .btn-danger {
+  background-color: #dc2626 !important;
+  border-color: #dc2626 !important;
+}
+
 /* small helper for components using bg-primary/text-light in header */
 body.dark-mode .navbar-dark .navbar-nav .nav-link {
   color: #e5e7eb !important;
+}
+
+/* Fix dropdown menus in dark mode */
+body.dark-mode .dropdown-menu {
+  background-color: #1f2937 !important;
+  border: 1px solid rgba(255,255,255,0.1) !important;
+}
+
+body.dark-mode .dropdown-item {
+  color: #e5e7eb !important;
+}
+
+body.dark-mode .dropdown-item:hover {
+  background-color: #374151 !important;
+  color: #fff !important;
+}
+
+body.dark-mode .dropdown-divider {
+  border-color: rgba(255,255,255,0.1) !important;
 }

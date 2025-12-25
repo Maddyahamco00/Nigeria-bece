@@ -107,7 +107,7 @@ document.getElementById('stateId').addEventListener('change', async function() {
   
   if (stateId) {
     try {
-      const response = await fetch(`/admin/api/lgas/${stateId}`);
+      const response = await fetch(`/api/lgas/${stateId}`);
       const lgas = await response.json();
       
       lgaSelect.innerHTML = '<option value="">Select LGA</option>';
@@ -135,7 +135,7 @@ async function generateSerial() {
   if (stateId && lgaId) {
     try {
       // Get count of schools in this LGA
-      const response = await fetch(`/admin/api/schools?stateId=${stateId}&lgaId=${lgaId}`);
+      const response = await fetch(`/api/schools/${lgaId}`);
       const schools = await response.json();
       const nextSerial = schools.length + 1;
       

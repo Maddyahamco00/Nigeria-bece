@@ -1,0 +1,103 @@
+<!-- views/admin/edit-student.ejs -->
+<div class="dashboard-container">
+  <%- include('../partials/sidebar') %>
+
+  <div id="mainContent" class="main-content">
+    <div class="welcome-header mb-4">
+      <h2 class="dashboard-title">
+        <i class="fas fa-user-edit me-3"></i>
+        Edit Student
+      </h2>
+      <p class="dashboard-subtitle">Update student information</p>
+    </div>
+
+    <div class="row justify-content-center">
+      <div class="col-lg-8">
+        <div class="card shadow-sm border-0 rounded-4">
+          <div class="card-body p-4">
+            <% if (messages && messages.error) { %>
+              <div class="alert alert-danger">
+                <i class="fas fa-exclamation-triangle me-2"></i>
+                <%= messages.error %>
+              </div>
+            <% } %>
+            <% if (messages && messages.success) { %>
+              <div class="alert alert-success">
+                <i class="fas fa-check-circle me-2"></i>
+                <%= messages.success %>
+              </div>
+            <% } %>
+
+            <form action="/admin/students/<%= student.id %>" method="POST">
+              <div class="row">
+                <div class="col-md-6 mb-3">
+                  <label for="name" class="form-label fw-bold">
+                    <i class="fas fa-user me-2"></i>Full Name *
+                  </label>
+                  <input type="text" class="form-control" id="name" name="name" value="<%= student.name %>" required>
+                </div>
+                <div class="col-md-6 mb-3">
+                  <label for="email" class="form-label fw-bold">
+                    <i class="fas fa-envelope me-2"></i>Email
+                  </label>
+                  <input type="email" class="form-control" id="email" name="email" value="<%= student.email || '' %>">
+                </div>
+              </div>
+
+              <div class="row">
+                <div class="col-md-6 mb-3">
+                  <label for="gender" class="form-label fw-bold">
+                    <i class="fas fa-venus-mars me-2"></i>Gender
+                  </label>
+                  <select class="form-control" id="gender" name="gender">
+                    <option value="">Select Gender</option>
+                    <option value="Male" <%= student.gender === 'Male' ? 'selected' : '' %>>Male</option>
+                    <option value="Female" <%= student.gender === 'Female' ? 'selected' : '' %>>Female</option>
+                  </select>
+                </div>
+                <div class="col-md-6 mb-3">
+                  <label for="dateOfBirth" class="form-label fw-bold">
+                    <i class="fas fa-calendar me-2"></i>Date of Birth
+                  </label>
+                  <input type="date" class="form-control" id="dateOfBirth" name="dateOfBirth" 
+                         value="<%= student.dateOfBirth ? new Date(student.dateOfBirth).toISOString().split('T')[0] : '' %>">
+                </div>
+              </div>
+
+              <div class="row">
+                <div class="col-md-6 mb-3">
+                  <label for="guardianPhone" class="form-label fw-bold">
+                    <i class="fas fa-phone me-2"></i>Guardian Phone
+                  </label>
+                  <input type="tel" class="form-control" id="guardianPhone" name="guardianPhone" value="<%= student.guardianPhone || '' %>">
+                </div>
+                <div class="col-md-6 mb-3">
+                  <label for="schoolId" class="form-label fw-bold">
+                    <i class="fas fa-school me-2"></i>School *
+                  </label>
+                  <select class="form-control" id="schoolId" name="schoolId" required>
+                    <option value="">Select School</option>
+                    <% schools.forEach(school => { %>
+                      <option value="<%= school.id %>" <%= student.schoolId == school.id ? 'selected' : '' %>>
+                        <%= school.name %> - <%= school.State?.name %>
+                      </option>
+                    <% }) %>
+                  </select>
+                </div>
+              </div>
+
+              <div class="d-flex gap-2 mt-4">
+                <button type="submit" class="btn btn-primary">
+                  <i class="fas fa-save me-2"></i>Update Student
+                </button>
+                <a href="/admin/students/<%= student.id %>" class="btn btn-secondary">
+                  <i class="fas fa-times me-2"></i>Cancel
+                </a>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

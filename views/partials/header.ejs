@@ -21,6 +21,11 @@
 
       <!-- Navigation -->
       <nav class="header-nav">
+        <!-- Mobile Sidebar Toggle -->
+        <button class="sidebar-toggle d-md-none" onclick="toggleSidebar()" title="Toggle Sidebar">
+          <i class="fas fa-bars"></i>
+        </button>
+        
         <!-- Dark/Light Mode Toggle -->
         <button class="theme-toggle" onclick="toggleTheme()" title="Toggle Dark/Light Mode">
           <i class="fas fa-moon" id="theme-icon"></i>
@@ -484,9 +489,9 @@ function toggleTheme() {
   const body = document.body;
   const themeIcon = document.getElementById('theme-icon');
   
-  body.classList.toggle('dark-theme');
+  body.classList.toggle('dark-mode');
   
-  if (body.classList.contains('dark-theme')) {
+  if (body.classList.contains('dark-mode')) {
     themeIcon.className = 'fas fa-sun';
     localStorage.setItem('theme', 'dark');
   } else {
@@ -501,7 +506,7 @@ document.addEventListener('DOMContentLoaded', function() {
   const themeIcon = document.getElementById('theme-icon');
   
   if (savedTheme === 'dark') {
-    document.body.classList.add('dark-theme');
+    document.body.classList.add('dark-mode');
     if (themeIcon) themeIcon.className = 'fas fa-sun';
   }
 });

@@ -3,18 +3,13 @@ document.addEventListener('DOMContentLoaded', () => {
   // Theme (light/dark) handling
   const applyTheme = (theme) => {
     const body = document.body;
+    const icon = document.getElementById('theme-icon');
     if (theme === 'dark') {
-      body.classList.add('dark-mode');
-      body.classList.remove('bg-light');
-      body.classList.add('bg-dark');
-      const icon = document.getElementById('themeIcon');
-      if (icon) icon.className = 'bi bi-sun-fill';
+      body.classList.add('dark-theme');
+      if (icon) icon.className = 'fas fa-sun';
     } else {
-      body.classList.remove('dark-mode');
-      body.classList.remove('bg-dark');
-      body.classList.add('bg-light');
-      const icon = document.getElementById('themeIcon');
-      if (icon) icon.className = 'bi bi-moon-fill';
+      body.classList.remove('dark-theme');
+      if (icon) icon.className = 'fas fa-moon';
     }
   };
 
@@ -26,16 +21,21 @@ document.addEventListener('DOMContentLoaded', () => {
     applyTheme('dark');
   }
 
-  // Toggle button
-  const themeToggle = document.getElementById('themeToggle');
-  if (themeToggle) {
-    themeToggle.addEventListener('click', () => {
-      const isDark = document.body.classList.contains('dark-mode');
-      const newTheme = isDark ? 'light' : 'dark';
-      applyTheme(newTheme);
-      localStorage.setItem('nb_theme', newTheme);
-    });
-  }
+  // Global toggleTheme function
+  window.toggleTheme = () => {
+    const isDark = document.body.classList.contains('dark-theme');
+    const newTheme = isDark ? 'light' : 'dark';
+    applyTheme(newTheme);
+    localStorage.setItem('nb_theme', newTheme);
+  };
+
+  // Global toggleSidebar function
+  window.toggleSidebar = () => {
+    const sidebar = document.querySelector('.modern-sidebar');
+    if (sidebar) {
+      sidebar.classList.toggle('open');
+    }
+  };
   // Sidebar toggle (supports both #sidebarToggle/#sidebar and .sidebar-toggle/.sidebar)
   const toggleBtn = document.getElementById('sidebarToggle') || document.querySelector('.sidebar-toggle');
   const sidebar = document.getElementById('sidebar') || document.querySelector('.sidebar');

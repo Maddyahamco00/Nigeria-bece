@@ -393,6 +393,44 @@ body {
   color: var(--text-primary) !important;
 }
 
+.admin-footer {
+  background: linear-gradient(135deg, var(--bg-secondary), var(--bg-tertiary)) !important;
+  color: var(--text-primary) !important;
+}
+
+.admin-footer h6 {
+  color: var(--text-primary) !important;
+}
+
+.admin-footer .btn-outline-light {
+  color: var(--text-primary) !important;
+  border-color: var(--border-color) !important;
+}
+
+.admin-footer .btn-outline-light:hover {
+  background-color: var(--bg-tertiary) !important;
+  color: var(--text-primary) !important;
+}
+
+/* Header */
+.modern-header {
+  background-color: var(--navbar-bg) !important;
+  border-color: var(--border-color) !important;
+  color: var(--text-primary) !important;
+}
+
+.modern-header .navbar-brand {
+  color: var(--text-primary) !important;
+}
+
+.modern-header .nav-link {
+  color: var(--text-secondary) !important;
+}
+
+.modern-header .nav-link:hover {
+  color: var(--text-primary) !important;
+}
+
 /* Scrollbars */
 ::-webkit-scrollbar {
   width: 8px;
