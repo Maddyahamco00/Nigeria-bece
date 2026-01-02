@@ -51,6 +51,12 @@ body {
   transition: background-color 0.3s ease, color 0.3s ease;
 }
 
+/* Override modern-theme.css body background */
+body.dark-theme {
+  background: var(--bg-primary) !important;
+  background-image: none !important;
+}
+
 /* Cards */
 .card {
   background-color: var(--card-bg) !important;
@@ -62,6 +68,7 @@ body {
   background-color: var(--bg-secondary) !important;
   border-color: var(--border-color) !important;
   color: var(--text-primary) !important;
+  background-image: none !important;
 }
 
 .card-body {
@@ -370,16 +377,21 @@ body {
   border-right-color: var(--border-color) !important;
 }
 
-/* Custom components */
-.dashboard-card {
-  background-color: var(--card-bg) !important;
-  border-color: var(--border-color) !important;
-  box-shadow: 0 0.125rem 0.25rem var(--shadow) !important;
+/* Override dashboard-enhancements.css backgrounds */
+.welcome-header {
+  background: linear-gradient(135deg, var(--bg-secondary) 0%, var(--bg-tertiary) 100%) !important;
 }
 
-.stats-card {
-  background-color: var(--card-bg) !important;
-  color: var(--text-primary) !important;
+.welcome-header::before {
+  background: rgba(0,0,0,0.1) !important;
+}
+
+.modern-sidebar {
+  background: linear-gradient(180deg, var(--sidebar-bg) 0%, var(--bg-secondary) 100%) !important;
+}
+
+.page-content {
+  background: var(--bg-primary) !important;
 }
 
 .data-table {
@@ -431,23 +443,16 @@ body {
   color: var(--text-primary) !important;
 }
 
-/* Scrollbars */
-::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
+/* Theme toggle button */
+.theme-toggle {
+  background-color: var(--bg-secondary) !important;
+  color: var(--text-primary) !important;
+  border-color: var(--border-color) !important;
 }
 
-::-webkit-scrollbar-track {
-  background: var(--bg-secondary);
-}
-
-::-webkit-scrollbar-thumb {
-  background: var(--text-muted);
-  border-radius: 4px;
-}
-
-::-webkit-scrollbar-thumb:hover {
-  background: var(--text-secondary);
+.theme-toggle:hover {
+  background-color: var(--bg-tertiary) !important;
+  color: var(--text-primary) !important;
 }
 
 /* Smooth transitions */

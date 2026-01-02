@@ -4,9 +4,10 @@ services:
     env: node
     region: oregon
     plan: free
-    buildCommand: npm ci
+    buildCommand: npm ci --only=production
     startCommand: npm start
-    healthCheckPath: /
+    healthCheckPath: /health
+    autoDeploy: true
     envVars:
       - key: MYSQL_ADDON_HOST
         value: bligkjakztomxoqeghos-mysql.services.clever-cloud.com

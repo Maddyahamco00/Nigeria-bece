@@ -139,6 +139,28 @@ app.use('/api', schoolRoutes);
 // Admin Routes (single consolidated router)
 app.use('/admin', adminRoutes);
 
+// Health check endpoint for Render
+app.get('/health', async (req, res) => {
+  try {
+    // Check database connection
+    await sequelize.authenticate();
+    
+    res.status(200).json({
+      status: 'healthy',
+      timestamp: new Date().toISOString(),
+      uptime: process.uptime(),
+      database: 'connected',
+      version: process.env.npm_package_version || '1.0.0'
+    });
+  } catch (error) {
+    res.status(500).json({
+      status: 'unhealthy',
+      timestamp: new Date().toISOString(),
+      error: error.message
+    });
+  }
+});
+
 // ------------------------------
 // Error Handling
 // ------------------------------
