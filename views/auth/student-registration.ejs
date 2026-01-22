@@ -1,7 +1,6 @@
 <!-- views/auth/student-registration.ejs -->
 
-<main class="d-flex align-items-center justify-content-center py-5" 
-      style="background: linear-gradient(135deg, #f8f9fa, #e3f2fd); min-height: 100vh;">
+<main class="d-flex align-items-center justify-content-center py-5 min-vh-100">
 
   <div class="card shadow-lg border-0 rounded-4 p-4 w-100" style="max-width: 720px;">
     <div class="text-center mb-4">
@@ -50,6 +49,13 @@
         <label for="password" class="form-label fw-bold">Password</label>
         <input id="password" type="password" name="password" class="form-control form-control-lg" 
                placeholder="Enter password (min. 6 characters)" required minlength="6">
+        <!-- Password Strength Meter -->
+        <div class="password-strength mt-2">
+          <div class="strength-meter">
+            <div class="strength-fill" id="strengthFill"></div>
+          </div>
+          <small class="strength-text" id="strengthText">Password strength: Weak</small>
+        </div>
       </div>
 
       <!-- Confirm Password -->
@@ -180,7 +186,7 @@
 
       <!-- Submit -->
       <div class="col-12 d-grid mt-3">
-        <button type="submit" class="btn btn-primary btn-lg fw-bold shadow-sm rounded-pill">
+        <button type="submit" id="registerBtn" class="btn btn-primary btn-lg fw-bold shadow-sm rounded-pill">
           <i class="bi bi-person-plus me-2"></i> Register Now
         </button>
       </div>

@@ -4,22 +4,83 @@ document.addEventListener('DOMContentLoaded', () => {
   const applyTheme = (theme) => {
     const body = document.body;
     const icon = document.getElementById('theme-icon');
+
+    // Remove existing theme styles
+    const existingStyle = document.getElementById('theme-override-style');
+    if (existingStyle) {
+      existingStyle.remove();
+    }
+
     if (theme === 'dark') {
       body.classList.add('dark-theme');
+      body.classList.remove('light-theme');
       if (icon) icon.className = 'fas fa-sun';
+
+      // Inject immediate style override
+      const style = document.createElement('style');
+      style.id = 'theme-override-style';
+      style.textContent = `
+        body * {
+          background-color: #2d2d2d !important;
+          color: #e0e0e0 !important;
+          border-color: #404040 !important;
+        }
+        body {
+          color: #e0e0e0 !important;
+          border-color: #404040 !important;
+        }
+        .card, .card-header, .card-body, .table, .navbar, .sidebar {
+          background-color: #2d2d2d !important;
+          color: #e0e0e0 !important;
+        }
+      `;
+      document.head.appendChild(style);
     } else {
       body.classList.remove('dark-theme');
+      body.classList.add('light-theme');
       if (icon) icon.className = 'fas fa-moon';
+
+      // Inject immediate style override for light theme
+      const style = document.createElement('style');
+      style.id = 'theme-override-style';
+      style.textContent = `
+        body * {
+          background-color: #ffffff !important;
+          color: #212529 !important;
+          border-color: #dee2e6 !important;
+        }
+        body {
+          color: #212529 !important;
+          border-color: #dee2e6 !important;
+        }
+        .card, .card-header, .card-body, .table, .navbar, .sidebar {
+          background-color: #ffffff !important;
+          color: #212529 !important;
+        }
+      `;
+      document.head.appendChild(style);
     }
   };
 
   // Initialize theme from localStorage or system preference
-  const stored = localStorage.getItem('nb_theme');
-  if (stored) {
-    applyTheme(stored);
-  } else if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
-    applyTheme('dark');
-  }
+  const initTheme = () => {
+    const stored = localStorage.getItem('nb_theme');
+    let themeToApply = 'light'; // default
+
+    if (stored) {
+      themeToApply = stored;
+    } else if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+      themeToApply = 'dark';
+      localStorage.setItem('nb_theme', 'dark');
+    } else {
+      localStorage.setItem('nb_theme', 'light');
+    }
+
+    applyTheme(themeToApply);
+  };
+
+  // Initialize immediately
+  initTheme();
 
   // Global toggleTheme function
   window.toggleTheme = () => {
@@ -79,10 +140,134 @@ document.addEventListener('DOMContentLoaded', () => {
         }
       });
 
-      if (!valid) {
-        e.preventDefault();
-        alert('Please fill all required fields.');
-      }
+  // Password Strength Meter
+  const passwordInput = document.getElementById('password');
+  const strengthFill = document.getElementById('strengthFill');
+  const strengthText = document.getElementById('strengthText');
+
+  if (passwordInput && strengthFill && strengthText) {
+    passwordInput.addEventListener('input', function() {
+      const password = this.value;
+      const strength = calculatePasswordStrength(password);
+      updatePasswordStrengthMeter(strength);
     });
+  }
+
+  function calculatePasswordStrength(password) {
+    let score = 0;
+
+    // Length check
+    if (password.length >= 8) score += 1;
+    if (password.length >= 12) score += 1;
+
+    // Character variety checks
+    if (/[a-z]/.test(password)) score += 1;
+    if (/[A-Z]/.test(password)) score += 1;
+    if (/[0-9]/.test(password)) score += 1;
+    if (/[^A-Za-z0-9]/.test(password)) score += 1;
+
+    return score;
+  }
+
+  function updatePasswordStrengthMeter(score) {
+    const fill = strengthFill;
+    const text = strengthText;
+
+    // Remove all classes
+    fill.className = 'strength-fill';
+
+    if (score <= 2) {
+      fill.style.width = '25%';
+      fill.classList.add('weak');
+      text.textContent = 'Password strength: Weak';
+      text.style.color = '#dc3545';
+    } else if (score <= 4) {
+      fill.style.width = '50%';
+      fill.classList.add('fair');
+      text.textContent = 'Password strength: Fair';
+      text.style.color = '#ffc107';
+    } else if (score <= 5) {
+      fill.style.width = '75%';
+      fill.classList.add('good');
+      text.textContent = 'Password strength: Good';
+      text.style.color = '#28a745';
+    } else {
+      fill.style.width = '100%';
+      fill.classList.add('strong');
+      text.textContent = 'Password strength: Strong';
+      text.style.color = '#20c997';
+    }
+  }
+
+  // Loading Indicators
+  function showLoading(button) {
+    if (!button) return;
+
+    button.disabled = true;
+    button.innerHTML = '<span class="loading-spinner"></span>Loading...';
+    button.classList.add('btn-loading');
+  }
+
+  function hideLoading(button, originalText) {
+    if (!button) return;
+
+    button.disabled = false;
+    button.innerHTML = originalText;
+    button.classList.remove('btn-loading');
+  }
+
+  // Global loading functions
+  window.showLoading = showLoading;
+  window.hideLoading = hideLoading;
+
+  // Auto-apply loading to forms
+  document.addEventListener('submit', function(e) {
+    const form = e.target;
+    const submitBtn = form.querySelector('button[type="submit"], input[type="submit"]');
+
+    if (submitBtn && !submitBtn.classList.contains('no-loading')) {
+      const originalText = submitBtn.innerHTML;
+      showLoading(submitBtn);
+
+      // Store original text for restoration
+      submitBtn.setAttribute('data-original-text', originalText);
+    }
   });
-});
+
+  // Page Loading Overlay
+  function showPageLoading() {
+    const overlay = document.createElement('div');
+    overlay.className = 'loading-overlay';
+    overlay.id = 'pageLoadingOverlay';
+    overlay.innerHTML = `
+      <div class="loading-content">
+        <div class="spinner"></div>
+        <p>Loading...</p>
+      </div>
+    `;
+    document.body.appendChild(overlay);
+  }
+
+  function hidePageLoading() {
+    const overlay = document.getElementById('pageLoadingOverlay');
+    if (overlay) {
+      overlay.remove();
+    }
+  }
+
+  // Global page loading functions
+  window.showPageLoading = showPageLoading;
+  window.hidePageLoading = hidePageLoading;
+
+  // Hide page loading on page load
+  window.addEventListener('load', function() {
+    setTimeout(hidePageLoading, 500); // Small delay for smooth transition
+  });
+
+  // Show page loading on navigation
+  document.addEventListener('click', function(e) {
+    const link = e.target.closest('a[href]');
+    if (link && !link.hasAttribute('data-no-loading') && link.hostname === window.location.hostname) {
+      showPageLoading();
+    }
+  });

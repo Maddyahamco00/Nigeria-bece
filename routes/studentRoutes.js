@@ -17,8 +17,16 @@ import {
 } from '../controllers/studentController.js';
 import { Student, School, State, LGA, Result, Payment, Subject } from '../models/index.js';
 import db from '../config/database.js';
+import sendEmail from '../utils/sendEmail.js';
+import SMSService from '../services/smsService.js';
 
 const router = express.Router();
+
+// Middleware to set current path for navigation highlighting
+router.use((req, res, next) => {
+  res.locals.currentPath = req.path;
+  next();
+});
 
 // Middleware to check if student is logged in
 // Accept either a legacy req.session.student (used in some controllers)
@@ -157,6 +165,31 @@ router.post('/profile', requireStudent, async (req, res) => {
     await student.update({ name, email, guardianPhone });
 
     req.session.student.name = name;
+
+    // Send notifications for profile update
+    try {
+      const smsService = new SMSService();
+      const smsMessage = `BECE Profile Updated!\nName: ${student.name}\nReg Number: ${student.regNumber}\nYour profile has been updated successfully.`;
+      await smsService.sendSMS(student.guardianPhone, smsMessage);
+
+      const emailHtml = `
+        <h2>BECE Profile Updated</h2>
+        <p>Dear ${student.name},</p>
+        <p>Your BECE profile has been updated successfully.</p>
+        <p><strong>Updated Details:</strong></p>
+        <ul>
+          <li>Name: ${student.name}</li>
+          <li>Email: ${student.email}</li>
+          <li>Registration Number: ${student.regNumber}</li>
+        </ul>
+        <p><a href="${process.env.APP_URL || 'https://bece-ng.onrender.com'}/students/dashboard">Access Dashboard</a></p>
+        <p>Best regards,<br>BECE Registration Team</p>
+      `;
+      await sendEmail(student.email, 'BECE Profile Updated', emailHtml);
+    } catch (notificationError) {
+      console.error('Notification error:', notificationError);
+      // Don't fail update if notifications fail
+    }
 
     req.flash('success', 'Profile updated successfully');
     res.redirect('/students/profile');

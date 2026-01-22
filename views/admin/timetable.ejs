@@ -34,17 +34,10 @@
           </div>
           <div class="col-md-3">
             <label class="form-label fw-bold">Subject</label>
-            <select name="subject" class="form-control" required>
-              <option value="English Language">English Language</option>
-              <option value="Mathematics">Mathematics</option>
-              <option value="Basic Science">Basic Science</option>
-              <option value="Social Studies">Social Studies</option>
-              <option value="Civic Education">Civic Education</option>
-              <option value="Computer Studies">Computer Studies</option>
-              <option value="French">French</option>
-              <option value="Arabic">Arabic</option>
-              <option value="Business Studies">Business Studies</option>
-              <option value="Home Economics">Home Economics</option>
+            <select name="subjectId" class="form-control" required>
+              <% subjects.forEach(subject => { %>
+                <option value="<%= subject.id %>"><%= subject.name %></option>
+              <% }); %>
             </select>
           </div>
           <div class="col-md-2">
@@ -61,7 +54,7 @@
           </div>
           <div class="col-md-1">
             <label class="form-label fw-bold">Duration (min)</label>
-            <input type="number" name="duration" class="form-control" value="120" required>
+            <input type="number" name="duration" id="duration" class="form-control" readonly>
           </div>
           <div class="col-md-2">
             <label class="form-label fw-bold">Paper Type</label>
@@ -87,11 +80,15 @@
 
     <!-- Current Timetable -->
     <div class="card shadow-sm border-0 rounded-4">
-      <div class="card-header bg-transparent border-0">
+      <div class="card-header bg-transparent border-0 d-flex justify-content-between align-items-center">
         <h5 class="fw-bold mb-0">
           <i class="fas fa-calendar me-2"></i>
           Current Timetable
         </h5>
+        <a href="/admin/timetable/export" class="btn btn-success btn-sm">
+          <i class="fas fa-download me-2"></i>
+          Export CSV
+        </a>
       </div>
       <div class="card-body">
         <div class="table-responsive">
@@ -113,7 +110,7 @@
                 <% timetables.forEach(entry => { %>
                   <tr>
                     <td><%= entry.examYear %></td>
-                    <td><%= entry.subject %></td>
+                    <td><%= entry.subject ? entry.subject.name : 'Unknown' %></td>
                     <td><%= new Date(entry.examDate).toLocaleDateString() %></td>
                     <td><%= entry.startTime %> - <%= entry.endTime %></td>
                     <td><%= entry.duration %> min</td>
@@ -151,3 +148,31 @@
     </div>
   </div>
 </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  const startTimeInput = document.querySelector('input[name="startTime"]');
+  const endTimeInput = document.querySelector('input[name="endTime"]');
+  const durationInput = document.getElementById('duration');
+
+  function calculateDuration() {
+    const startTime = startTimeInput.value;
+    const endTime = endTimeInput.value;
+
+    if (startTime && endTime) {
+      const start = new Date(`2000-01-01T${startTime}`);
+      const end = new Date(`2000-01-01T${endTime}`);
+      const duration = Math.round((end - start) / (1000 * 60)); // Convert to minutes
+
+      if (duration > 0) {
+        durationInput.value = duration;
+      } else {
+        durationInput.value = '';
+      }
+    }
+  }
+
+  startTimeInput.addEventListener('change', calculateDuration);
+  endTimeInput.addEventListener('change', calculateDuration);
+});
+</script>

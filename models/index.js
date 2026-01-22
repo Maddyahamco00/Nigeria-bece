@@ -75,6 +75,10 @@ Payment.belongsTo(Student, { foreignKey: 'studentId' });
 Subject.belongsToMany(Result, { through: 'ResultSubjects', foreignKey: 'subjectId' });
 Result.belongsToMany(Subject, { through: 'ResultSubjects', foreignKey: 'resultId' });
 
+// ExamTimetable <-> Subject
+Subject.hasMany(ExamTimetable, { foreignKey: 'subjectId', onDelete: 'CASCADE' });
+ExamTimetable.belongsTo(Subject, { foreignKey: 'subjectId' });
+
 // New model associations
 State.hasMany(ExamCenter, { foreignKey: 'stateId', onDelete: 'CASCADE' });
 ExamCenter.belongsTo(State, { foreignKey: 'stateId' });

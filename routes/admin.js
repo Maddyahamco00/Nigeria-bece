@@ -3,11 +3,12 @@ import express from 'express';
 import { Student, School, Payment, Result, User, State, LGA, ExamTimetable, ExamCenter, Certificate, Subject } from '../models/index.js';
 import { getGrade } from '../utils/grade.js';
 import sendEmail from '../utils/sendEmail.js';
+import SMSService from '../services/smsService.js';
 import db from '../config/database.js';
 import { requireAdmin, requireSuperAdmin } from '../middleware/roleMiddleware.js';
 import { isAuthenticated, isAdmin } from '../middleware/auth.js';
 import { APP_CONFIG } from '../config/constants.js';
-import sequelize from '../config/database.js';
+import { validateStudentUpdate } from '../middleware/validationMiddleware.js';
 
 
 const router = express.Router();
@@ -286,7 +287,7 @@ router.get('/students/:id/edit', requireAdmin, async (req, res) => {
   }
 });
 
-router.post('/students/:id', requireAdmin, async (req, res) => {
+router.post('/students/:id', requireAdmin, validateStudentUpdate, async (req, res) => {
   try {
     const { id } = req.params;
     const { name, email, gender, dateOfBirth, guardianPhone, schoolId } = req.body;
@@ -305,6 +306,32 @@ router.post('/students/:id', requireAdmin, async (req, res) => {
       guardianPhone,
       schoolId
     });
+
+    // Send notifications for profile update
+    try {
+      const smsService = new SMSService();
+      const smsMessage = `BECE Profile Updated!\nName: ${student.name}\nReg Number: ${student.regNumber}\nYour profile has been updated by an administrator.`;
+      await smsService.sendSMS(student.guardianPhone, smsMessage);
+
+      const emailHtml = `
+        <h2>BECE Profile Updated</h2>
+        <p>Dear ${student.name},</p>
+        <p>Your BECE profile has been updated by an administrator.</p>
+        <p><strong>Updated Details:</strong></p>
+        <ul>
+          <li>Name: ${student.name}</li>
+          <li>Email: ${student.email}</li>
+          <li>Registration Number: ${student.regNumber}</li>
+        </ul>
+        <p>If you did not request this change, please contact support immediately.</p>
+        <p><a href="${process.env.APP_URL || 'https://bece-ng.onrender.com'}/auth/student/login">Login Here</a></p>
+        <p>Best regards,<br>BECE Registration Team</p>
+      `;
+      await sendEmail(student.email, 'BECE Profile Updated', emailHtml);
+    } catch (notificationError) {
+      console.error('Notification error:', notificationError);
+      // Don't fail update if notifications fail
+    }
 
     req.flash('success', 'Student updated successfully');
     res.redirect(`/admin/students/${id}`);
@@ -633,16 +660,100 @@ router.get('/analytics', requireAdmin, async (req, res) => {
 
 /* ---------------- Timetable ---------------- */
 router.get('/timetable', requireAdmin, async (req, res) => {
-  res.render('admin/timetable', {
-    title: 'Exam Timetable',
-    user: req.user,
-    timetables: []
-  });
+  try {
+    const timetables = await ExamTimetable.findAll({
+      include: [{ model: Subject, as: 'subject' }],
+      order: [['examDate', 'ASC'], ['startTime', 'ASC']]
+    });
+    const subjects = await Subject.findAll({ order: [['name', 'ASC']] });
+
+    res.render('admin/timetable', {
+      title: 'Exam Timetable',
+      user: req.user,
+      timetables,
+      subjects
+    });
+  } catch (err) {
+    console.error('Timetable error:', err);
+    res.render('admin/timetable', {
+      title: 'Exam Timetable',
+      user: req.user,
+      timetables: [],
+      subjects: []
+    });
+  }
+});
+
+router.post('/timetable', requireAdmin, async (req, res) => {
+  try {
+    const { examYear, subjectId, examDate, startTime, endTime, paperType, instructions } = req.body;
+
+    // Calculate duration in minutes
+    const start = new Date(`2000-01-01T${startTime}`);
+    const end = new Date(`2000-01-01T${endTime}`);
+    const duration = Math.round((end - start) / (1000 * 60)); // Convert to minutes
+
+    if (duration <= 0) {
+      req.flash('error', 'End time must be after start time');
+      return res.redirect('/admin/timetable');
+    }
+
+    await ExamTimetable.create({
+      examYear,
+      subjectId,
+      examDate,
+      startTime,
+      endTime,
+      duration,
+      paperType,
+      instructions: instructions || null
+    });
+
+    req.flash('success', 'Exam added to timetable successfully');
+    res.redirect('/admin/timetable');
+  } catch (err) {
+    console.error('Add timetable error:', err);
+    req.flash('error', 'Failed to add exam to timetable');
+    res.redirect('/admin/timetable');
+  }
+});
+
+router.get('/timetable/export', requireAdmin, async (req, res) => {
+  try {
+    const timetables = await ExamTimetable.findAll({
+      include: [{ model: Subject, as: 'subject' }],
+      order: [['examDate', 'ASC'], ['startTime', 'ASC']]
+    });
+
+    // Generate CSV content
+    let csv = 'Exam Year,Subject,Date,Start Time,End Time,Duration (min),Paper Type,Instructions\n';
+
+    timetables.forEach(timetable => {
+      const subjectName = timetable.subject ? timetable.subject.name : 'Unknown';
+      const instructions = timetable.instructions ? `"${timetable.instructions.replace(/"/g, '""')}"` : '';
+      csv += `${timetable.examYear},${subjectName},${timetable.examDate},${timetable.startTime},${timetable.endTime},${timetable.duration},${timetable.paperType},${instructions}\n`;
+    });
+
+    res.setHeader('Content-Type', 'text/csv');
+    res.setHeader('Content-Disposition', 'attachment; filename="exam_timetable.csv"');
+    res.send(csv);
+  } catch (err) {
+    console.error('Export timetable error:', err);
+    req.flash('error', 'Failed to export timetable');
+    res.redirect('/admin/timetable');
+  }
 });
 
 /* ---------------- Centers ---------------- */
 router.get('/centers', requireAdmin, async (req, res) => {
   try {
+    const centers = await ExamCenter.findAll({
+      include: [
+        { model: State, as: 'state' },
+        { model: LGA, as: 'lga' }
+      ],
+      order: [['name', 'ASC']]
+    });
     const states = await State.findAll({ order: [['name', 'ASC']] });
     const lgas = await LGA.findAll({ order: [['name', 'ASC']] });
     const schools = await School.findAll({ order: [['name', 'ASC']] });
@@ -650,7 +761,7 @@ router.get('/centers', requireAdmin, async (req, res) => {
     res.render('admin/centers', {
       title: 'Exam Centers',
       user: req.user,
-      centers: [],
+      centers,
       states,
       lgas,
       schools
@@ -665,6 +776,31 @@ router.get('/centers', requireAdmin, async (req, res) => {
       lgas: [],
       schools: []
     });
+  }
+});
+
+router.post('/centers', requireAdmin, async (req, res) => {
+  try {
+    const { name, code, address, stateId, lgaId, capacity, facilities, contactPerson, contactPhone } = req.body;
+
+    await ExamCenter.create({
+      name,
+      code,
+      address,
+      stateId,
+      lgaId,
+      capacity: parseInt(capacity),
+      facilities: facilities || null,
+      contactPerson: contactPerson || null,
+      contactPhone: contactPhone || null
+    });
+
+    req.flash('success', 'Exam center added successfully');
+    res.redirect('/admin/centers');
+  } catch (err) {
+    console.error('Add center error:', err);
+    req.flash('error', 'Failed to add exam center');
+    res.redirect('/admin/centers');
   }
 });
 

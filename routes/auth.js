@@ -2,13 +2,20 @@
 import express from 'express';
 import passport from 'passport';
 import { User, Student, State, LGA, School, Subject } from '../models/index.js';
-import sendEmail, { sendTemplateEmail } from '../utils/sendEmail.js';
+import sendEmail from '../utils/sendEmail.js';
+import SMSService from '../services/smsService.js';
 import bcrypt from 'bcryptjs';
 import crypto from 'crypto';
 import { Op } from 'sequelize';
-import db from '../config/database.js';
+import { validateStudentRegistration } from '../middleware/validationMiddleware.js';
 
 const router = express.Router();
+
+// Middleware to set current path for navigation highlighting
+router.use((req, res, next) => {
+  res.locals.currentPath = req.path;
+  next();
+});
 
 /* ===== SHARED AUTHENTICATION PAGES ===== */
 
@@ -217,7 +224,7 @@ router.get('/student/register', async (req, res) => {
 });
 
 // Student registration handler
-router.post('/student/register', async (req, res) => {
+router.post('/student/register', validateStudentRegistration, async (req, res) => {
   try {
     const { name, email, password, confirmPassword, stateId, lgaId, schoolId, gender, dob, guardianPhone } = req.body;
 
@@ -244,6 +251,32 @@ router.post('/student/register', async (req, res) => {
     const regNumber = `BECE2024${student.id.toString().padStart(6, '0')}`;
     student.regNumber = regNumber;
     await student.save();
+
+    // Send notifications
+    try {
+      const smsService = new SMSService();
+      const smsMessage = `BECE Registration Successful!\nName: ${student.name}\nReg Number: ${regNumber}\nLogin at: ${process.env.APP_URL || 'https://bece-ng.onrender.com'}/auth/student/login`;
+      await smsService.sendSMS(guardianPhone, smsMessage);
+
+      const emailHtml = `
+        <h2>BECE Registration Successful!</h2>
+        <p>Dear ${student.name},</p>
+        <p>Your BECE registration has been completed successfully.</p>
+        <p><strong>Registration Details:</strong></p>
+        <ul>
+          <li>Name: ${student.name}</li>
+          <li>Registration Number: ${regNumber}</li>
+          <li>Email: ${student.email}</li>
+        </ul>
+        <p>You can now login to your dashboard to complete your payment and access your results.</p>
+        <p><a href="${process.env.APP_URL || 'https://bece-ng.onrender.com'}/auth/student/login">Login Here</a></p>
+        <p>Best regards,<br>BECE Registration Team</p>
+      `;
+      await sendEmail(student.email, 'BECE Registration Successful', emailHtml);
+    } catch (notificationError) {
+      console.error('Notification error:', notificationError);
+      // Don't fail registration if notifications fail
+    }
 
     req.flash('success', `Registration successful! Your Registration Number: ${regNumber}`);
     res.redirect('/auth/student/login');

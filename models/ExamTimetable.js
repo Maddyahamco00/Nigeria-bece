@@ -12,9 +12,13 @@ const ExamTimetable = db.define('ExamTimetable', {
     type: DataTypes.INTEGER,
     allowNull: false
   },
-  subject: {
-    type: DataTypes.STRING,
-    allowNull: false
+  subjectId: {
+    type: DataTypes.INTEGER,
+    allowNull: false,
+    references: {
+      model: 'subjects',
+      key: 'id'
+    }
   },
   examDate: {
     type: DataTypes.DATE,
