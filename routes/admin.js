@@ -117,20 +117,27 @@ router.get('/dashboard/live/counters', requireAdmin, async (req, res) => {
 router.get('/dashboard/live/recent', requireAdmin, async (req, res) => {
   try {
     const recentStudents = await Student.findAll({
-      include: [School, Payment],
+      include: [School],
       order: [['createdAt', 'DESC']],
       limit: APP_CONFIG.LIMITS.RECENT_ITEMS,
       attributes: ['id', 'name', 'email', 'createdAt']
     });
 
-    // Add payment status to students
-    const studentsWithPaymentStatus = recentStudents.map(student => {
-      const hasSuccessfulPayment = student.Payments && student.Payments.some(p => p.status === 'success');
-      return {
-        ...student.toJSON(),
-        paymentStatus: hasSuccessfulPayment ? 'Paid' : 'Pending'
-      };
-    });
+    // Add payment status to recent students - simplified approach
+    const studentsWithPaymentStatus = await Promise.all(
+      recentStudents.map(async (student) => {
+        const payment = await Payment.findOne({
+          where: { 
+            email: student.email,
+            status: 'success'
+          }
+        });
+        return {
+          ...student.toJSON(),
+          paymentStatus: payment ? 'Paid' : 'Pending'
+        };
+      })
+    );
 
     const recentPayments = await Payment.findAll({
       include: [Student, School],
