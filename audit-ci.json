@@ -1,0 +1,43 @@
+{
+  "levels": {
+    "low": true,
+    "moderate": true,
+    "high": true,
+    "critical": true
+  },
+  "report": {
+    "type": "json",
+    "path": "./audit-results"
+  },
+  "allowlist": [
+    {
+      "GHSA-36jr-mh4h-2g58": "Prototype pollution in immer - low severity, no active exploit"
+    },
+    {
+      "GHSA-ww39-953v-wcq6": "Regular expression denial of service in micromatch - only affects development"
+    }
+  ],
+  "path-allowlist": [
+    "/test/",
+    "/tests/",
+    "/spec/",
+    "/example/",
+    "/samples/",
+    "/demo/"
+  ],
+  "ignore-dev-dependencies": false,
+  "audit-level": "moderate",
+  "production": true,
+  "audit": {
+    "audit-level": "moderate",
+    "production": true,
+    "json": true,
+    "audit-level": "moderate"
+  },
+  "summary": true,
+  "fail-on": "high",
+  "retry": {
+    "count": 3,
+    "delay": 1000
+  }
+}

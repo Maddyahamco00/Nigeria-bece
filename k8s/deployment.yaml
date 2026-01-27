@@ -1,0 +1,159 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nigeria-bece-api
+  labels:
+    app: nigeria-bece
+    component: api
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: nigeria-bece
+      component: api
+  template:
+    metadata:
+      labels:
+        app: nigeria-bece
+        component: api
+    spec:
+      containers:
+      - name: api
+        image: nigeria-bece:latest
+        ports:
+        - containerPort: 3000
+        env:
+        - name: NODE_ENV
+          value: "production"
+        - name: PORT
+          value: "3000"
+        - name: MYSQL_ADDON_HOST
+          valueFrom:
+            secretKeyRef:
+              name: db-secrets
+              key: host
+        - name: MYSQL_ADDON_USER
+          valueFrom:
+            secretKeyRef:
+              name: db-secrets
+              key: user
+        - name: MYSQL_ADDON_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: db-secrets
+              key: password
+        - name: MYSQL_ADDON_DB
+          valueFrom:
+            secretKeyRef:
+              name: db-secrets
+              key: database
+        resources:
+          requests:
+            memory: "256Mi"
+            cpu: "250m"
+          limits:
+            memory: "512Mi"
+            cpu: "500m"
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 3000
+          initialDelaySeconds: 30
+          periodSeconds: 10
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 3000
+          initialDelaySeconds: 5
+          periodSeconds: 5
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+          - weight: 100
+            podAffinityTerm:
+              labelSelector:
+                matchExpressions:
+                - key: app
+                  operator: In
+                  values:
+                  - nigeria-bece
+              topologyKey: kubernetes.io/hostname
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: nigeria-bece-service
+spec:
+  selector:
+    app: nigeria-bece
+    component: api
+  ports:
+  - port: 80
+    targetPort: 3000
+    protocol: TCP
+  type: LoadBalancer
+
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: nigeria-bece-ingress
+  annotations:
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
+    cert-manager.io/cluster-issuer: "letsencrypt-prod"
+spec:
+  ingressClassName: nginx
+  tls:
+  - hosts:
+    - nigeria-bece.example.com
+    secretName: nigeria-bece-tls
+  rules:
+  - host: nigeria-bece.example.com
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: nigeria-bece-service
+            port:
+              number: 80
+
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: nigeria-bece-config
+data:
+  NODE_ENV: "production"
+  SESSION_SECRET: "your-super-secure-session-secret"
+  PAYSTACK_SECRET_KEY: "your-paystack-secret"
+  PAYSTACK_PUBLIC_KEY: "your-paystack-public"
+  EMAIL_HOST: "smtp.gmail.com"
+  EMAIL_PORT: "587"
+  SMS_API_KEY: "your-sms-api-key"
+
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: db-secrets
+type: Opaque
+data:
+  host: <base64-encoded-host>
+  user: <base64-encoded-user>
+  password: <base64-encoded-password>
+  database: <base64-encoded-database>
+
+---
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: nigeria-bece-pdb
+spec:
+  minAvailable: 2
+  selector:
+    matchLabels:
+      app: nigeria-bece

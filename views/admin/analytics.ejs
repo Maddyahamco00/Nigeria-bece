@@ -51,6 +51,42 @@
       </div>
     </div>
 
+    <!-- Payment Analytics -->
+    <div class="row g-4 mb-4">
+      <div class="col-md-3">
+        <div class="card border-0 shadow-sm text-center">
+          <div class="card-body">
+            <div class="display-6 text-success fw-bold">₦<%= stats.monthlyPayments.toLocaleString() %></div>
+            <div class="text-muted">Monthly Revenue</div>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-3">
+        <div class="card border-0 shadow-sm text-center">
+          <div class="card-body">
+            <div class="display-6 text-primary fw-bold">₦<%= stats.yearlyPayments.toLocaleString() %></div>
+            <div class="text-muted">Yearly Revenue</div>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-3">
+        <div class="card border-0 shadow-sm text-center">
+          <div class="card-body">
+            <div class="display-6 text-warning fw-bold"><%= stats.pendingPayments %></div>
+            <div class="text-muted">Pending Payments</div>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-3">
+        <div class="card border-0 shadow-sm text-center">
+          <div class="card-body">
+            <div class="display-6 text-danger fw-bold"><%= stats.failedPayments %></div>
+            <div class="text-muted">Failed Payments</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <!-- Grade Distribution Chart -->
     <div class="card shadow-sm border-0 rounded-4 mb-4">
       <div class="card-header bg-transparent border-0">
@@ -62,6 +98,21 @@
       <div class="card-body">
         <div style="max-width: 400px; margin: 0 auto;">
           <canvas id="gradeChart" width="400" height="400"></canvas>
+        </div>
+      </div>
+    </div>
+
+    <!-- Payment Methods Chart -->
+    <div class="card shadow-sm border-0 rounded-4 mb-4">
+      <div class="card-header bg-transparent border-0">
+        <h5 class="fw-bold mb-0">
+          <i class="fas fa-credit-card me-2"></i>
+          Payment Methods Distribution
+        </h5>
+      </div>
+      <div class="card-body">
+        <div style="max-width: 400px; margin: 0 auto;">
+          <canvas id="paymentChart" width="400" height="400"></canvas>
         </div>
       </div>
     </div>
@@ -87,21 +138,19 @@
                   </tr>
                 </thead>
                 <tbody>
-                  <tr>
-                    <td>Mathematics</td>
-                    <td><span class="badge bg-primary">65.2</span></td>
-                    <td><span class="badge bg-success">78%</span></td>
-                  </tr>
-                  <tr>
-                    <td>English</td>
-                    <td><span class="badge bg-primary">68.5</span></td>
-                    <td><span class="badge bg-success">82%</span></td>
-                  </tr>
-                  <tr>
-                    <td>Basic Science</td>
-                    <td><span class="badge bg-primary">62.1</span></td>
-                    <td><span class="badge bg-warning">74%</span></td>
-                  </tr>
+                  <% if (stats.subjectPerformance && stats.subjectPerformance.length > 0) { %>
+                    <% stats.subjectPerformance.forEach(subject => { %>
+                      <tr>
+                        <td><%= subject.name %></td>
+                        <td><span class="badge bg-primary"><%= subject.avgScore ? subject.avgScore.toFixed(1) : 'N/A' %></span></td>
+                        <td><span class="badge bg-success"><%= subject.passRate ? Math.round(subject.passRate) + '%' : 'N/A' %></span></td>
+                      </tr>
+                    <% }); %>
+                  <% } else { %>
+                    <tr>
+                      <td colspan="3" class="text-center text-muted">No subject performance data available</td>
+                    </tr>
+                  <% } %>
                 </tbody>
               </table>
             </div>
@@ -112,8 +161,8 @@
         <div class="card shadow-sm border-0 rounded-4">
           <div class="card-header bg-transparent border-0">
             <h5 class="fw-bold mb-0">
-              <i class="fas fa-map-marked-alt me-2"></i>
-              State Performance
+              <i class="fas fa-credit-card me-2"></i>
+              Recent Payments
             </h5>
           </div>
           <div class="card-body">
@@ -121,27 +170,27 @@
               <table class="table table-sm">
                 <thead>
                   <tr>
-                    <th>State</th>
-                    <th>Students</th>
-                    <th>Performance</th>
+                    <th>Student</th>
+                    <th>Amount</th>
+                    <th>Method</th>
+                    <th>Date</th>
                   </tr>
                 </thead>
                 <tbody>
-                  <tr>
-                    <td>Lagos</td>
-                    <td><span class="badge bg-info">2,456</span></td>
-                    <td><span class="badge bg-success">85%</span></td>
-                  </tr>
-                  <tr>
-                    <td>Kano</td>
-                    <td><span class="badge bg-info">1,892</span></td>
-                    <td><span class="badge bg-success">79%</span></td>
-                  </tr>
-                  <tr>
-                    <td>Rivers</td>
-                    <td><span class="badge bg-info">1,234</span></td>
-                    <td><span class="badge bg-warning">72%</span></td>
-                  </tr>
+                  <% if (stats.recentPayments && stats.recentPayments.length > 0) { %>
+                    <% stats.recentPayments.forEach(payment => { %>
+                      <tr>
+                        <td><%= payment.Student ? payment.Student.name : 'N/A' %></td>
+                        <td><span class="badge bg-success">₦<%= payment.amount %></span></td>
+                        <td><span class="badge bg-info"><%= payment.paymentMethod %></span></td>
+                        <td><%= new Date(payment.createdAt).toLocaleDateString() %></td>
+                      </tr>
+                    <% }); %>
+                  <% } else { %>
+                    <tr>
+                      <td colspan="4" class="text-center text-muted">No recent payments</td>
+                    </tr>
+                  <% } %>
                 </tbody>
               </table>
             </div>
@@ -171,6 +220,44 @@ new Chart(ctx, {
         '#ffc107', // D - Yellow
         '#6c757d', // E - Gray
         '#dc3545'  // F - Red
+      ],
+      borderWidth: 2,
+      borderColor: '#fff'
+    }]
+  },
+  options: {
+    responsive: true,
+    maintainAspectRatio: true,
+    aspectRatio: 1,
+    plugins: {
+      legend: {
+        position: 'bottom',
+        labels: {
+          padding: 20,
+          usePointStyle: true
+        }
+      }
+    }
+  }
+});
+
+// Payment Methods Chart
+const paymentData = <%- JSON.stringify(stats.paymentMethods) %>;
+const paymentCtx = document.getElementById('paymentChart').getContext('2d');
+
+new Chart(paymentCtx, {
+  type: 'doughnut',
+  data: {
+    labels: paymentData.map(p => p.method),
+    datasets: [{
+      data: paymentData.map(p => p.count),
+      backgroundColor: [
+        '#28a745', // Card
+        '#007bff', // Bank Transfer
+        '#17a2b8', // USSD
+        '#ffc107', // Wallet
+        '#6c757d', // Other
+        '#dc3545'  // Cash
       ],
       borderWidth: 2,
       borderColor: '#fff'

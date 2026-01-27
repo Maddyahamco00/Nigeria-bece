@@ -56,7 +56,7 @@
 
 <script src="https://js.paystack.co/v1/inline.js"></script>
 <script>
-  window.PAYSTACK_PUBLIC_KEY = '<%= typeof PAYSTACK_PUBLIC_KEY !== "undefined" ? PAYSTACK_PUBLIC_KEY : (process.env.PAYSTACK_PUBLIC_KEY || '') %>';
+  window.PAYSTACK_PUBLIC_KEY = '<%= PAYSTACK_PUBLIC_KEY %>';
 </script>
 <script src="/js/payment.js"></script>
 

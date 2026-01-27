@@ -17,6 +17,7 @@ router.get('/payment', (req, res) => {
     states,
     errors: req.flash('error'),
     success: req.flash('success'),
+    PAYSTACK_PUBLIC_KEY: process.env.PAYSTACK_PUBLIC_KEY || ''
   });
 });
 

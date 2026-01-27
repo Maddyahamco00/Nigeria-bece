@@ -651,11 +651,156 @@ router.get('/settings', requireAdmin, async (req, res) => {
 
 /* ---------------- Analytics ---------------- */
 router.get('/analytics', requireAdmin, async (req, res) => {
-  res.render('admin/analytics', {
-    title: 'Analytics Dashboard',
-    user: req.user,
-    stats: { totalStudents: 0, totalResults: 0, passRate: [{ total: 0, passed: 0 }], gradeDistribution: [] }
-  });
+  try {
+    // Get current date ranges for analytics
+    const today = new Date();
+    const firstDayOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
+    const firstDayOfYear = new Date(today.getFullYear(), 0, 1);
+
+    // Fetch real analytics data
+    const [
+      totalStudents,
+      totalResults,
+      passRateData,
+      gradeDistribution,
+      totalPayments,
+      monthlyPayments,
+      yearlyPayments,
+      pendingPayments,
+      failedPayments,
+      paymentMethods,
+      recentPayments,
+      subjectPerformance
+    ] = await Promise.all([
+      Student.count(),
+      Result.count(),
+      Result.findAll({
+        attributes: [
+          [db.sequelize.fn('COUNT', db.sequelize.col('id')), 'total'],
+          [db.sequelize.fn('SUM', db.sequelize.literal('CASE WHEN grade IN (\'A\', \'B\', \'C\', \'D\') THEN 1 ELSE 0 END')), 'passed']
+        ]
+      }),
+      Result.findAll({
+        attributes: [
+          'grade',
+          [db.sequelize.fn('COUNT', db.sequelize.col('grade')), 'count']
+        ],
+        group: ['grade'],
+        order: [['grade', 'ASC']]
+      }),
+      Payment.count({ where: { status: 'success' } }),
+      Payment.sum('amount', {
+        where: {
+          status: 'success',
+          createdAt: { [Op.gte]: firstDayOfMonth }
+        }
+      }) || 0,
+      Payment.sum('amount', {
+        where: {
+          status: 'success',
+          createdAt: { [Op.gte]: firstDayOfYear }
+        }
+      }) || 0,
+      Payment.count({ where: { status: 'pending' } }),
+      Payment.count({ where: { status: 'failed' } }),
+      Payment.findAll({
+        where: { status: 'success' },
+        attributes: [
+          'paymentMethod',
+          [db.sequelize.fn('COUNT', db.sequelize.col('id')), 'count'],
+          [db.sequelize.fn('SUM', db.sequelize.col('amount')), 'totalAmount']
+        ],
+        group: ['paymentMethod']
+      }),
+      Payment.findAll({
+        where: { status: 'success' },
+        include: [Student, School],
+        order: [['createdAt', 'DESC']],
+        limit: 10
+      }),
+      Result.findAll({
+        include: [{ model: Subject, as: 'subject' }],
+        attributes: [
+          [db.sequelize.fn('AVG', db.sequelize.col('score')), 'avgScore'],
+          [db.sequelize.fn('COUNT', db.sequelize.col('Result.id')), 'totalResults'],
+          [db.sequelize.fn('SUM', db.sequelize.literal('CASE WHEN grade IN (\'A\', \'B\', \'C\', \'D\') THEN 1 ELSE 0 END')), 'passed']
+        ],
+        include: [{
+          model: Subject,
+          as: 'subject',
+          attributes: ['name']
+        }],
+        group: ['Subject.id'],
+        order: [[db.sequelize.fn('AVG', db.sequelize.col('score')), 'DESC']],
+        limit: 5
+      })
+    ]);
+
+    // Process pass rate data
+    const passRate = passRateData[0] ? {
+      total: parseInt(passRateData[0].dataValues.total) || 0,
+      passed: parseInt(passRateData[0].dataValues.passed) || 0
+    } : { total: 0, passed: 0 };
+
+    // Process grade distribution
+    const processedGradeDistribution = gradeDistribution.map(g => ({
+      grade: g.dataValues.grade,
+      count: parseInt(g.dataValues.count) || 0
+    }));
+
+    // Process payment methods
+    const processedPaymentMethods = paymentMethods.map(p => ({
+      method: p.dataValues.paymentMethod,
+      count: parseInt(p.dataValues.count) || 0,
+      totalAmount: parseFloat(p.dataValues.totalAmount) || 0
+    }));
+
+    // Process subject performance
+    const processedSubjectPerformance = subjectPerformance.map(s => ({
+      name: s.subject ? s.subject.name : 'Unknown',
+      avgScore: parseFloat(s.dataValues.avgScore) || 0,
+      passRate: s.dataValues.totalResults > 0 ? (parseInt(s.dataValues.passed) / parseInt(s.dataValues.totalResults)) * 100 : 0
+    }));
+
+    res.render('admin/analytics', {
+      title: 'Analytics Dashboard',
+      user: req.user,
+      stats: {
+        totalStudents,
+        totalResults,
+        passRate,
+        gradeDistribution: processedGradeDistribution,
+        totalPayments,
+        monthlyPayments,
+        yearlyPayments,
+        pendingPayments,
+        failedPayments,
+        paymentMethods: processedPaymentMethods,
+        recentPayments,
+        subjectPerformance: processedSubjectPerformance
+      }
+    });
+  } catch (err) {
+    console.error('Analytics Error:', err);
+    res.render('admin/analytics', {
+      title: 'Analytics Dashboard',
+      user: req.user,
+      stats: {
+        totalStudents: 0,
+        totalResults: 0,
+        passRate: { total: 0, passed: 0 },
+        gradeDistribution: [],
+        totalPayments: 0,
+        monthlyPayments: 0,
+        yearlyPayments: 0,
+        pendingPayments: 0,
+        failedPayments: 0,
+        paymentMethods: [],
+        recentPayments: [],
+        subjectPerformance: []
+      }
+    });
+  }
 });
 
 /* ---------------- Timetable ---------------- */

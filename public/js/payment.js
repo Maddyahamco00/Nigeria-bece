@@ -18,7 +18,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
       try {
         // Initialize on server
-        const initRes = await fetch("/payment/initialize", {
+        const initRes = await fetch("/payment/init", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ email, amount })

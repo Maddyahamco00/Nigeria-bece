@@ -1,0 +1,87 @@
+config:
+  target: 'http://localhost:3000'
+  phases:
+    - duration: 60
+      arrivalRate: 5
+      name: "Warm up phase"
+    - duration: 120
+      arrivalRate: 5
+      rampTo: 50
+      name: "Ramp up load"
+    - duration: 60
+      arrivalRate: 50
+      name: "Sustained load"
+  defaults:
+    headers:
+      Content-Type: 'application/json'
+
+scenarios:
+  - name: "Student registration flow"
+    weight: 40
+    flow:
+      - get:
+          url: "/students/register/biodata"
+          expect:
+            - statusCode: 200
+      - post:
+          url: "/students/register/biodata"
+          json:
+            name: "Test Student {{ $randomInt }}"
+            email: "student{{ $randomInt }}@example.com"
+            password: "password123"
+            confirmPassword: "password123"
+            gender: "Male"
+            dob: "2005-01-01"
+            guardianPhone: "+2348012345678"
+            stateId: 1
+            lgaId: 1
+            schoolId: 1
+          expect:
+            - statusCode: 302
+
+  - name: "Admin dashboard access"
+    weight: 30
+    flow:
+      - post:
+          url: "/auth/login"
+          form:
+            email: "admin@example.com"
+            password: "adminpass123"
+          expect:
+            - statusCode: 302
+      - get:
+          url: "/admin/dashboard"
+          expect:
+            - statusCode: 200
+
+  - name: "Public pages access"
+    weight: 20
+    flow:
+      - get:
+          url: "/"
+          expect:
+            - statusCode: 200
+      - get:
+          url: "/payment"
+          expect:
+            - statusCode: 200
+
+  - name: "API endpoints"
+    weight: 10
+    flow:
+      - get:
+          url: "/health"
+          expect:
+            - statusCode: 200
+      - get:
+          url: "/api/states"
+          expect:
+            - statusCode: 200
+
+before:
+  flow:
+    - log: "Starting performance test for Nigeria BECE Portal"
+
+after:
+  flow:
+    - log: "Performance test completed"
