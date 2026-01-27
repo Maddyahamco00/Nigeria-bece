@@ -87,7 +87,7 @@
       <div class="col-lg-8 col-12">
         <div class="card border-0 shadow-sm rounded-4">
           <div class="card-header bg-transparent border-0 d-flex justify-content-between align-items-center">
-            <h5 class="fw-bold mb-0">Payments (Last 6 Months)</h5>
+            <h5 class="fw-bold mb-0">Monthly Revenue (Last 6 Months)</h5>
             <div>
               <button id="refreshCharts" class="btn btn-sm btn-outline-secondary">Refresh</button>
             </div>
@@ -181,12 +181,19 @@
 <script>
 async function refreshDashboard() {
 
-  // LIVE COUNTERS
+// LIVE COUNTERS
   const counters = await fetch('/admin/dashboard/live/counters').then(r => r.json());
   if (counters.success) {
     document.getElementById('totalStudents').textContent = counters.counters.students;
     document.getElementById('totalSchools').textContent = counters.counters.schools;
     document.getElementById('totalPaid').textContent = counters.counters.paid;
+    
+    // Debug: Log payment status
+    console.log('Payment Status:', {
+      total: counters.counters.totalPayments,
+      successful: counters.counters.paid,
+      pending: counters.counters.pendingPayments
+    });
   }
 
   // LIVE RECENT ACTIVITY
@@ -270,11 +277,20 @@ async function fetchDashboardStats() {
 async function renderPaymentsChart() {
   try {
     const json = await fetchDashboardStats();
-    if (!json.success) return;
+    if (!json.success) {
+      console.error('Failed to fetch dashboard stats');
+      return;
+    }
 
     const ctx = document.getElementById('paymentsChart').getContext('2d');
     const labels = json.chart.labels || [];
     const data = json.chart.data || [];
+
+    // Ensure we have data to display
+    if (labels.length === 0) {
+      console.warn('No chart data available');
+      return;
+    }
 
     if (paymentsChart) {
       paymentsChart.data.labels = labels;
@@ -288,33 +304,53 @@ async function renderPaymentsChart() {
       data: {
         labels,
         datasets: [{
-          label: 'Payments (₦)',
+          label: 'Monthly Revenue (₦)',
           data,
           borderColor: '#16a34a',
           backgroundColor: 'rgba(22,163,74,0.08)',
           fill: true,
-          tension: 0.3
+          tension: 0.3,
+          pointBackgroundColor: '#16a34a',
+          pointBorderColor: '#ffffff',
+          pointBorderWidth: 2
         }]
       },
       options: {
         responsive: true,
+        maintainAspectRatio: false,
         plugins: {
           tooltip: {
             callbacks: {
               label: function(context) {
                 const v = context.raw || 0;
-                return `₦${Number(v).toLocaleString()}`;
+                return `Revenue: ₦${Number(v).toLocaleString()}`;
               }
             }
+          },
+          legend: {
+            display: true,
+            position: 'top'
           }
         },
         scales: {
-          y: { beginAtZero: true }
+          y: { 
+            beginAtZero: true,
+            ticks: {
+              callback: function(value) {
+                return '₦' + Number(value).toLocaleString();
+              }
+            }
+          },
+          x: {
+            grid: {
+              display: false
+            }
+          }
         }
       }
     });
   } catch (err) {
-    console.error('Failed to render payments chart', err);
+    console.error('Failed to render payments chart:', err);
   }
 }
 
@@ -356,8 +392,10 @@ async function renderStudentsByStateChart() {
 
     // Render top states list under the chart
     const topList = document.getElementById('topStatesList');
-    if (topList) {
+    if (topList && stateRows.length > 0) {
       topList.innerHTML = stateRows.slice(0, 6).map(r => `<li><strong>${r.state || 'Unknown'}</strong>: ${r.count}</li>`).join('');
+    } else if (topList) {
+      topList.innerHTML = '<li class="text-muted">No data available</li>';
     }
   } catch (err) {
     console.error('Failed to render students-by-state chart', err);

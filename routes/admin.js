@@ -1,4 +1,3 @@
-// routes/admin.js
 import express from 'express';
 import { Student, School, Payment, Result, User, State, LGA, ExamTimetable, ExamCenter, Certificate, Subject } from '../models/index.js';
 import { getGrade } from '../utils/grade.js';
@@ -9,11 +8,10 @@ import { requireAdmin, requireSuperAdmin } from '../middleware/roleMiddleware.js
 import { isAuthenticated, isAdmin } from '../middleware/auth.js';
 import { APP_CONFIG } from '../config/constants.js';
 import { validateStudentUpdate } from '../middleware/validationMiddleware.js';
-
+import { Parser } from 'json2csv';
+import { Op, QueryTypes } from 'sequelize';
 
 const router = express.Router();
-import { Parser } from 'json2csv';
-import { Op } from 'sequelize';
 
 // Middleware to ensure user object is available in all views
 router.use((req, res, next) => {
@@ -29,7 +27,21 @@ router.get('/dashboard', requireAdmin, async (req, res) => {
     const totalStudents = await Student.count();
     const totalSchools = await School.count();
     const totalPayments = await Payment.count({ where: { status: 'success' } });
-    const monthlyRevenue = await Payment.sum('amount', { where: { status: 'success' } }) || 0;
+    
+    // Calculate monthly revenue for current month
+    const currentMonth = new Date();
+    const startOfMonth = new Date(currentMonth.getFullYear(), currentMonth.getMonth(), 1);
+    const endOfMonth = new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1, 0);
+    
+    const monthlyRevenue = await Payment.sum('amount', { 
+      where: { 
+        status: 'success',
+        createdAt: {
+          [Op.gte]: startOfMonth,
+          [Op.lte]: endOfMonth
+        }
+      } 
+    }) || 0;
 
     // Recent students
     const recentStudents = await Student.findAll({
@@ -38,7 +50,7 @@ router.get('/dashboard', requireAdmin, async (req, res) => {
       limit: APP_CONFIG.LIMITS.RECENT_ITEMS
     });
 
-    // Recent payments
+    // Recent payments with student data
     const recentPayments = await Payment.findAll({
       include: [Student, School],
       where: { status: 'success' },
@@ -46,12 +58,28 @@ router.get('/dashboard', requireAdmin, async (req, res) => {
       limit: APP_CONFIG.LIMITS.RECENT_ITEMS
     });
 
+    // Add payment status to recent students
+    const studentsWithPaymentStatus = await Promise.all(
+      recentStudents.map(async (student) => {
+        const payment = await Payment.findOne({
+          where: { 
+            email: student.email,
+            status: 'success'
+          }
+        });
+        return {
+          ...student.toJSON(),
+          paymentStatus: payment ? 'Paid' : 'Pending'
+        };
+      })
+    );
+
     const analytics = {
       totalStudents,
       totalSchools,
       totalPayments,
       monthlyRevenue,
-      recentStudents,
+      recentStudents: studentsWithPaymentStatus,
       recentPayments
     };
 
@@ -75,10 +103,13 @@ router.get('/dashboard/live/counters', requireAdmin, async (req, res) => {
     const counters = {
       students: await Student.count(),
       schools: await School.count(),
-      paid: await Payment.count({ where: { status: 'success' } })
+      paid: await Payment.count({ where: { status: 'success' } }),
+      totalPayments: await Payment.count(),
+      pendingPayments: await Payment.count({ where: { status: 'pending' } })
     };
     res.json({ success: true, counters });
   } catch (err) {
+    console.error('Counters error:', err);
     res.json({ success: false, error: 'Failed to fetch counters' });
   }
 });
@@ -86,10 +117,19 @@ router.get('/dashboard/live/counters', requireAdmin, async (req, res) => {
 router.get('/dashboard/live/recent', requireAdmin, async (req, res) => {
   try {
     const recentStudents = await Student.findAll({
-      include: [School],
+      include: [School, Payment],
       order: [['createdAt', 'DESC']],
       limit: APP_CONFIG.LIMITS.RECENT_ITEMS,
       attributes: ['id', 'name', 'email', 'createdAt']
+    });
+
+    // Add payment status to students
+    const studentsWithPaymentStatus = recentStudents.map(student => {
+      const hasSuccessfulPayment = student.Payments && student.Payments.some(p => p.status === 'success');
+      return {
+        ...student.toJSON(),
+        paymentStatus: hasSuccessfulPayment ? 'Paid' : 'Pending'
+      };
     });
 
     const recentPayments = await Payment.findAll({
@@ -97,10 +137,10 @@ router.get('/dashboard/live/recent', requireAdmin, async (req, res) => {
       where: { status: 'success' },
       order: [['createdAt', 'DESC']],
       limit: APP_CONFIG.LIMITS.RECENT_ITEMS,
-      attributes: ['id', 'amount', 'reference', 'createdAt']
+      attributes: ['id', 'amount', 'reference', 'createdAt', 'email']
     });
 
-    res.json({ success: true, recentStudents, recentPayments });
+    res.json({ success: true, recentStudents: studentsWithPaymentStatus, recentPayments });
   } catch (err) {
     console.error('Recent data error:', err);
     res.json({ success: false, error: 'Failed to fetch recent data' });
@@ -109,7 +149,7 @@ router.get('/dashboard/live/recent', requireAdmin, async (req, res) => {
 
 router.get('/dashboard/stats', requireAdmin, async (req, res) => {
   try {
-    // Get monthly student registrations for the last 6 months
+    // Get monthly payment data for the last 6 months
     const labels = [];
     const data = [];
     
@@ -117,35 +157,35 @@ router.get('/dashboard/stats', requireAdmin, async (req, res) => {
       const date = new Date();
       date.setMonth(date.getMonth() - i);
       const month = date.toLocaleString('default', { month: 'short' });
-      const year = date.getFullYear();
       labels.push(month);
       
       const startOfMonth = new Date(date.getFullYear(), date.getMonth(), 1);
       const endOfMonth = new Date(date.getFullYear(), date.getMonth() + 1, 0);
       
-      const count = await Student.count({
+      // Get total payment amount for successful payments in this month
+      const monthlyTotal = await Payment.sum('amount', {
         where: {
+          status: 'success',
           createdAt: {
             [Op.gte]: startOfMonth,
             [Op.lte]: endOfMonth
           }
         }
-      });
+      }) || 0;
       
-      data.push(count);
+      data.push(monthlyTotal);
     }
 
-    // Students by state
-    const studentsByState = await Student.findAll({
-      include: [State],
-      attributes: [
-        [sequelize.fn('COUNT', sequelize.col('Student.id')), 'count'],
-        [sequelize.col('State.name'), 'stateName']
-      ],
-      group: ['State.id', 'State.name'],
-      order: [[sequelize.fn('COUNT', sequelize.col('Student.id')), 'DESC']],
-      limit: 10
-    });
+    // Students by state with proper sequelize import
+    const studentsByState = await db.query(`
+      SELECT s.name as state, COUNT(st.id) as count 
+      FROM states s 
+      LEFT JOIN students st ON s.id = st.stateId 
+      GROUP BY s.id, s.name 
+      HAVING COUNT(st.id) > 0
+      ORDER BY count DESC 
+      LIMIT 10
+    `, { type: QueryTypes.SELECT });
 
     res.json({ success: true, chart: { labels, data }, studentsByState });
   } catch (err) {
