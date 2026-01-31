@@ -75,7 +75,7 @@ router.get('/register/confirmation', renderConfirmationPage);
 router.get('/register', async (req, res) => {
   try {
     const states = await State.findAll({ order: [['name', 'ASC']] });
-    const subjects = await Subject.findAll({ order: [['subject_name', 'ASC']] });
+    const subjects = await Subject.findAll({ order: [['name', 'ASC']] });
     res.render('students/student-registration', {
       title: 'Student Registration',
       messages: req.flash(),
@@ -137,68 +137,8 @@ router.get('/dashboard/full', requireStudent, async (req, res) => {
 });
 
 // Student profile
-router.get('/profile', requireStudent, async (req, res) => {
-  try {
-    const studentData = await Student.findByPk(req.session.student.id, {
-      include: [School],
-      attributes: { exclude: ['password'] }
-    });
-
-    res.render('students/profile', {
-      title: 'Student Profile',
-      student: studentData,
-      messages: req.flash()
-    });
-  } catch (err) {
-    console.error('Profile error:', err);
-    req.flash('error', 'Error loading profile');
-    res.redirect('/students/dashboard');
-  }
-});
-
-// Update student profile
-router.post('/profile', requireStudent, async (req, res) => {
-  try {
-    const { name, email, guardianPhone } = req.body;
-    const student = await Student.findByPk(req.session.student.id);
-
-    await student.update({ name, email, guardianPhone });
-
-    req.session.student.name = name;
-
-    // Send notifications for profile update
-    try {
-      const smsService = new SMSService();
-      const smsMessage = `BECE Profile Updated!\nName: ${student.name}\nReg Number: ${student.regNumber}\nYour profile has been updated successfully.`;
-      await smsService.sendSMS(student.guardianPhone, smsMessage);
-
-      const emailHtml = `
-        <h2>BECE Profile Updated</h2>
-        <p>Dear ${student.name},</p>
-        <p>Your BECE profile has been updated successfully.</p>
-        <p><strong>Updated Details:</strong></p>
-        <ul>
-          <li>Name: ${student.name}</li>
-          <li>Email: ${student.email}</li>
-          <li>Registration Number: ${student.regNumber}</li>
-        </ul>
-        <p><a href="${process.env.APP_URL || 'https://bece-ng.onrender.com'}/students/dashboard">Access Dashboard</a></p>
-        <p>Best regards,<br>BECE Registration Team</p>
-      `;
-      await sendEmail(student.email, 'BECE Profile Updated', emailHtml);
-    } catch (notificationError) {
-      console.error('Notification error:', notificationError);
-      // Don't fail update if notifications fail
-    }
-
-    req.flash('success', 'Profile updated successfully');
-    res.redirect('/students/profile');
-  } catch (err) {
-    console.error('Profile update error:', err);
-    req.flash('error', 'Error updating profile');
-    res.redirect('/students/profile');
-  }
-});
+router.get('/profile', requireStudent, renderProfile);
+router.post('/profile', requireStudent, updateProfile);
 
 // Payment simulation
 router.post('/payment/simulate', requireStudent, async (req, res) => {
