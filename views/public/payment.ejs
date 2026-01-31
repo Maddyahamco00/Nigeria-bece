@@ -1,10 +1,10 @@
 
  <!-- views/public/payment.ejs--> 
 
-<main class="container-fluid d-flex align-items-center justify-content-center py-5" 
+<main class="container-fluid d-flex align-items-center justify-content-center py-3 py-md-5" 
       style="min-height: 100vh; background: linear-gradient(135deg, #fdfdfd, #e8f1f9);">
 
-  <div class="card shadow-lg border-0 rounded-4 p-4" style="max-width: 500px; width: 100%;">
+  <div class="card shadow-lg border-0 rounded-4 p-2 p-md-4" style="max-width: 500px; width: 100%; margin: 1rem;">
     <div class="card-body">
 
       <!-- Header -->
@@ -14,10 +14,10 @@
       </p>
 
       <!-- Error / Success Messages -->
-      <% if (messages.error) { %>
+      <% if (typeof messages !== 'undefined' && messages.error) { %>
         <div class="alert alert-danger"><%= messages.error %></div>
       <% } %>
-      <% if (messages.success) { %>
+      <% if (typeof messages !== 'undefined' && messages.success) { %>
         <div class="alert alert-success"><%= messages.success %></div>
       <% } %>
 
@@ -46,8 +46,8 @@
 
       <!-- Cancel / Back -->
       <div class="text-center mt-3">
-        <a href="/students/dashboard" class="btn btn-outline-secondary rounded-pill px-4">
-          Cancel / Back
+        <a href="/" class="btn btn-outline-secondary rounded-pill px-4">
+          Back to Home
         </a>
       </div>
     </div>

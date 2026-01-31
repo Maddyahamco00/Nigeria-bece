@@ -63,21 +63,30 @@ router.post('/pay', async (req, res) => {
 // Initialize a Paystack transaction
 router.post('/init', async (req, res) => {
     try {
-        const PAYSTACK_KEY = process.env.PAYSTACK_SECRET_KEY || process.env.PAYSTACK_SECRET || process.env.PAYSTACK_SECRET_KEY;
+        const PAYSTACK_KEY = process.env.PAYSTACK_SECRET_KEY || process.env.PAYSTACK_SECRET;
         if (!PAYSTACK_KEY) {
-            return res.status(500).json({ error: 'PAYSTACK secret key not configured. Set PAYSTACK_SECRET_KEY or PAYSTACK_SECRET in your environment.' });
+            console.error('Paystack secret key missing');
+            return res.status(500).json({ error: 'Payment service not configured' });
         }
 
         const { email, amount, metadata, name, guardian } = req.body;
-        if (!email || !amount) return res.status(400).json({ error: 'email and amount are required' });
+        if (!email || !amount) {
+            return res.status(400).json({ error: 'Email and amount are required' });
+        }
 
-        const baseUrl = process.env.BASE_URL || `http://localhost:3000`;
+        const baseUrl = process.env.BASE_URL || process.env.APP_URL || `http://localhost:3000`;
         const body = {
             email,
             amount: Math.round(Number(amount) * 100), // convert Naira to kobo
             callback_url: `${baseUrl}/payment/callback`,
-            metadata: Object.assign({}, metadata || {}, { name: name || '', guardian: guardian || '', autoCreate: false })
+            metadata: Object.assign({}, metadata || {}, { 
+                name: name || '', 
+                guardian: guardian || '', 
+                autoCreate: false 
+            })
         };
+
+        console.log('Initializing Paystack payment:', { email, amount: body.amount });
 
         const resp = await fetch('https://api.paystack.co/transaction/initialize', {
             method: 'POST',
@@ -89,9 +98,11 @@ router.post('/init', async (req, res) => {
         });
 
         const data = await resp.json();
+        console.log('Paystack response:', data);
+        
         if (!resp.ok || !data.status) {
             console.error('Paystack initialize failed', data);
-            return res.status(500).json({ error: 'Failed to initialize payment' });
+            return res.status(500).json({ error: data.message || 'Failed to initialize payment' });
         }
 
         // Create a pending Payment record
@@ -103,10 +114,14 @@ router.post('/init', async (req, res) => {
             status: 'pending'
         });
 
-        res.json({ authorization_url: data.data.authorization_url, reference: data.data.reference, publicKey: process.env.PAYSTACK_PUBLIC_KEY || '' });
+        res.json({ 
+            authorization_url: data.data.authorization_url, 
+            reference: data.data.reference, 
+            publicKey: process.env.PAYSTACK_PUBLIC_KEY || '' 
+        });
     } catch (err) {
         console.error('Init payment error', err);
-        res.status(500).json({ error: 'Server error' });
+        res.status(500).json({ error: 'Server error: ' + err.message });
     }
 });
 

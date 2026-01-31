@@ -1,4 +1,4 @@
-  // public/js/payment.js
+// public/js/payment.js
 document.addEventListener("DOMContentLoaded", () => {
   const paymentForm = document.getElementById("payment-form");
   const paymentButton = document.getElementById("payment-button");
@@ -6,15 +6,25 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // Use public key exposed by the view if available
   const PAYSTACK_KEY = window.PAYSTACK_PUBLIC_KEY || '';
+  
+  console.log('Payment script loaded, Paystack key:', PAYSTACK_KEY ? 'Available' : 'Missing');
 
   if (paymentForm) {
     paymentForm.addEventListener("submit", async (e) => {
       e.preventDefault();
       paymentButton.disabled = true;
+      paymentButton.textContent = 'Processing...';
       errorDiv.textContent = "";
 
       const email = document.getElementById("email").value;
       const amount = document.getElementById("amount").value;
+      
+      if (!email || !amount) {
+        errorDiv.textContent = 'Please fill in all fields';
+        paymentButton.disabled = false;
+        paymentButton.textContent = 'Pay Now';
+        return;
+      }
 
       try {
         // Initialize on server
@@ -23,10 +33,21 @@ document.addEventListener("DOMContentLoaded", () => {
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ email, amount })
         });
+        
+        if (!initRes.ok) {
+          throw new Error(`HTTP ${initRes.status}: ${initRes.statusText}`);
+        }
 
-        const { authorization_url, reference } = await initRes.json();
+        const initData = await initRes.json();
+        console.log('Init response:', initData);
+        
+        if (initData.error) {
+          throw new Error(initData.error);
+        }
 
-        // If inline key is available, use inline modal
+        const { authorization_url, reference } = initData;
+
+        // If inline key is available and we have a reference, use inline modal
         if (PAYSTACK_KEY && reference) {
           const handler = PaystackPop.setup({
             key: PAYSTACK_KEY,
@@ -36,26 +57,32 @@ document.addEventListener("DOMContentLoaded", () => {
             onClose: () => {
               errorDiv.textContent = "Payment was cancelled.";
               paymentButton.disabled = false;
+              paymentButton.textContent = 'Pay Now';
             },
             callback: async (response) => {
               try {
+                console.log('Payment callback:', response);
                 const verifyRes = await fetch("/payment/verify", {
                   method: "POST",
                   headers: { "Content-Type": "application/json" },
                   body: JSON.stringify({ reference: response.reference })
                 });
+                
                 const data = await verifyRes.json();
-                if (data.status === "success") {
-                  window.location.href = `/payment/success?code=${data.code}`;
-                } else if (data.ok && data.redirectUrl) {
+                console.log('Verify response:', data);
+                
+                if (data.ok && data.redirectUrl) {
                   window.location.href = data.redirectUrl;
+                } else if (data.status === "success") {
+                  window.location.href = `/success?reference=${response.reference}`;
                 } else {
-                  throw new Error('Verification failed');
+                  throw new Error(data.error || 'Verification failed');
                 }
               } catch (err) {
                 console.error('Verification error', err);
-                errorDiv.textContent = 'Payment verification failed.';
+                errorDiv.textContent = 'Payment verification failed: ' + err.message;
                 paymentButton.disabled = false;
+                paymentButton.textContent = 'Pay Now';
               }
             }
           });
@@ -63,21 +90,19 @@ document.addEventListener("DOMContentLoaded", () => {
           return;
         }
 
-        // Fallback: if server returned a hosted authorization_url, present a safe link
+        // Fallback: redirect to hosted checkout
         if (authorization_url) {
-          // errorDiv.innerHTML = `Inline checkout unavailable. <a href="${authorization_url}" target="_blank" rel="noopener">Open hosted checkout in a new tab</a>`;
-          // paymentButton.disabled = false;
-           window.location.href = authorization_url;
+          window.location.href = authorization_url;
           return;
         }
 
-        errorDiv.textContent = "Payment init failed.";
-        paymentButton.disabled = false;
+        throw new Error('No payment method available');
 
       } catch (err) {
-        console.error(err);
-        errorDiv.textContent = "Payment initialization failed.";
+        console.error('Payment error:', err);
+        errorDiv.textContent = "Payment failed: " + err.message;
         paymentButton.disabled = false;
+        paymentButton.textContent = 'Pay Now';
       }
     });
   }
