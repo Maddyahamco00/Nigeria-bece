@@ -15,13 +15,13 @@
       <div class="col-lg-8">
         <div class="card shadow-sm border-0 rounded-4">
           <div class="card-body p-4">
-            <% if (messages && messages.error) { %>
+            <% if (typeof messages !== 'undefined' && messages.error) { %>
               <div class="alert alert-danger">
                 <i class="fas fa-exclamation-triangle me-2"></i>
                 <%= messages.error %>
               </div>
             <% } %>
-            <% if (messages && messages.success) { %>
+            <% if (typeof messages !== 'undefined' && messages.success) { %>
               <div class="alert alert-success">
                 <i class="fas fa-check-circle me-2"></i>
                 <%= messages.success %>

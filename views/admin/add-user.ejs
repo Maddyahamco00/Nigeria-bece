@@ -21,6 +21,23 @@
       </div>
       <div class="card-body">
         <form action="/admin/users" method="POST" class="row g-3">
+          <!-- Flash Messages -->
+          <% if (typeof messages !== 'undefined' && messages.error) { %>
+            <div class="col-12">
+              <div class="alert alert-danger">
+                <i class="fas fa-exclamation-triangle me-2"></i>
+                <%= messages.error %>
+              </div>
+            </div>
+          <% } %>
+          <% if (typeof messages !== 'undefined' && messages.success) { %>
+            <div class="col-12">
+              <div class="alert alert-success">
+                <i class="fas fa-check-circle me-2"></i>
+                <%= messages.success %>
+              </div>
+            </div>
+          <% } %>
           <div class="col-md-6">
             <label class="form-label fw-bold">Full Name</label>
             <input type="text" name="name" class="form-control" required placeholder="Enter full name">

@@ -410,20 +410,41 @@ router.get('/schools', requireAdmin, async (req, res) => {
   }
 });
 
-router.get('/schools/add', requireAdmin, async (req, res) => {
+router.post('/schools', requireAdmin, async (req, res) => {
   try {
-    const states = await State.findAll();
-    const lgas = await LGA.findAll();
-    res.render('admin/newSchool', {
-      title: 'Add School',
-      states,
-      lgas,
-      user: req.user
+    const { name, stateId, lgaId, address, schoolSerial, stateCode } = req.body;
+    
+    if (!name || !stateId || !lgaId || !address) {
+      req.flash('error', 'All fields are required');
+      return res.redirect('/admin/schools/add');
+    }
+
+    // Check if school already exists
+    const existingSchool = await School.findOne({ 
+      where: { name, lgaId } 
     });
+    
+    if (existingSchool) {
+      req.flash('error', 'School already exists in this LGA');
+      return res.redirect('/admin/schools/add');
+    }
+
+    // Create school
+    const school = await School.create({
+      name,
+      stateId,
+      lgaId,
+      address,
+      schoolSerial: schoolSerial || 1,
+      stateCode
+    });
+
+    req.flash('success', 'School added successfully');
+    res.redirect('/admin/schools');
   } catch (err) {
     console.error('Add school error:', err);
-    req.flash('error', 'Failed to load form');
-    res.redirect('/admin/schools');
+    req.flash('error', 'Failed to add school');
+    res.redirect('/admin/schools/add');
   }
 });
 
@@ -620,11 +641,25 @@ router.post('/users', requireSuperAdmin, async (req, res) => {
   try {
     const { name, email, password, role, stateId, schoolId, permissions } = req.body;
 
+    // Validate required fields
+    if (!name || !email || !password || !role) {
+      req.flash('error', 'Name, email, password, and role are required');
+      return res.redirect('/admin/users/new');
+    }
+
     // Check if user already exists
     const existingUser = await User.findOne({ where: { email } });
     if (existingUser) {
-      req.flash('error', APP_CONFIG.MESSAGES.ERROR.EMAIL_EXISTS);
+      req.flash('error', 'User with this email already exists');
       return res.redirect('/admin/users/new');
+    }
+
+    // Process permissions array
+    let permissionsObj = {};
+    if (permissions && Array.isArray(permissions)) {
+      permissions.forEach(perm => {
+        permissionsObj[perm] = true;
+      });
     }
 
     // Create user
@@ -633,17 +668,17 @@ router.post('/users', requireSuperAdmin, async (req, res) => {
       email,
       password, // Will be hashed by model hook
       role,
-      stateId: stateId || null,
-      schoolId: schoolId || null,
-      permissions: permissions ? permissions : {},
+      stateId: (role === 'state_admin' && stateId) ? stateId : null,
+      schoolId: (role === 'school_admin' && schoolId) ? schoolId : null,
+      permissions: permissionsObj,
       isActive: true
     });
 
-    req.flash('success', APP_CONFIG.MESSAGES.SUCCESS.ADMIN_CREATED);
+    req.flash('success', `${role.replace('_', ' ')} created successfully`);
     res.redirect('/admin/users');
   } catch (err) {
     console.error('Create user error:', err);
-    req.flash('error', 'Failed to create user');
+    req.flash('error', 'Failed to create user: ' + err.message);
     res.redirect('/admin/users/new');
   }
 });
