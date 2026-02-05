@@ -92,11 +92,21 @@ router.get('/register', async (req, res) => {
 router.post('/register', registerStudent);
 
 
-// Fetch LGAs by state ID (AJAX)
+// Fetch LGAs by state ID (AJAX) - with input validation
 router.get('/api/lgas/:stateId', async (req, res) => {
   try {
     const { stateId } = req.params;
-    const lgas = await LGA.findAll({ where: { stateId } });
+    
+    // Validate stateId is a positive integer
+    const stateIdNum = parseInt(stateId);
+    if (isNaN(stateIdNum) || stateIdNum <= 0) {
+      return res.status(400).json({ error: 'Invalid state ID' });
+    }
+    
+    const lgas = await LGA.findAll({ 
+      where: { stateId: stateIdNum },
+      attributes: ['id', 'name'] // Only return needed fields
+    });
     res.json(lgas);
   } catch (err) {
     console.error('❌ Error fetching LGAs:', err);

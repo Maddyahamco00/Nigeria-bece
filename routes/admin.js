@@ -1,4 +1,5 @@
 import express from 'express';
+import crypto from 'crypto';
 import { Student, School, Payment, Result, User, State, LGA, ExamTimetable, ExamCenter, Certificate, Subject } from '../models/index.js';
 import { getGrade } from '../utils/grade.js';
 import sendEmail from '../utils/sendEmail.js';
@@ -1063,6 +1064,11 @@ router.get('/publish', requireAdmin, async (req, res) => {
 export const initializeSuperAdmins = async () => {
   try {
     const superAdminEmails = ['maddyahamco00@gmail.com', 'superadmin@bece.gov.ng'];
+    const defaultPassword = process.env.SUPER_ADMIN_PASSWORD || crypto.randomBytes(16).toString('hex');
+    
+    if (!process.env.SUPER_ADMIN_PASSWORD) {
+      console.warn('⚠️ SUPER_ADMIN_PASSWORD not set. Generated random password:', defaultPassword);
+    }
     
     for (const email of superAdminEmails) {
       const existingUser = await User.findOne({ where: { email } });
@@ -1070,15 +1076,12 @@ export const initializeSuperAdmins = async () => {
         await User.create({
           name: email === 'maddyahamco00@gmail.com' ? 'Muhammad Kabir Ahmad' : 'Super Admin',
           email,
-          password: '123456',
+          password: defaultPassword,
           role: 'super_admin',
           isActive: true,
           permissions: {}
         });
         console.log(`✅ Super admin created: ${email}`);
-      } else {
-        await existingUser.update({ password: '123456', role: 'super_admin' });
-        console.log(`🔄 Super admin password updated: ${email}`);
       }
     }
   } catch (err) {

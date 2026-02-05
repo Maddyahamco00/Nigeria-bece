@@ -11,6 +11,7 @@ import expressLayouts from 'express-ejs-layouts';
 import { sequelize } from './config/index.js';
 import cacheService from './services/cacheService.js';
 import { User } from './models/index.js';
+import { securityHeaders, sanitizeInput, createRateLimit } from './middleware/security.js';
 
 // ------------------------------
 // Route Imports
@@ -37,6 +38,15 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 // ------------------------------
+// Security Middleware
+// ------------------------------
+app.use(securityHeaders);
+app.use(sanitizeInput);
+app.use('/api/', createRateLimit(15 * 60 * 1000, 100)); // API rate limiting
+app.use('/auth/', createRateLimit(15 * 60 * 1000, 20)); // Auth rate limiting
+app.use('/payment/', createRateLimit(15 * 60 * 1000, 10)); // Payment rate limiting
+
+// ------------------------------
 // Core Middleware
 // ------------------------------
 app.use(express.urlencoded({ extended: true }));
@@ -48,14 +58,17 @@ app.use(express.static(path.join(__dirname, 'public')));
 // ------------------------------
 app.use(
   session({
-    secret: process.env.SESSION_SECRET || 'secret_key',
+    secret: process.env.SESSION_SECRET || 'fallback-secret-key',
     resave: false,
     saveUninitialized: false,
+    name: 'bece.sid',
     cookie: {
-      secure: false, // Set to false for development
+      secure: process.env.NODE_ENV === 'production',
       httpOnly: true,
-      maxAge: 24 * 60 * 60 * 1000 // 24 hours
-    }
+      maxAge: 24 * 60 * 60 * 1000, // 24 hours
+      sameSite: 'strict'
+    },
+    rolling: true // Reset expiry on activity
   })
 );
 

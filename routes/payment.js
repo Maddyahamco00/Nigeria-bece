@@ -1,5 +1,7 @@
 // routes/payment.js
 import express from 'express';
+import { DataTypes } from 'sequelize';
+import sequelize from '../config/database.js';
 const router = express.Router();
 import db from '../config/database.js'; // your MySQL connection
 import nodemailer from 'nodemailer';
@@ -24,12 +26,24 @@ router.post('/pay', async (req, res) => {
     const payment_ref = 'PAY' + Date.now(); // demo reference
 
     try {
-        // Save pre-registration payment
-        await db.query(
-            `INSERT INTO pre_reg_payments (name, email, guardian_number, amount, payment_reference, payment_status, created_at)
-             VALUES (?, ?, ?, ?, ?, 'Paid', NOW())`,
-            [name, email, guardian_number, 1000, payment_ref]
-        );
+        // Save pre-registration payment using Sequelize to prevent SQL injection
+        const PreRegPayment = sequelize.define('PreRegPayment', {
+          name: DataTypes.STRING,
+          email: DataTypes.STRING,
+          guardian_number: DataTypes.STRING,
+          amount: DataTypes.DECIMAL,
+          payment_reference: DataTypes.STRING,
+          payment_status: DataTypes.STRING
+        }, { tableName: 'pre_reg_payments' });
+        
+        await PreRegPayment.create({
+          name,
+          email,
+          guardian_number,
+          amount: 1000,
+          payment_reference: payment_ref,
+          payment_status: 'Paid'
+        });
 
         // Demo Email using your existing setup
         const transporter = nodemailer.createTransport({
