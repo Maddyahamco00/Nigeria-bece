@@ -10,8 +10,9 @@ import { fileURLToPath } from 'url';
 import expressLayouts from 'express-ejs-layouts';
 import { sequelize } from './config/index.js';
 import cacheService from './services/cacheService.js';
-import { User } from './models/index.js';
 import { securityHeaders, sanitizeInput, createRateLimit } from './middleware/security.js';
+import { notFoundHandler, globalErrorHandler } from './middleware/errorHandler.js';
+import logger from './utils/logger.js';
 
 // ------------------------------
 // Route Imports
@@ -58,7 +59,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 // ------------------------------
 app.use(
   session({
-    secret: process.env.SESSION_SECRET || 'fallback-secret-key',
+    secret: process.env.SESSION_SECRET || (process.env.NODE_ENV === 'production' ? (() => { throw new Error('SESSION_SECRET must be set in production'); })() : 'dev-session-secret'),
     resave: false,
     saveUninitialized: false,
     name: 'bece.sid',
@@ -99,43 +100,11 @@ app.use(expressLayouts);
 app.set('layout', 'layout/main');
 
 // ------------------------------
-// Debugging Middleware (optional)
+// Request Logging Middleware
 // ------------------------------
 app.use((req, res, next) => {
-  console.log(`[${req.method}] ${req.originalUrl}`);
+  logger.debug(`[${req.method}] ${req.originalUrl}`);
   next();
-});
-
-// ------------------------------
-// Health Check for Render
-// ------------------------------
-app.get('/health', (req, res) => {
-  res.status(200).json({ status: 'OK', timestamp: new Date().toISOString() });
-});
-
-// Emergency admin creation endpoint
-app.get('/create-admin-now', async (req, res) => {
-  try {
-    const [user, created] = await User.findOrCreate({
-      where: { email: 'maddyahamco00@gmail.com' },
-      defaults: {
-        name: 'Muhammad Kabir Ahmad',
-        email: 'maddyahamco00@gmail.com',
-        password: '123456', // Let User model hooks handle hashing
-        role: 'super_admin',
-        isActive: true,
-        permissions: {}
-      }
-    });
-    
-    if (!created) {
-      await user.update({ password: '123456', role: 'super_admin' });
-    }
-    
-    res.json({ success: true, message: created ? 'Admin created' : 'Admin updated', email: user.email });
-  } catch (err) {
-    res.json({ success: false, error: err.message });
-  }
 });
 
 // ------------------------------
@@ -152,12 +121,12 @@ app.use('/api', schoolRoutes);
 // Admin Routes (single consolidated router)
 app.use('/admin', adminRoutes);
 
-// Health check endpoint for Render
+// ------------------------------
+// Health Check
+// ------------------------------
 app.get('/health', async (req, res) => {
   try {
-    // Check database connection
     await sequelize.authenticate();
-    
     res.status(200).json({
       status: 'healthy',
       timestamp: new Date().toISOString(),
@@ -175,32 +144,10 @@ app.get('/health', async (req, res) => {
 });
 
 // ------------------------------
-// Error Handling
+// Error Handling (must be last)
 // ------------------------------
-// 404 handler - log details to help diagnose missing routes/static files
-app.use((req, res) => {
-  const info = {
-    method: req.method,
-    url: req.originalUrl,
-    ip: req.ip,
-    headers: {
-      host: req.headers.host,
-      referer: req.headers.referer || req.headers.referrer || null,
-      'user-agent': req.headers['user-agent']
-    }
-  };
-  console.warn('⛔ 404 Not Found:', info);
-  // Render the 404 page and include the requested URL so it's visible in the browser
-  res.status(404).render('404', { title: 'Page Not Found', requested: req.originalUrl });
-});
-
-app.use((err, req, res, next) => {
-  console.error('❌ Server Error:', err.stack);
-  res.status(500).render('error', {
-    title: 'Server Error',
-    message: err.message || 'Something went wrong',
-  });
-});
+app.use(notFoundHandler);
+app.use(globalErrorHandler);
 
 // ------------------------------
 // Server + DB Connection
@@ -209,20 +156,20 @@ const PORT = process.env.PORT || 3000;
 
 // Start server immediately for Render port detection
 app.listen(PORT, () => {
-  console.log(`🚀 Server running on http://localhost:${PORT}`);
+  logger.info(`Server running on http://localhost:${PORT}`, { port: PORT, env: process.env.NODE_ENV });
 });
 
 // Initialize database in background
 sequelize
   .authenticate()
   .then(async () => {
-    console.log('✅ Database connected successfully');
+    logger.info('Database connected successfully');
     
     try {
       await sequelize.query('SET FOREIGN_KEY_CHECKS = 0');
       await sequelize.sync({ force: false });
       await sequelize.query('SET FOREIGN_KEY_CHECKS = 1');
-      console.log('✅ Tables synced successfully');
+      logger.info('Tables synced successfully');
       
       // Seed states and LGAs (only if needed)
       const State = (await import('./models/State.js')).default;
@@ -231,19 +178,18 @@ sequelize
         const seedStatesAndLGAs = (await import('./scripts/seedStatesAndLGAs.js')).default;
         await seedStatesAndLGAs();
       } else {
-        console.log('✅ States already exist, skipping seeding');
+        logger.info('States already exist, skipping seeding');
       }
       
       // Initialize admins
       await initializeSuperAdmins();
-      console.log('⚠️ Running without Redis cache (using mock client)');
       
     } catch (syncErr) {
-      console.error('❌ Table sync failed:', syncErr.message);
+      logger.error('Table sync failed', { error: syncErr.message });
     }
   })
   .catch((err) => {
-    console.error('❌ Database connection failed:', err);
+    logger.error('Database connection failed', { error: err.message });
   });
 
 

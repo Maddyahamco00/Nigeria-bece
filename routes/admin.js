@@ -1063,18 +1063,21 @@ router.get('/publish', requireAdmin, async (req, res) => {
 /* ---------------- Initialize Super Admins ---------------- */
 export const initializeSuperAdmins = async () => {
   try {
-    const superAdminEmails = ['maddyahamco00@gmail.com', 'superadmin@bece.gov.ng'];
-    const defaultPassword = process.env.SUPER_ADMIN_PASSWORD || crypto.randomBytes(16).toString('hex');
+    const superAdminEmails = [
+      process.env.SUPER_ADMIN_EMAIL || 'superadmin@bece.gov.ng'
+    ];
+    const defaultPassword = process.env.SUPER_ADMIN_PASSWORD;
     
-    if (!process.env.SUPER_ADMIN_PASSWORD) {
-      console.warn('⚠️ SUPER_ADMIN_PASSWORD not set. Generated random password:', defaultPassword);
+    if (!defaultPassword) {
+      console.warn('⚠️ SUPER_ADMIN_PASSWORD not set — skipping super admin initialization.');
+      return;
     }
     
     for (const email of superAdminEmails) {
       const existingUser = await User.findOne({ where: { email } });
       if (!existingUser) {
         await User.create({
-          name: email === 'maddyahamco00@gmail.com' ? 'Muhammad Kabir Ahmad' : 'Super Admin',
+          name: 'Super Admin',
           email,
           password: defaultPassword,
           role: 'super_admin',

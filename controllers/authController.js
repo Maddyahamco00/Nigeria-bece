@@ -2,7 +2,7 @@
 import bcrypt from 'bcryptjs';
 import crypto from 'crypto';
 import User from '../models/User.js';
-import { sendTemplateEmail } from '../utils/sendEmail.js'; // Add this import
+import sendEmail, { sendTemplateEmail } from '../utils/sendEmail.js'; // Add this import
 import { Op } from 'sequelize'; // Add this import
 
 const authController = {

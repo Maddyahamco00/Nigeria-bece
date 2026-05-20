@@ -32,6 +32,18 @@ const Payment = sequelize.define(
       type: DataTypes.ENUM('pending', 'success', 'failed'),
       defaultValue: 'pending',
     },
+    schoolId: {
+      type: DataTypes.INTEGER,
+      allowNull: true,
+    },
+    studentId: {
+      type: DataTypes.INTEGER,
+      allowNull: true,
+    },
+    paymentMethod: {
+      type: DataTypes.STRING,
+      allowNull: true,
+    },
   },
   {
     tableName: 'payments',

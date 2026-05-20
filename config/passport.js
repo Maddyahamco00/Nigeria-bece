@@ -1,88 +1,64 @@
 // config/passport.js
+// Passport strategies now delegate credential validation to AuthService.
+// No business logic lives here — just wiring.
+
 import { Strategy as LocalStrategy } from 'passport-local';
-import bcrypt from 'bcryptjs';
 import { User, Student } from '../models/index.js';
-import { Op } from 'sequelize';
+import * as AuthService from '../src/auth/services/AuthService.js';
+import logger from '../utils/logger.js';
 
 export default function initialize(passport) {
 
-  // -----------------------------
-  // Admin login
-  // -----------------------------
-  passport.use('local-admin', new LocalStrategy(
-    { usernameField: 'email' },
-    async (email, password, done) => {
+  // ── Admin strategy ──────────────────────────────────────────────────────
+  passport.use(
+    'local-admin',
+    new LocalStrategy({ usernameField: 'email' }, async (email, password, done) => {
       try {
-        const user = await User.findOne({ where: { email } });
-        if (!user) return done(null, false, { message: 'Email not found' });
-        
-        const adminRoles = ['super_admin', 'admin', 'state_admin', 'school_admin', 'exam_admin', 'feedback_admin'];
-        if (!adminRoles.includes(user.role)) {
-          return done(null, false, { message: 'Access denied - Admin role required' });
-        }
-        
-        if (!user.isActive) {
-          return done(null, false, { message: 'Account is deactivated' });
-        }
-        
-        const isMatch = await bcrypt.compare(password, user.password);
-        if (!isMatch) return done(null, false, { message: 'Incorrect password' });
-        
+        const user = await AuthService.validateAdminCredentials(email, password);
         return done(null, user);
       } catch (err) {
+        // AuthenticationError → return false with message (not a system error)
+        if (err.name === 'AuthenticationError') {
+          return done(null, false, { message: err.message });
+        }
+        logger.error('Passport admin strategy error', { error: err.message });
         return done(err);
       }
-    }
-  ));
+    })
+  );
 
-  // -----------------------------
-  // Student login
-  // -----------------------------
-  // Student login: allow login via registration number or email.
-  passport.use('local-student', new LocalStrategy(
-    { usernameField: 'regNumber' },
-    async (username, password, done) => {
+  // ── Student strategy ────────────────────────────────────────────────────
+  passport.use(
+    'local-student',
+    new LocalStrategy({ usernameField: 'regNumber' }, async (identifier, password, done) => {
       try {
-        const student = await Student.findOne({
-          where: {
-            [Op.or]: [
-              { regNumber: username },
-              { email: username }
-            ]
-          }
-        });
-
-        if (!student) return done(null, false, { message: 'Registration number or email not found. Please check your details and try again.' });
-
-        const isMatch = await bcrypt.compare(password, student.password);
-        if (!isMatch) return done(null, false, { message: 'Incorrect password. Please check your password and try again.' });
-
+        const student = await AuthService.validateStudentCredentials(identifier, password);
         return done(null, student);
       } catch (err) {
-        console.error('Student authentication error:', err.message);
-        return done(null, false, { message: 'Database connection error. Please try again.' });
+        if (err.name === 'AuthenticationError') {
+          return done(null, false, { message: err.message });
+        }
+        logger.error('Passport student strategy error', { error: err.message });
+        return done(err);
       }
-    }
-  ));
+    })
+  );
 
-  // -----------------------------
-  // Serialize & Deserialize
-  // -----------------------------
+  // ── Serialize / Deserialize ─────────────────────────────────────────────
   passport.serializeUser((user, done) => {
-    // store both id and role
     done(null, { id: user.id, role: user.role || 'student' });
   });
 
-  passport.deserializeUser(async (obj, done) => {
+  passport.deserializeUser(async ({ id, role }, done) => {
     try {
-      if (obj.role === 'student') {
-        const student = await Student.findByPk(obj.id);
-        return done(null, student);
-      } else {
-        const user = await User.findByPk(obj.id);
-        return done(null, user);
+      if (role === 'student') {
+        const student = await Student.findByPk(id);
+        return done(null, student || false);
       }
+      const user = await User.findByPk(id);
+      return done(null, user || false);
     } catch (err) {
+      logger.error('Passport deserialize error', { error: err.message });
       done(err);
     }
   });

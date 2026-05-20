@@ -146,10 +146,6 @@ router.get('/dashboard/full', requireStudent, async (req, res) => {
   }
 });
 
-// Student profile
-router.get('/profile', requireStudent, renderProfile);
-router.post('/profile', requireStudent, updateProfile);
-
 // Payment simulation
 router.post('/payment/simulate', requireStudent, async (req, res) => {
   try {

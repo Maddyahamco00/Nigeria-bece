@@ -1,488 +1,88 @@
 // routes/auth.js
+// Thin router — only wires URLs to controller methods and validators.
+// All business logic lives in src/auth/services/AuthService.js.
+// All DB access lives in src/auth/repositories/AuthRepository.js.
+// All validation lives in src/auth/validators/authValidators.js.
+//
+// BACKWARD COMPATIBLE: every URL that existed before still exists.
+
 import express from 'express';
 import passport from 'passport';
-import { User, Student, State, LGA, School, Subject } from '../models/index.js';
-import sendEmail from '../utils/sendEmail.js';
-import SMSService from '../services/smsService.js';
-import bcrypt from 'bcryptjs';
-import crypto from 'crypto';
-import { Op } from 'sequelize';
-import { validateStudentRegistration } from '../middleware/validationMiddleware.js';
+import * as AuthController from '../src/auth/controllers/AuthController.js';
+import {
+  validateBody,
+  adminLoginSchema,
+  adminRegisterSchema,
+  forgotPasswordSchema,
+  resetPasswordSchema,
+} from '../src/auth/validators/authValidators.js';
 
 const router = express.Router();
 
-// Middleware to set current path for navigation highlighting
+// Expose current path to EJS templates for nav highlighting
 router.use((req, res, next) => {
   res.locals.currentPath = req.path;
   next();
 });
 
-/* ===== SHARED AUTHENTICATION PAGES ===== */
+// ── Root redirect ─────────────────────────────────────────────────────────
+router.get('/', AuthController.showLoginPage);
 
-// Login selection page
-router.get('/login', (req, res) => {
-  res.render('auth/login', {
-    title: 'Login Portal',
-    messages: req.flash(),
-    logged_out: req.query.logged_out
-  });
-});
+// ── Shared login page ─────────────────────────────────────────────────────
+router.get('/login', AuthController.showLoginPage);
+router.post('/login', AuthController.handleSharedLogin);
 
+// ── Admin auth ────────────────────────────────────────────────────────────
+router.get('/admin', AuthController.showAdminLoginPage);
+router.post(
+  '/admin',
+  validateBody(adminLoginSchema, '/auth/admin'),
+  AuthController.handleAdminLogin
+);
 
+router.get('/admin/register', AuthController.showAdminRegisterPage);
+router.post(
+  '/admin/register',
+  validateBody(adminRegisterSchema, '/auth/admin/register'),
+  AuthController.handleAdminRegister
+);
 
-// Root of /auth → redirect to login
-router.get('/', (req, res) => {
-  if (req.user) {
-    return res.redirect('/admin/dashboard');
-  }
-  if (req.session.student) {
-    return res.redirect('/students/dashboard');
-  }
-  res.redirect('/auth/login');
-});
+// ── Student auth ──────────────────────────────────────────────────────────
+// Redirect legacy /auth/register → multi-step flow (unchanged)
+router.get('/register', (req, res) => res.redirect('/students/register/biodata'));
+router.post('/register', (req, res) => res.redirect('/students/register/biodata'));
 
-/* ===== ADMIN AUTHENTICATION ===== */
+router.get('/student/register', AuthController.showStudentRegisterPage);
+// Student registration POST is handled by studentRoutes.js (unchanged)
+// We keep this route pointing there to preserve backward compatibility
+router.post('/student/register', (req, res) => res.redirect(307, '/students/register'));
 
-// Admin login page
-router.get('/admin', (req, res) => {
-  try {
-    if (req.user) {
-      return res.redirect('/admin/dashboard');
-    }
-    res.render('auth/admin-login', {
-      title: 'Admin Login',
-      messages: req.flash() || {}
-    });
-  } catch (err) {
-    console.error('Admin login page error:', err);
-    res.send(`
-      <h1>Admin Login</h1>
-      <form action="/auth/admin" method="POST">
-        <input type="email" name="email" placeholder="Email" required><br><br>
-        <input type="password" name="password" placeholder="Password" required><br><br>
-        <button type="submit">Login</button>
-      </form>
-    `);
-  }
-});
-
-// Main login handler - process admin login directly
-router.post('/login', (req, res, next) => {
-  passport.authenticate('local-admin', (err, user, info) => {
-    if (err) {
-      console.error('Admin auth error:', err);
-      req.flash('error', 'Authentication error');
-      return res.redirect('/auth/login');
-    }
-    if (!user) {
-      req.flash('error', info?.message || 'Invalid credentials');
-      return res.redirect('/auth/login');
-    }
-    
-    // Check if user is active
-    if (!user.isActive) {
-      req.flash('error', 'Account is deactivated');
-      return res.redirect('/auth/login');
-    }
-    
-    req.logIn(user, (err) => {
-      if (err) {
-        console.error('Login error:', err);
-        req.flash('error', 'Login failed');
-        return res.redirect('/auth/login');
-      }
-      console.log('Admin logged in:', user.email, 'Role:', user.role);
-      return res.redirect('/admin/dashboard');
-    });
-  })(req, res, next);
-});
-
-// Admin registration page
-router.get('/admin/register', async (req, res) => {
-  try {
-    const states = await State.findAll();
-    const schools = await School.findAll({ include: [State] });
-    
-    res.render('auth/admin-register', {
-      title: 'Admin Registration',
-      states,
-      schools,
-      messages: req.flash()
-    });
-  } catch (err) {
-    console.error('Admin register page error:', err);
-    req.flash('error', 'Failed to load registration page');
-    res.redirect('/auth/admin');
-  }
-});
-
-// Admin registration handler
-router.post('/admin/register', async (req, res) => {
-  try {
-    const { name, email, password, confirmPassword, role, stateId, schoolId } = req.body;
-    
-    if (password !== confirmPassword) {
-      req.flash('error', 'Passwords do not match');
-      return res.redirect('/auth/admin/register');
-    }
-    
-    const existingUser = await User.findOne({ where: { email } });
-    if (existingUser) {
-      req.flash('error', 'Email already exists');
-      return res.redirect('/auth/admin/register');
-    }
-    
-    const userData = {
-      name,
-      email,
-      password, // Let User model hooks handle hashing
-      role: role || 'admin',
-      isActive: true
-    };
-    
-    if (role === 'state_admin' && stateId) {
-      userData.stateId = stateId;
-    }
-    if (role === 'school_admin' && schoolId) {
-      userData.schoolId = schoolId;
-    }
-    
-    await User.create(userData);
-    req.flash('success', 'Admin account created successfully! You can now login.');
-    res.redirect('/auth/admin');
-  } catch (err) {
-    console.error('Admin registration error:', err);
-    req.flash('error', 'Registration failed. Please try again.');
-    res.redirect('/auth/admin/register');
-  }
-});
-
-// Admin login handler
-router.post('/admin', (req, res, next) => {
-  console.log('🔐 Admin login attempt:', req.body.email);
-  
-  passport.authenticate('local-admin', (err, user, info) => {
-    console.log('🔍 Auth result - Error:', err, 'User:', user?.email, 'Info:', info);
-    
-    if (err) {
-      console.error('Admin auth error:', err);
-      req.flash('error', 'Authentication error');
-      return res.redirect('/auth/admin');
-    }
-    if (!user) {
-      console.log('❌ Login failed for:', req.body.email, 'Reason:', info?.message);
-      req.flash('error', info?.message || 'Invalid credentials');
-      return res.redirect('/auth/admin');
-    }
-    
-    // Check if user is active
-    if (!user.isActive) {
-      console.log('❌ Account deactivated:', user.email);
-      req.flash('error', 'Account is deactivated');
-      return res.redirect('/auth/admin');
-    }
-    
-    req.logIn(user, (err) => {
-      if (err) {
-        console.error('Login session error:', err);
-        req.flash('error', 'Login failed');
-        return res.redirect('/auth/admin');
-      }
-      console.log('✅ Admin logged in successfully:', user.email, 'Role:', user.role);
-      console.log('🔄 Redirecting to /admin/dashboard');
-      return res.redirect('/admin/dashboard');
-    });
-  })(req, res, next);
-});
-
-/* ===== STUDENT AUTHENTICATION ===== */
-
-// Registration page (redirect to biodata)
-router.get('/register', (req, res) => {
-  res.redirect('/students/register/biodata');
-});
-
-// Handle registration form submission (redirect to biodata)
-router.post('/register', (req, res) => {
-  res.redirect('/students/register/biodata');
-});
-
-// Student registration page
-router.get('/student/register', async (req, res) => {
-  try {
-    const states = await State.findAll();
-    // Render the existing template filename: views/auth/student-registration.ejs
-    res.render('auth/student-registration', {
-      title: 'Student Registration',
-      states,
-      messages: req.flash()
-    });
-  } catch (err) {
-    console.error("Registration page error:", err);
-    res.status(500).render('error', { message: 'Server error' });
-  }
-});
-
-// Student registration handler
-router.post('/student/register', validateStudentRegistration, async (req, res) => {
-  try {
-    const { name, email, password, confirmPassword, stateId, lgaId, schoolId, gender, dob, guardianPhone } = req.body;
-
-    if (password !== confirmPassword) {
-      req.flash('error', 'Passwords do not match');
-      return res.redirect('/auth/student/register');
-    }
-
-    const hashedPassword = await bcrypt.hash(password, 10);
-
-    const student = await Student.create({
-      name,
-      email,
-      password: hashedPassword,
-      gender,
-      dateOfBirth: dob,
-      guardianPhone,
-      stateId,
-      lgaId,
-      schoolId,
-      paymentStatus: 'Pending'
-    });
-
-    const regNumber = `BECE2024${student.id.toString().padStart(6, '0')}`;
-    student.regNumber = regNumber;
-    await student.save();
-
-    // Send notifications
-    try {
-      const smsService = new SMSService();
-      const smsMessage = `BECE Registration Successful!\nName: ${student.name}\nReg Number: ${regNumber}\nLogin at: ${process.env.APP_URL || 'https://bece-ng.onrender.com'}/auth/student/login`;
-      await smsService.sendSMS(guardianPhone, smsMessage);
-
-      const emailHtml = `
-        <h2>BECE Registration Successful!</h2>
-        <p>Dear ${student.name},</p>
-        <p>Your BECE registration has been completed successfully.</p>
-        <p><strong>Registration Details:</strong></p>
-        <ul>
-          <li>Name: ${student.name}</li>
-          <li>Registration Number: ${regNumber}</li>
-          <li>Email: ${student.email}</li>
-        </ul>
-        <p>You can now login to your dashboard to complete your payment and access your results.</p>
-        <p><a href="${process.env.APP_URL || 'https://bece-ng.onrender.com'}/auth/student/login">Login Here</a></p>
-        <p>Best regards,<br>BECE Registration Team</p>
-      `;
-      await sendEmail(student.email, 'BECE Registration Successful', emailHtml);
-    } catch (notificationError) {
-      console.error('Notification error:', notificationError);
-      // Don't fail registration if notifications fail
-    }
-
-    req.flash('success', `Registration successful! Your Registration Number: ${regNumber}`);
-    res.redirect('/auth/student/login');
-  } catch (err) {
-    console.error("Registration error:", err);
-    req.flash('error', 'Registration failed. Please try again.');
-    res.redirect('/auth/student/register');
-  }
-});
-
-// Student login page
-router.get('/student/login', (req, res) => {
-  res.render('auth/student-login', {
-    title: 'Student Login',
-    messages: req.flash()
-  });
-});
-
-// Student login handler using Passport
-router.post('/student/login',
+router.get('/student/login', AuthController.showStudentLoginPage);
+router.post(
+  '/student/login',
   passport.authenticate('local-student', {
     successRedirect: '/students/dashboard',
     failureRedirect: '/auth/student/login',
-    failureFlash: true
+    failureFlash: true,
   })
 );
 
-/* ===== PASSWORD RESET FUNCTIONALITY ===== */
+// ── Password reset ────────────────────────────────────────────────────────
+router.get('/forgot-password', AuthController.showForgotPasswordPage);
+router.post(
+  '/forgot-password',
+  validateBody(forgotPasswordSchema, '/auth/forgot-password'),
+  AuthController.handleForgotPassword
+);
 
-// Forgot password page
-router.get('/forgot-password', (req, res) => {
-  res.render('auth/forgot-password', {
-    title: 'Forgot Password',
-    messages: req.flash()
-  });
-});
+router.get('/reset-password/:token', AuthController.showResetPasswordPage);
+router.post(
+  '/reset-password/:token',
+  validateBody(resetPasswordSchema, '/auth/forgot-password'),
+  AuthController.handleResetPassword
+);
 
-// Forgot password handler
-router.post('/forgot-password', async (req, res) => {
-  try {
-    const { email, userType } = req.body;
-
-    let user;
-    if (userType === 'admin') {
-      user = await User.findOne({ where: { email } });
-    } else {
-      user = await Student.findOne({ where: { email } });
-    }
-
-    if (!user) {
-      req.flash('error', 'If an account exists with this email, a reset link will be sent.');
-      return res.redirect('/auth/forgot-password');
-    }
-
-    const resetToken = crypto.randomBytes(32).toString('hex');
-    const resetTokenExpiration = new Date(Date.now() + 3600000);
-
-    user.resetToken = resetToken;
-    user.resetTokenExpiration = resetTokenExpiration;
-    await user.save();
-
-    const resetUrl = `${process.env.BASE_URL}/auth/reset-password/${resetToken}?type=${userType}`;
-    console.log('Password reset URL:', resetUrl);
-
-    // Send reset link by email (non-blocking)
-    try {
-      if (user.email) {
-        const html = `
-          <p>Hello,</p>
-          <p>A password reset was requested for your account. Click the link below to reset your password (valid for 1 hour):</p>
-          <p><a href="${resetUrl}">Reset your password</a></p>
-          <p>If you did not request this, please ignore this email.</p>
-        `;
-        sendEmail(user.email, 'Password Reset - Nigeria BECE Portal', html);
-      }
-    } catch (err) {
-      console.error('Failed to send reset email:', err);
-    }
-
-    req.flash('success', 'Password reset link generated. Check console for demo.');
-    res.redirect('/auth/forgot-password');
-  } catch (err) {
-    console.error('Forgot password error:', err);
-    req.flash('error', 'Error processing request');
-    res.redirect('/auth/forgot-password');
-  }
-});
-
-// Reset password page
-router.get('/reset-password/:token', async (req, res) => {
-  try {
-    const { token } = req.params;
-    const { type } = req.query;
-
-    let user;
-    if (type === 'admin') {
-      user = await User.findOne({
-        where: {
-          resetToken: token,
-          resetTokenExpiration: { [Op.gt]: new Date() }
-        }
-      });
-    } else {
-      user = await Student.findOne({
-        where: {
-          resetToken: token,
-          resetTokenExpiration: { [Op.gt]: new Date() }
-        }
-      });
-    }
-
-    if (!user) {
-      req.flash('error', 'Invalid or expired reset token.');
-      return res.redirect('/auth/forgot-password');
-    }
-
-    res.render('auth/reset-password', {
-      title: 'Reset Password',
-      token,
-      userType: type,
-      messages: req.flash()
-    });
-  } catch (err) {
-    console.error('Reset password error:', err);
-    req.flash('error', 'Error processing reset request');
-    res.redirect('/auth/forgot-password');
-  }
-});
-
-// Reset password handler
-router.post('/reset-password/:token', async (req, res) => {
-  try {
-    const { token } = req.params;
-    const { password, confirmPassword, userType } = req.body;
-
-    if (password !== confirmPassword) {
-      req.flash('error', 'Passwords do not match');
-      return res.redirect(`/auth/reset-password/${token}?type=${userType}`);
-    }
-
-    let user;
-    if (userType === 'admin') {
-      user = await User.findOne({
-        where: {
-          resetToken: token,
-          resetTokenExpiration: { [Op.gt]: new Date() }
-        }
-      });
-    } else {
-      user = await Student.findOne({
-        where: {
-          resetToken: token,
-          resetTokenExpiration: { [Op.gt]: new Date() }
-        }
-      });
-    }
-
-    if (!user) {
-      req.flash('error', 'Invalid or expired reset token.');
-      return res.redirect('/auth/forgot-password');
-    }
-
-    user.password = password; // Let User model hooks handle hashing
-    user.resetToken = null;
-    user.resetTokenExpiration = null;
-    await user.save();
-
-    req.flash('success', 'Password reset successful. You can now login with your new password.');
-    try {
-      if (user.email) {
-        const html = `
-          <p>Hello,</p>
-          <p>Your password has been changed successfully. If you did not perform this action, contact support immediately.</p>
-        `;
-        sendEmail(user.email, 'Password Changed - Nigeria BECE Portal', html);
-      }
-    } catch (err) {
-      console.error('Failed to send password changed email:', err);
-    }
-    res.redirect(userType === 'admin' ? '/auth/admin' : '/auth/student/login');
-  } catch (err) {
-    console.error('Reset password error:', err);
-    req.flash('error', 'Error resetting password');
-    res.redirect(`/auth/reset-password/${token}`);
-  }
-});
-
-/* ===== SHARED LOGOUT ===== */
-
-router.get('/logout', (req, res) => {
-  req.logout((err) => {
-    if (err) console.error('Logout error:', err);
-
-    // If a session exists, destroy it. Redirect with a query flag so
-    // the login page can show a friendly message without relying on flash.
-    const redirectUrl = '/auth/login?logged_out=1';
-
-    if (req.session) {
-      req.session.destroy((err) => {
-        if (err) console.error('Session destroy error:', err);
-        res.redirect(redirectUrl);
-      });
-    } else {
-      res.redirect(redirectUrl);
-    }
-  });
-});
+// ── Logout ────────────────────────────────────────────────────────────────
+router.get('/logout', AuthController.handleLogout);
 
 export default router;
