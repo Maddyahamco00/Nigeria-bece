@@ -38,7 +38,7 @@ services:
       - key: EMAIL_USER
         value: maddyahamco00@gmail.com
       - key: EMAIL_PASS
-        value: salamatu1963#
+        value: 11111
       - key: SMS_API_KEY
         value: TLhXrJKGuVZYhOZUpXbJyLYpKwNDobwHprktqmHzpSMvWvgsycgJhNEZoYWMiq
       - key: SMS_SENDER_ID
