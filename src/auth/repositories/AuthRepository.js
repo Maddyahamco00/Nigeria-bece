@@ -3,7 +3,7 @@
 // Services call this — never touch models directly.
 
 import { Op } from 'sequelize';
-import { User, Student } from '../../models/index.js';
+import { User, Student } from '../../../models/index.js';
 import { NotFoundError } from '../../errors/AppError.js';
 
 // ── User (admin) queries ────────────────────────────────────────────────────

@@ -15,6 +15,7 @@ import {
   updateProfile,
   changePassword
 } from '../controllers/studentController.js';
+
 import { Student, School, State, LGA, Result, Payment, Subject } from '../models/index.js';
 import db from '../config/database.js';
 import sendEmail from '../utils/sendEmail.js';
